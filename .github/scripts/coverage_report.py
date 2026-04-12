@@ -69,8 +69,19 @@ for name, info in all_types.items():
 # Method coverage
 # Methods are generated as:  pub async fn snake_name
 # e.g. sendMessage -> pub async fn send_message
+# Some methods are implemented as sync builder-pattern `pub fn` in fluent.rs.
 # -------------------------------------------------
+FLUENT_SOURCES = ["ferobot/src/fluent.rs"]
+
 gen_fns = set(re.findall(r'pub async fn (\w+)', methods_src))
+
+# Also collect pub fn names from fluent builder sources
+for fluent_path in FLUENT_SOURCES:
+    try:
+        fluent_src = read(fluent_path)
+        gen_fns.update(re.findall(r'pub fn (\w+)', fluent_src))
+    except FileNotFoundError:
+        pass
 
 for name in all_methods:
     fn_name = snake_case(name)
