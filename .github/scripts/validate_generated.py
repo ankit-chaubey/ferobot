@@ -10,7 +10,8 @@ How it works:
     - Generated types    → must appear in gen_types.rs
     - Hand-crafted types → defined in HAND_CRAFTED_TYPES below; searched in
                            ferobot/src/ instead of gen_types.rs
-    - All methods        → must appear in gen_methods.rs
+    - All methods        → must appear in gen_methods.rs (pub async fn)
+                           OR in FLUENT_SOURCES (pub fn, builder-pattern)
 
 Adding a new hand-crafted type:
     1. Implement it in the appropriate ferobot/src/*.rs file
@@ -33,6 +34,13 @@ HAND_CRAFTED_TYPES = {
     # Ergonomic wrapper enum with From<> impls - in lib.rs
     "InputMedia": ["ferobot/src/lib.rs"],
 }
+
+# Source files that implement methods as sync builder-pattern `pub fn`
+# rather than `pub async fn` in gen_methods.rs.  The validator accepts
+# a method as present if it appears in ANY of these files.
+FLUENT_SOURCES = [
+    "ferobot/src/fluent.rs",
+]
 
 def snake_case(name):
     s = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1_\2', name)
@@ -106,10 +114,19 @@ def main():
     print(f"\n=== Validating {len(all_methods)} methods ===")
 
     gen_fns = set(re.findall(r'pub async fn (\w+)', methods_src))
+
+    # Also collect `pub fn` names from fluent sources (builder-pattern methods)
+    fluent_fns: set[str] = set()
+    for fluent_path in FLUENT_SOURCES:
+        fluent_src = read(fluent_path)
+        fluent_fns.update(re.findall(r'pub fn (\w+)', fluent_src))
+
+    all_fns = gen_fns | fluent_fns
+
     missing_methods = []
     for method_name in all_methods:
         fn_name = snake_case(method_name)
-        if fn_name not in gen_fns:
+        if fn_name not in all_fns:
             missing_methods.append(method_name)
             errors.append(f"❌ Missing method: {method_name} (expected fn '{fn_name}')")
 
