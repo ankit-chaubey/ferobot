@@ -28,11 +28,11 @@ print("Source dir:", SRC_DIR)
 print("Site dir: ", SITE_DIR)
 
 def load(path):
- try:
- return Path(path).read_text(encoding="utf-8")
- except FileNotFoundError:
- print(f"Warning: not found: {path}")
- return ""
+    try:
+        return Path(path).read_text(encoding="utf-8")
+    except FileNotFoundError:
+        print(f"Warning: not found: {path}")
+        return ""
 
 gen_methods = load(SRC_DIR / "gen_methods.rs")
 gen_types = load(SRC_DIR / "gen_types.rs")

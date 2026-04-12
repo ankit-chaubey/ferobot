@@ -38,7 +38,7 @@
 //!
 //! // Send a photo with a caption
 //! let msg = bot
-//!     .send_photo(123456789_i64, InputFile::memory("cat.jpg", b"fake image data"))
+//!     .send_photo(123456789_i64, InputFile::memory("cat.jpg", b"fake image data" as &[u8]))
 //!     .caption("Look at this cat 🐱")
 //!     .html()
 //!     .await?;
