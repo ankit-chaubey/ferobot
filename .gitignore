@@ -1,0 +1,8 @@
+/target
+Cargo.lock
+*.DS_Store
+.env
+
+# Docs generated output (built automatically on tag/release)
+site/
+__pycache__/

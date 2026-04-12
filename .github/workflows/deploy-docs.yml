@@ -1,0 +1,68 @@
+name: Deploy Docs
+
+# Only runs on versioned tags and published releases.
+on:
+ push:
+ tags:
+ - 'v*'
+
+ release:
+ types: [published]
+
+ # Manual trigger (useful for hotfixing docs without a code change)
+ workflow_dispatch:
+ inputs:
+ message:
+ description: 'Reason for manual deploy (optional)'
+ required: false
+ default: 'Manual docs deploy'
+
+permissions:
+ contents: write
+ pages: write
+ id-token: write
+
+concurrency:
+ group: docs-deploy
+ cancel-in-progress: true
+
+jobs:
+ generate-and-deploy:
+ name: Build and deploy docs
+ runs-on: ubuntu-latest
+
+ steps:
+ - name: Checkout
+ uses: actions/checkout@v4
+ with:
+ fetch-depth: 0
+
+ - name: Set up Python 3.11
+ uses: actions/setup-python@v5
+ with:
+ python-version: '3.11'
+
+ - name: Install Python deps
+ run: pip install beautifulsoup4 lxml 2>/dev/null || true
+
+ - name: Generate docs
+ run: python3 scripts/generate_docs.py
+
+ - name: Show output size
+ run: |
+ echo "--- Generated files ---"
+ ls -lah site/
+ du -sh site/*
+
+ - name: Deploy to gh-pages
+ uses: peaceiris/actions-gh-pages@v4
+ with:
+ github_token: ${{ secrets.GITHUB_TOKEN }}
+ publish_dir: ./site
+ publish_branch: gh-pages
+ force_orphan: true
+ commit_message: |
+ docs: deploy ${{ github.ref_name }}
+
+ trigger: ${{ github.event_name }}
+ sha: ${{ github.sha }}

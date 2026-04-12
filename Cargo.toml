@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "ferobot",
+    "codegen",
+    "examples/mock_client",
+]
+resolver = "2"
