@@ -33,7 +33,7 @@
 //! let handler: UpdateHandler = Box::new(|bot, update| {
 //!     Box::pin(async move {
 //!         if let Some(msg) = update.message {
-//!             let _ = bot.send_message(msg.chat.id, "pong", None).await;
+//!             let _ = bot.send_message(msg.chat.id, "pong").await;
 //!         }
 //!     })
 //! });

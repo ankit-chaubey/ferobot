@@ -169,6 +169,21 @@ fn method_params_name(name: &str) -> String {
     format!("{}Params", name.to_pascal_case())
 }
 
+const COPYRIGHT_HEADER: &str = "\
+// Copyright (c) Ankit Chaubey <ankitchaubey.dev@gmail.com>\n\
+// SPDX-License-Identifier: MIT OR Apache-2.0\n\
+//\n\
+// ferobot: async Telegram Bot API framework written in Rust\n\
+// Repository: https://github.com/ankit-chaubey/ferobot\n\
+//\n\
+// Ferobot provides a fast and ergonomic framework for building Telegram bots\n\
+// using the official Telegram Bot API.\n\
+//\n\
+// Author: Ankit Chaubey\n\
+//\n\
+// If you use or modify this code, keep this notice at the top of your file\n\
+// and include the LICENSE-MIT or LICENSE-APACHE file from this repository.\n";
+
 // Types implemented manually in the library - skip generating them to avoid duplicates.
 // Keep in sync with SKIP_TYPES in codegen/codegen.py and HAND_CRAFTED_TYPES in
 // .github/scripts/validate_generated.py
@@ -183,6 +198,8 @@ fn sorted_keys<V>(map: &HashMap<String, V>) -> Vec<String> {
 // Code generators
 fn generate_types(spec: &ApiSpec) -> String {
     let mut out = String::new();
+    out.push_str(COPYRIGHT_HEADER);
+    out.push('\n');
     writeln!(out, "// THIS FILE IS AUTO-GENERATED. DO NOT EDIT.").unwrap();
     writeln!(out, "// Generated from Telegram Bot API {}", spec.version).unwrap();
     writeln!(out, "// https://core.telegram.org/bots/api").unwrap();
@@ -272,6 +289,8 @@ fn generate_types(spec: &ApiSpec) -> String {
 
 fn generate_methods(spec: &ApiSpec) -> String {
     let mut out = String::new();
+    out.push_str(COPYRIGHT_HEADER);
+    out.push('\n');
     writeln!(out, "// THIS FILE IS AUTO-GENERATED. DO NOT EDIT.").unwrap();
     writeln!(out, "// Generated from Telegram Bot API {}", spec.version).unwrap();
     writeln!(out).unwrap();

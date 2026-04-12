@@ -54,7 +54,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::answer_callback_query`]
+/// Optional parameters for [`Bot::answer_callback_query_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AnswerCallbackQueryParams {
     /// Text of the notification. If not specified, nothing will be shown to the user, 0-200 characters
@@ -542,7 +542,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::copy_message`]
+/// Optional parameters for [`Bot::copy_message_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CopyMessageParams {
     /// Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only
@@ -2161,7 +2161,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::edit_message_text`]
+/// Optional parameters for [`Bot::edit_message_text_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct EditMessageTextParams {
     /// Unique identifier of the business connection on behalf of which the message to be edited was sent
@@ -2377,7 +2377,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::forward_message`]
+/// Optional parameters for [`Bot::forward_message_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ForwardMessageParams {
     /// Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only
@@ -3740,7 +3740,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::pin_chat_message`]
+/// Optional parameters for [`Bot::pin_chat_message_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct PinChatMessageParams {
     /// Unique identifier of the business connection on behalf of which the message will be pinned
@@ -4856,7 +4856,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_chat_action`]
+/// Optional parameters for [`Bot::send_chat_action_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendChatActionParams {
     /// Unique identifier of the business connection on behalf of which the action will be sent
@@ -5248,7 +5248,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_document`]
+/// Optional parameters for [`Bot::send_document_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendDocumentParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -6060,7 +6060,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_message`]
+/// Optional parameters for [`Bot::send_message_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendMessageParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -6412,7 +6412,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_photo`]
+/// Optional parameters for [`Bot::send_photo_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendPhotoParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent

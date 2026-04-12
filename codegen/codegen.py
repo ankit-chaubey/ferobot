@@ -30,6 +30,37 @@ from pathlib import Path
 
 # Types that are hand-crafted in the library and must NOT be generated.
 # Keep this in sync with HAND_CRAFTED_TYPES in .github/scripts/validate_generated.py
+COPYRIGHT_HEADER = """\
+// Copyright (c) Ankit Chaubey <ankitchaubey.dev@gmail.com>
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//
+// ferobot: async Telegram Bot API framework written in Rust
+// Repository: https://github.com/ankit-chaubey/ferobot
+//
+// Ferobot provides a fast and ergonomic framework for building Telegram bots
+// using the official Telegram Bot API.
+//
+// Author: Ankit Chaubey
+//
+// If you use or modify this code, keep this notice at the top of your file
+// and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
+"""
+
+# Methods that fluent.rs exposes as builder-pattern wrappers under the bare name.
+# The generated async implementation must use the _with_params suffix so there is
+# no duplicate-definition conflict and fluent.rs can call the raw async version.
+FLUENT_METHODS = {
+    "sendMessage",
+    "sendPhoto",
+    "sendDocument",
+    "editMessageText",
+    "answerCallbackQuery",
+    "forwardMessage",
+    "copyMessage",
+    "pinChatMessage",
+    "sendChatAction",
+}
+
 SKIP_TYPES = {
     "InputFile",   # rich enum in ferobot/src/input_file.rs
     "InputMedia",  # ergonomic wrapper enum in ferobot/src/lib.rs
@@ -173,6 +204,8 @@ def generate_types(spec):
     version = spec['version']
     lines = []
 
+    lines.append(COPYRIGHT_HEADER.rstrip())
+    lines.append('')
     lines.append(f'// THIS FILE IS AUTO-GENERATED. DO NOT EDIT.')
     lines.append(f'// Generated from Telegram Bot API {version}')
     lines.append(f'// Spec:    https://github.com/ankit-chaubey/api-spec')
@@ -258,6 +291,8 @@ def generate_methods(spec):
     version = spec['version']
     lines = []
 
+    lines.append(COPYRIGHT_HEADER.rstrip())
+    lines.append('')
     lines.append(f'// THIS FILE IS AUTO-GENERATED. DO NOT EDIT.')
     lines.append(f'// Generated from Telegram Bot API {version}')
     lines.append(f'// Spec:    https://github.com/ankit-chaubey/api-spec')
@@ -277,6 +312,8 @@ def generate_methods(spec):
     for method_name in sorted(methods_map.keys()):
         method = methods_map[method_name]
         fn_name = method_fn_name(method_name)
+        if method_name in FLUENT_METHODS:
+            fn_name = fn_name + "_with_params"
         params_name = method_params_struct(method_name)
         docs = method.get('description', [])
         href = method.get('href', '')

@@ -120,7 +120,9 @@ pub struct Audio {
 }
 
 /// This object describes the way a background is filled based on the selected colors. Currently, it can be one of
-
+/// - BackgroundFillSolid
+/// - BackgroundFillGradient
+/// - BackgroundFillFreeformGradient
 /// https://core.telegram.org/bots/api#backgroundfill
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -168,7 +170,10 @@ pub struct BackgroundFillSolid {
 }
 
 /// This object describes the type of a background. Currently, it can be one of
-
+/// - BackgroundTypeFill
+/// - BackgroundTypeWallpaper
+/// - BackgroundTypePattern
+/// - BackgroundTypeChatTheme
 /// https://core.telegram.org/bots/api#backgroundtype
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -267,7 +272,13 @@ pub struct BotCommand {
 }
 
 /// This object represents the scope to which bot commands are applied. Currently, the following 7 scopes are supported:
-
+/// - BotCommandScopeDefault
+/// - BotCommandScopeAllPrivateChats
+/// - BotCommandScopeAllGroupChats
+/// - BotCommandScopeAllChatAdministrators
+/// - BotCommandScopeChat
+/// - BotCommandScopeChatAdministrators
+/// - BotCommandScopeChatMember
 /// https://core.telegram.org/bots/api#botcommandscope
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -651,7 +662,9 @@ pub struct ChatBoostRemoved {
 }
 
 /// This object describes the source of a chat boost. It can be one of
-
+/// - ChatBoostSourcePremium
+/// - ChatBoostSourceGiftCode
+/// - ChatBoostSourceGiveaway
 /// https://core.telegram.org/bots/api#chatboostsource
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -930,7 +943,12 @@ pub struct ChatLocation {
 }
 
 /// This object contains information about one member of a chat. Currently, the following 6 types of chat members are supported:
-
+/// - ChatMemberOwner
+/// - ChatMemberAdministrator
+/// - ChatMemberMember
+/// - ChatMemberRestricted
+/// - ChatMemberLeft
+/// - ChatMemberBanned
 /// https://core.telegram.org/bots/api#chatmember
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -1922,7 +1940,26 @@ pub struct InlineQuery {
 }
 
 /// This object represents one result of an inline query. Telegram clients currently support results of the following 20 types:
-
+/// - InlineQueryResultCachedAudio
+/// - InlineQueryResultCachedDocument
+/// - InlineQueryResultCachedGif
+/// - InlineQueryResultCachedMpeg4Gif
+/// - InlineQueryResultCachedPhoto
+/// - InlineQueryResultCachedSticker
+/// - InlineQueryResultCachedVideo
+/// - InlineQueryResultCachedVoice
+/// - InlineQueryResultArticle
+/// - InlineQueryResultAudio
+/// - InlineQueryResultContact
+/// - InlineQueryResultGame
+/// - InlineQueryResultDocument
+/// - InlineQueryResultGif
+/// - InlineQueryResultLocation
+/// - InlineQueryResultMpeg4Gif
+/// - InlineQueryResultPhoto
+/// - InlineQueryResultVenue
+/// - InlineQueryResultVideo
+/// - InlineQueryResultVoice
 /// Note: All URLs passed in inline query results will be available to end users and therefore must be assumed to be public.
 /// https://core.telegram.org/bots/api#inlinequeryresult
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -3000,7 +3037,11 @@ pub struct InputMediaVideo {
 }
 
 /// This object represents the content of a message to be sent as a result of an inline query. Telegram clients currently support the following 5 types:
-
+/// - InputTextMessageContent
+/// - InputLocationMessageContent
+/// - InputVenueMessageContent
+/// - InputContactMessageContent
+/// - InputInvoiceMessageContent
 /// https://core.telegram.org/bots/api#inputmessagecontent
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -3013,7 +3054,8 @@ pub enum InputMessageContent {
 }
 
 /// This object describes the paid media to be sent. Currently, it can be one of
-
+/// - InputPaidMediaPhoto
+/// - InputPaidMediaVideo
 /// https://core.telegram.org/bots/api#inputpaidmedia
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -3080,7 +3122,8 @@ pub struct InputPollOption {
 }
 
 /// This object describes a profile photo to set. Currently, it can be one of
-
+/// - InputProfilePhotoStatic
+/// - InputProfilePhotoAnimated
 /// https://core.telegram.org/bots/api#inputprofilephoto
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -3133,7 +3176,8 @@ pub struct InputSticker {
 }
 
 /// This object describes the content of a story to post. Currently, it can be one of
-
+/// - InputStoryContentPhoto
+/// - InputStoryContentVideo
 /// https://core.telegram.org/bots/api#inputstorycontent
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -3475,7 +3519,8 @@ pub struct MaskPosition {
 }
 
 /// This object describes a message that can be inaccessible to the bot. It can be one of
-
+/// - Message
+/// - InaccessibleMessage
 /// https://core.telegram.org/bots/api#maybeinaccessiblemessage
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -3485,7 +3530,9 @@ pub enum MaybeInaccessibleMessage {
 }
 
 /// This object describes the bot's menu button in a private chat. It should be one of
-
+/// - MenuButtonCommands
+/// - MenuButtonWebApp
+/// - MenuButtonDefault
 /// If a menu button other than MenuButtonDefault is set for a private chat, then it is applied in the chat. Otherwise the default menu button is applied. By default, the menu button opens the list of bot commands.
 /// https://core.telegram.org/bots/api#menubutton
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -3908,7 +3955,10 @@ pub struct MessageId {
 }
 
 /// This object describes the origin of a message. It can be one of
-
+/// - MessageOriginUser
+/// - MessageOriginHiddenUser
+/// - MessageOriginChat
+/// - MessageOriginChannel
 /// https://core.telegram.org/bots/api#messageorigin
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -4034,7 +4084,8 @@ pub struct OrderInfo {
 }
 
 /// This object describes a gift received and owned by a user or a chat. Currently, it can be one of
-
+/// - OwnedGiftRegular
+/// - OwnedGiftUnique
 /// https://core.telegram.org/bots/api#ownedgift
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -4137,7 +4188,9 @@ pub struct OwnedGifts {
 }
 
 /// This object describes paid media. Currently, it can be one of
-
+/// - PaidMediaPreview
+/// - PaidMediaPhoto
+/// - PaidMediaVideo
 /// https://core.telegram.org/bots/api#paidmedia
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -4226,7 +4279,15 @@ pub struct PassportData {
 }
 
 /// This object represents an error in the Telegram Passport element which was submitted that should be resolved by the user. It should be one of:
-
+/// - PassportElementErrorDataField
+/// - PassportElementErrorFrontSide
+/// - PassportElementErrorReverseSide
+/// - PassportElementErrorSelfie
+/// - PassportElementErrorFile
+/// - PassportElementErrorFiles
+/// - PassportElementErrorTranslationFile
+/// - PassportElementErrorTranslationFiles
+/// - PassportElementErrorUnspecified
 /// https://core.telegram.org/bots/api#passportelementerror
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -4597,7 +4658,9 @@ pub struct ReactionCount {
 }
 
 /// This object describes the type of a reaction. Currently, it can be one of
-
+/// - ReactionTypeEmoji
+/// - ReactionTypeCustomEmoji
+/// - ReactionTypePaid
 /// https://core.telegram.org/bots/api#reactiontype
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -4734,7 +4797,9 @@ pub struct ResponseParameters {
 }
 
 /// This object describes the state of a revenue withdrawal operation. Currently, it can be one of
-
+/// - RevenueWithdrawalStatePending
+/// - RevenueWithdrawalStateSucceeded
+/// - RevenueWithdrawalStateFailed
 /// https://core.telegram.org/bots/api#revenuewithdrawalstate
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -4990,7 +5055,11 @@ pub struct StoryAreaPosition {
 }
 
 /// Describes the type of a clickable area on a story. Currently, it can be one of
-
+/// - StoryAreaTypeLocation
+/// - StoryAreaTypeSuggestedReaction
+/// - StoryAreaTypeLink
+/// - StoryAreaTypeWeather
+/// - StoryAreaTypeUniqueGift
 /// https://core.telegram.org/bots/api#storyareatype
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
@@ -5242,7 +5311,13 @@ pub struct TextQuote {
 }
 
 /// This object describes the source of a transaction, or its recipient for outgoing transactions. Currently, it can be one of
-
+/// - TransactionPartnerUser
+/// - TransactionPartnerChat
+/// - TransactionPartnerAffiliateProgram
+/// - TransactionPartnerFragment
+/// - TransactionPartnerTelegramAds
+/// - TransactionPartnerTelegramApi
+/// - TransactionPartnerOther
 /// https://core.telegram.org/bots/api#transactionpartner
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
