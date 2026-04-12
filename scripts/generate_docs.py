@@ -48,10 +48,10 @@ print("Source files loaded")
 
 def load_api_json():
  for p in [ROOT_DIR / "api.json", ROOT_DIR.parent / "api.json"]:
- if p.exists():
- data = json.loads(p.read_text(encoding="utf-8"))
- print(f"Loaded api.json: {data.get('version','?')} ({data.get('release_date','?')})")
- return data
+  if p.exists():
+   data = json.loads(p.read_text(encoding="utf-8"))
+   print(f"Loaded api.json: {data.get('version','?')} ({data.get('release_date','?')})")
+   return data
  print("Warning: api.json not found, falling back to Rust source")
  return None
 
@@ -64,41 +64,41 @@ def _to_snake(name):
  return s.lower().lstrip("_")
 
 def parse_methods_from_api(api_data, rust_content):
- rust_params = _parse_rust_params(rust_content)
- methods = []
- for camel, m in api_data["methods"].items():
- snake = _to_snake(camel)
- desc = " ".join(m.get("description", [])).strip()
- url = m.get("href", f"https://core.telegram.org/bots/api#{camel.lower()}")
- ret = ", ".join(m.get("returns", ["Unknown"]))
- fields = m.get("fields", [])
- all_p = [{"name":f["name"],"type":" | ".join(f["types"]),"doc":f.get("description",""),"required":f["required"]} for f in fields]
- methods.append({
- "name": snake, "camel": camel, "doc": desc, "url": url, "ret": ret,
- "param_list": rust_params.get(snake, []),
- "required_params": [p for p in all_p if p["required"]],
- "optional_params": [p for p in all_p if not p["required"]],
- "all_api_params": all_p,
- })
- return methods
+    rust_params = _parse_rust_params(rust_content)
+    methods = []
+    for camel, m in api_data["methods"].items():
+        snake = _to_snake(camel)
+        desc = " ".join(m.get("description", [])).strip()
+        url = m.get("href", f"https://core.telegram.org/bots/api#{camel.lower()}")
+        ret = ", ".join(m.get("returns", ["Unknown"]))
+        fields = m.get("fields", [])
+        all_p = [{"name":f["name"],"type":" | ".join(f["types"]),"doc":f.get("description",""),"required":f["required"]} for f in fields]
+        methods.append({
+            "name": snake, "camel": camel, "doc": desc, "url": url, "ret": ret,
+            "param_list": rust_params.get(snake, []),
+            "required_params": [p for p in all_p if p["required"]],
+            "optional_params": [p for p in all_p if not p["required"]],
+            "all_api_params": all_p,
+        })
+    return methods
 
 def _parse_rust_params(content):
- result = {}
- for block in re.split(r"\nimpl Bot \{", content):
- m = re.search(r"pub async fn (\w+)\(\s*&self,?(.*?)\)\s*->\s*Result<", block, re.DOTALL)
- if m:
- result[m.group(1)] = _parse_param_list(re.sub(r"\s+", " ", m.group(2).strip()).rstrip(","))
- return result
+    result = {}
+    for block in re.split(r"\nimpl Bot \{", content):
+        m = re.search(r"pub async fn (\w+)\(\s*&self,?(.*?)\)\s*->\s*Result<", block, re.DOTALL)
+        if m:
+            result[m.group(1)] = _parse_param_list(re.sub(r"\s+", " ", m.group(2).strip()).rstrip(","))
+    return result
 
 def _parse_param_list(raw):
- params, depth, cur = [], 0, ""
- for ch in raw:
- if ch in "<([": depth += 1
- elif ch in ">)]": depth -= 1
- if ch == "," and depth == 0: _add_param(params, cur); cur = ""
- else: cur += ch
- _add_param(params, cur)
- return params
+    params, depth, cur = [], 0, ""
+    for ch in raw:
+        if ch in "<([": depth += 1
+        elif ch in ">)]": depth -= 1
+        if ch == "," and depth == 0: _add_param(params, cur); cur = ""
+        else: cur += ch
+    _add_param(params, cur)
+    return params
 
 def _add_param(lst, raw):
  raw = raw.strip()
@@ -107,96 +107,96 @@ def _add_param(lst, raw):
  if len(parts) == 2: lst.append({"name": parts[0].strip(), "type": parts[1].strip()})
 
 def parse_param_structs(content):
- pattern = re.compile(
- r"/// Optional parameters for \[`Bot::(\w+)`\]\n#\[derive[^\]]+\]\npub struct (\w+) \{(.*?)\}\n",
- re.DOTALL)
- result = {}
- for method, struct_name, fields_raw in pattern.findall(content):
- fields = re.findall(r"/// ([^\n]+)\n\s+(?:#\[serde[^\]]+\]\n\s+)?pub (\w+): ([^,\n]+)", fields_raw)
- result[method] = {"struct": struct_name,
- "fields": [{"doc":d.strip(),"name":n.strip(),"type":t.strip().rstrip(",")} for d,n,t in fields]}
- return result
+    pattern = re.compile(
+        r"/// Optional parameters for \[`Bot::(\w+)`\]\n#\[derive[^\]]+\]\npub struct (\w+) \{(.*?)\}\n",
+        re.DOTALL)
+    result = {}
+    for method, struct_name, fields_raw in pattern.findall(content):
+        fields = re.findall(r"/// ([^\n]+)\n\s+(?:#\[serde[^\]]+\]\n\s+)?pub (\w+): ([^,\n]+)", fields_raw)
+        result[method] = {"struct": struct_name,
+            "fields": [{"doc":d.strip(),"name":n.strip(),"type":t.strip().rstrip(",")} for d,n,t in fields]}
+    return result
 
 def parse_types_from_api(api_data):
- structs, unions = [], []
- for name, t in api_data["types"].items():
- if t.get("subtypes"):
- unions.append({"name":name,"variants":t["subtypes"],"doc":" ".join(t.get("description",[])),"url":t.get("href","")})
- else:
- fields = [{"name":f["name"],"type":" | ".join(f["types"]),"doc":f.get("description",""),"required":f["required"]} for f in t.get("fields",[])]
- structs.append({"name":name,"fields":fields,"doc":" ".join(t.get("description",[])),"url":t.get("href","")})
- return structs, unions
+    structs, unions = [], []
+    for name, t in api_data["types"].items():
+        if t.get("subtypes"):
+            unions.append({"name":name,"variants":t["subtypes"],"doc":" ".join(t.get("description",[])),"url":t.get("href","")})
+        else:
+            fields = [{"name":f["name"],"type":" | ".join(f["types"]),"doc":f.get("description",""),"required":f["required"]} for f in t.get("fields",[])]
+            structs.append({"name":name,"fields":fields,"doc":" ".join(t.get("description",[])),"url":t.get("href","")})
+    return structs, unions
 
 def parse_structs_rust(content):
- structs = []
- for name, body in re.findall(r"pub struct (\w+) \{([^}]+)\}", content):
- fields = re.findall(r"pub (\w+): ([^,\n]+)", body)
- structs.append({"name":name,"fields":[{"name":n,"type":t.strip().rstrip(","),"doc":"","required":True} for n,t in fields],"doc":"","url":""})
- return structs
+    structs = []
+    for name, body in re.findall(r"pub struct (\w+) \{([^}]+)\}", content):
+        fields = re.findall(r"pub (\w+): ([^,\n]+)", body)
+        structs.append({"name":name,"fields":[{"name":n,"type":t.strip().rstrip(","),"doc":"","required":True} for n,t in fields],"doc":"","url":""})
+    return structs
 
 def parse_enums_rust(content):
- enums = []
- for name, body in re.findall(r"pub enum (\w+) \{([^}]+)\}", content):
- variants = re.findall(r"\n\s+(\w+)", body)
- enums.append({"name":name,"variants":variants,"doc":"","url":""})
- return enums
+    enums = []
+    for name, body in re.findall(r"pub enum (\w+) \{([^}]+)\}", content):
+        variants = re.findall(r"\n\s+(\w+)", body)
+        enums.append({"name":name,"variants":variants,"doc":"","url":""})
+    return enums
 
 def type_placeholder(t, name=""):
  t = t.strip()
  if t.startswith("Option<"): return "None"
  if t in ("i64","i32","u64","u32"):
- return "123456789i64" if any(k in name.lower() for k in ("chat","user","group")) else "0i64"
+  return "123456789i64" if any(k in name.lower() for k in ("chat","user","group")) else "0i64"
  if t == "bool": return "true"
  if t in ("f64","f32"): return "0.0"
  if "Into<String>" in t or t in ("String","&str"):
- if "token" in name.lower(): return '"YOUR_BOT_TOKEN"'
- if any(k in name.lower() for k in ("text","message","caption")): return '"Hello from ferobot! 🦀"'
- if "url" in name.lower(): return '"https://example.com"'
- if "chat_id" in name.lower(): return '"@yourchannel"'
- return '"example"'
+  if "token" in name.lower(): return '"YOUR_BOT_TOKEN"'
+  if any(k in name.lower() for k in ("text","message","caption")): return '"Hello from ferobot! 🦀"'
+  if "url" in name.lower(): return '"https://example.com"'
+  if "chat_id" in name.lower(): return '"@yourchannel"'
+  return '"example"'
  if "Into<ChatId>" in t: return "123456789i64"
  if t.startswith("Vec<"): return f"vec![] // Vec<{t[4:-1]}>"
  if t[:1].isupper(): return f"{t}::default()"
  return "todo!()"
 
 def generate_example(method, params_map):
- name, param_list = method["name"], method["param_list"]
- has_opt = name in params_map
- imports = ["use ferobot::{Bot, BotError};"]
- if has_opt:
- imports.append(f'use ferobot::gen_methods::{{{params_map[name]["struct"]}}};')
- lines = imports + ["", "#[tokio::main]", "async fn main() -> Result<(), BotError> {",
- ' let bot = Bot::new("YOUR_BOT_TOKEN").await?;', ""]
- call_args = []
- for p in param_list:
- pname, ptype = p["name"], p["type"]
- if pname == "params" and has_opt:
- pstruct = params_map[name]["struct"]
- fields = params_map[name].get("fields", [])
- if fields:
- chain = [f" let params = {pstruct}::new()"]
- for f in fields[:5]:
- chain.append(f' .{f["name"]}({type_placeholder(f["type"], f["name"])})')
- if len(fields) > 5:
- chain.append(f" // ... +{len(fields)-5} more optional fields")
- chain[-1] += ";"
- lines += [" // Optional parameters"] + chain
- else:
- lines.append(f" let params = {pstruct}::new();")
- lines.append("")
- call_args.append("Some(params)")
- else:
- val = type_placeholder(ptype, pname)
- lines.append(f" let {pname} = {val};")
- call_args.append(pname)
- lines.append("")
- args_str = ",\n ".join(call_args)
- if call_args:
- lines.append(f" let result = bot.{name}(\n {args_str}\n ).await?;")
- else:
- lines.append(f" let result = bot.{name}().await?;")
- lines += [' println!("Result: {result:?}");', " Ok(())", "}"]
- return "\n".join(lines)
+    name, param_list = method["name"], method["param_list"]
+    has_opt = name in params_map
+    imports = ["use ferobot::{Bot, BotError};"]
+    if has_opt:
+        imports.append(f'use ferobot::gen_methods::{{{params_map[name]["struct"]}}};')
+    lines = imports + ["", "#[tokio::main]", "async fn main() -> Result<(), BotError> {",
+        ' let bot = Bot::new("YOUR_BOT_TOKEN").await?;', ""]
+    call_args = []
+    for p in param_list:
+        pname, ptype = p["name"], p["type"]
+        if pname == "params" and has_opt:
+            pstruct = params_map[name]["struct"]
+            fields = params_map[name].get("fields", [])
+            if fields:
+                chain = [f" let params = {pstruct}::new()"]
+                for f in fields[:5]:
+                    chain.append(f' .{f["name"]}({type_placeholder(f["type"], f["name"])})')
+                if len(fields) > 5:
+                    chain.append(f" // ... +{len(fields)-5} more optional fields")
+                chain[-1] += ";"
+                lines += [" // Optional parameters"] + chain
+            else:
+                lines.append(f" let params = {pstruct}::new();")
+            lines.append("")
+            call_args.append("Some(params)")
+        else:
+            val = type_placeholder(ptype, pname)
+            lines.append(f" let {pname} = {val};")
+            call_args.append(pname)
+    lines.append("")
+    args_str = ",\n ".join(call_args)
+    if call_args:
+        lines.append(f" let result = bot.{name}(\n {args_str}\n ).await?;")
+    else:
+        lines.append(f" let result = bot.{name}().await?;")
+    lines += [' println!("Result: {result:?}");', " Ok(())", "}"]
+    return "\n".join(lines)
 
 CATEGORY_ORDER = [
  "Sending Messages","Getting Info","Editing","Deletion","Forwarding & Copying",
@@ -236,37 +236,37 @@ def h(s): return (str(s).replace("&","&amp;").replace("<","&lt;").replace(">","&
 def slug(name): return name.replace("_","-")
 
 def build_method_cards(categories, params_map, examples):
- html = ""
- for cat in CATEGORY_ORDER:
- if cat not in categories: continue
- cat_id = cat.lower().replace(" ","-").replace("&","and")
- methods = categories[cat]
- html += f'\n <section class="cat-section" id="cat-{cat_id}">\n <div class="cat-header"><h2 class="cat-title">{h(cat)}</h2><span class="cat-count">{len(methods)}</span></div>\n <div class="methods-grid">\n'
- for m in methods:
- name = m["name"]; s = slug(name); doc = h(m["doc"]); ret = h(m["ret"])
- has_rust = name in params_map
- if m.get("required_params"):
- param_pills = "".join(
- f'<span class="param-pill required" title="{h(p["type"])}">{h(p["name"])}</span>'
- for p in m["required_params"]
- ) or '<span class="no-params">no required parameters</span>'
- else:
- param_pills = "".join(
- f'<span class="param-pill {"optional" if "Option<" in p["type"] or p["name"]=="params" else "required"}" title="{h(p["type"])}">{h(p["name"])}</span>'
- for p in m["param_list"]
- ) or '<span class="no-params">no parameters</span>'
- opt_html = ""
- if m.get("optional_params"):
- rows = "".join(f'<tr><td class="field-name">{h(f["name"])}</td><td class="field-type">{h(f["type"])}</td><td class="field-doc">{h(f.get("doc",""))}</td></tr>' for f in m["optional_params"])
- count = len(m["optional_params"])
- opt_html = f'<div class="optional-section"><div class="section-label">Optional parameters <span class="field-count">{count} fields</span></div><div class="table-wrap"><table class="fields-table"><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>{rows}</tbody></table></div></div>'
- elif has_rust:
- fields = params_map[name].get("fields",[]); sname = params_map[name]["struct"]
- rows = "".join(f'<tr><td class="field-name">{h(f["name"])}</td><td class="field-type">{h(f["type"])}</td><td class="field-doc">{h(f.get("doc",""))}</td></tr>' for f in fields)
- opt_html = f'<div class="optional-section"><div class="section-label">Optional params: <code>{h(sname)}</code> <span class="field-count">{len(fields)} fields</span></div><div class="table-wrap"><table class="fields-table"><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>{rows}</tbody></table></div></div>'
- code = h(examples.get(name, "// not yet in generated Rust source"))
- has_opts = bool(m.get("optional_params") or has_rust)
- html += f'''
+    html = ""
+    for cat in CATEGORY_ORDER:
+        if cat not in categories: continue
+        cat_id = cat.lower().replace(" ","-").replace("&","and")
+        methods = categories[cat]
+        html += f'\n <section class="cat-section" id="cat-{cat_id}">\n <div class="cat-header"><h2 class="cat-title">{h(cat)}</h2><span class="cat-count">{len(methods)}</span></div>\n <div class="methods-grid">\n'
+        for m in methods:
+            name = m["name"]; s = slug(name); doc = h(m["doc"]); ret = h(m["ret"])
+            has_rust = name in params_map
+            if m.get("required_params"):
+                param_pills = "".join(
+                    f'<span class="param-pill required" title="{h(p["type"])}">{h(p["name"])}</span>'
+                    for p in m["required_params"]
+                ) or '<span class="no-params">no required parameters</span>'
+            else:
+                param_pills = "".join(
+                    f'<span class="param-pill {"optional" if "Option<" in p["type"] or p["name"]=="params" else "required"}" title="{h(p["type"])}">{h(p["name"])}</span>'
+                    for p in m["param_list"]
+                ) or '<span class="no-params">no parameters</span>'
+            opt_html = ""
+            if m.get("optional_params"):
+                rows = "".join(f'<tr><td class="field-name">{h(f["name"])}</td><td class="field-type">{h(f["type"])}</td><td class="field-doc">{h(f.get("doc",""))}</td></tr>' for f in m["optional_params"])
+                count = len(m["optional_params"])
+                opt_html = f'<div class="optional-section"><div class="section-label">Optional parameters <span class="field-count">{count} fields</span></div><div class="table-wrap"><table class="fields-table"><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>{rows}</tbody></table></div></div>'
+            elif has_rust:
+                fields = params_map[name].get("fields",[]); sname = params_map[name]["struct"]
+                rows = "".join(f'<tr><td class="field-name">{h(f["name"])}</td><td class="field-type">{h(f["type"])}</td><td class="field-doc">{h(f.get("doc",""))}</td></tr>' for f in fields)
+                opt_html = f'<div class="optional-section"><div class="section-label">Optional params: <code>{h(sname)}</code> <span class="field-count">{len(fields)} fields</span></div><div class="table-wrap"><table class="fields-table"><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>{rows}</tbody></table></div></div>'
+            code = h(examples.get(name, "// not yet in generated Rust source"))
+            has_opts = bool(m.get("optional_params") or has_rust)
+            html += f'''
  <div class="method-card" id="method-{s}" data-name="{name}" data-cat="{h(cat)}">
  <div class="method-header" onclick="toggleCard(this)">
  <div class="method-name-row">
@@ -297,40 +297,40 @@ def build_method_cards(categories, params_map, examples):
  </div>
  </div>
 '''
- html += " </div>\n </section>\n"
- return html
+        html += " </div>\n </section>\n"
+    return html
 
 def build_sidebar(categories):
- html = ""
- for cat in CATEGORY_ORDER:
- if cat not in categories: continue
- cat_id = cat.lower().replace(" ","-").replace("&","and")
- methods = categories[cat]
- html += f'<div class="sidebar-cat"><button class="cat-toggle" onclick="toggleCat(this)" data-cat-id="{cat_id}"><span class="cat-icon">{cat_icon(cat)}</span><span class="cat-name">{h(cat)}</span><span class="cat-cnt">{len(methods)}</span><span class="cat-arrow">▾</span></button><div class="cat-methods collapsed" id="sidebar-{cat_id}">\n'
- for m in methods:
- html += f' <a href="#method-{slug(m["name"])}" class="sidebar-method" onclick="closeSidebar()">{h(m["name"])}</a>\n'
- html += " </div>\n </div>\n"
- return html
+    html = ""
+    for cat in CATEGORY_ORDER:
+        if cat not in categories: continue
+        cat_id = cat.lower().replace(" ","-").replace("&","and")
+        methods = categories[cat]
+        html += f'<div class="sidebar-cat"><button class="cat-toggle" onclick="toggleCat(this)" data-cat-id="{cat_id}"><span class="cat-icon">{cat_icon(cat)}</span><span class="cat-name">{h(cat)}</span><span class="cat-cnt">{len(methods)}</span><span class="cat-arrow">▾</span></button><div class="cat-methods collapsed" id="sidebar-{cat_id}">\n'
+        for m in methods:
+            html += f' <a href="#method-{slug(m["name"])}" class="sidebar-method" onclick="closeSidebar()">{h(m["name"])}</a>\n'
+        html += " </div>\n </div>\n"
+    return html
 
 def build_types_html(types_list):
- html = ""
- for t in types_list:
- name = h(t["name"])
- fields_html = "".join(
- f'<div class="type-field" title="{h(f.get("doc",""))}"><span class="type-field-name">{h(f["name"])}</span><span class="type-field-type">{h(f["type"])}</span></div>'
- for f in t["fields"]
- ) or '<div class="type-empty">no public fields</div>'
- doc_attr = f' title="{h(t.get("doc","")[:120])}"' if t.get("doc") else ""
- html += f'\n <div class="type-card" id="type-{name.lower()}"{doc_attr}><div class="type-name">{name} <span class="type-field-count">{len(t["fields"])}</span></div><div class="type-fields">{fields_html}</div></div>\n'
- return html
+    html = ""
+    for t in types_list:
+        name = h(t["name"])
+        fields_html = "".join(
+            f'<div class="type-field" title="{h(f.get("doc",""))}"><span class="type-field-name">{h(f["name"])}</span><span class="type-field-type">{h(f["type"])}</span></div>'
+            for f in t["fields"]
+        ) or '<div class="type-empty">no public fields</div>'
+        doc_attr = f' title="{h(t.get("doc","")[:120])}"' if t.get("doc") else ""
+        html += f'\n <div class="type-card" id="type-{name.lower()}"{doc_attr}><div class="type-name">{name} <span class="type-field-count">{len(t["fields"])}</span></div><div class="type-fields">{fields_html}</div></div>\n'
+    return html
 
 def build_enums_html(enums_list):
- html = ""
- for e in enums_list:
- name = h(e["name"])
- variants = " ".join(f'<span class="enum-variant">{h(v)}</span>' for v in e["variants"])
- html += f'\n <div class="enum-card" id="enum-{name.lower()}"><div class="enum-name">{name}</div><div class="enum-variants">{variants}</div></div>\n'
- return html
+    html = ""
+    for e in enums_list:
+        name = h(e["name"])
+        variants = " ".join(f'<span class="enum-variant">{h(v)}</span>' for v in e["variants"])
+        html += f'\n <div class="enum-card" id="enum-{name.lower()}"><div class="enum-name">{name}</div><div class="enum-variants">{variants}</div></div>\n'
+    return html
 
 print("\nParsing methods...")
 methods = parse_methods_from_api(API_DATA, gen_methods) if API_DATA else []
