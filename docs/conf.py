@@ -6,7 +6,8 @@ import os
 # -- Project information -------------------------------------------------------
 
 project   = "ferobot"
-copyright = '2026, <a href="https://github.com/ankit-chaubey" target="_blank" rel="noopener">Ankit Chaubey</a>'
+from markupsafe import Markup
+copyright = Markup('2026, <a href="https://github.com/ankit-chaubey" target="_blank" rel="noopener">Ankit Chaubey</a>')
 author    = "Ankit Chaubey"
 release   = "0.1.0"
 version   = "0.1"
@@ -78,6 +79,19 @@ html_theme_options = {
                 '3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 '
                 '0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z">'
                 "</path></svg>"
+            ),
+            "class": "",
+        },
+        {
+            "name": "docs.rs",
+            "url":  "https://docs.rs/ferobot",
+            "html": (
+                '<svg stroke="currentColor" fill="currentColor" stroke-width="0" '
+                'viewBox="0 0 24 24" height="1em" width="1em" '
+                'xmlns="http://www.w3.org/2000/svg">'
+                '<path d="M13 9h5.5L13 3.5V9M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4c0-1.11.89-2 2-2m5 '
+                '12v2h6v-2h-6m0-4v2h6v-2h-6m-4 0v2h2v-2H7m0 4v2h2v-2H7z"/>'
+                '</svg>'
             ),
             "class": "",
         },

@@ -47,7 +47,8 @@ jobs:
             sphinx \
             furo \
             myst-parser \
-            sphinx-copybutton
+            sphinx-copybutton \
+            markupsafe
 
       - name: Generate RST reference pages from api.json
         run: python3 scripts/generate_rst.py

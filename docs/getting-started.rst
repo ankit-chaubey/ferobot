@@ -23,7 +23,7 @@ Add ferobot to ``Cargo.toml``:
 .. code-block:: toml
 
    [dependencies]
-   ferobot = { git = "https://github.com/ankit-chaubey/ferobot" }
+   ferobot = "0.1"
    tokio   = { version = "1", features = ["full"] }
 
 3. Echo bot
@@ -85,10 +85,7 @@ Enable optional features in ``Cargo.toml``:
 .. code-block:: toml
 
    [dependencies]
-   ferobot = {
-       git      = "https://github.com/ankit-chaubey/ferobot",
-       features = ["webhook", "per-chat", "redis-storage"]
-   }
+   ferobot = { version = "0.1", features = ["webhook", "per-chat", "redis-storage"] }
 
 .. list-table::
    :header-rows: 1
