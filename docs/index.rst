@@ -22,7 +22,7 @@ All **165 methods** and **285 types** are auto-generated from the official Teleg
 .. code-block:: toml
 
    [dependencies]
-   ferobot = { git = "https://github.com/ankit-chaubey/ferobot" }
+   ferobot = "0.1"
    tokio   = { version = "1", features = ["full"] }
 
 .. code-block:: rust

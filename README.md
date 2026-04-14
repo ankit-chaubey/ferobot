@@ -15,7 +15,7 @@
 [![Rust](https://img.shields.io/badge/Rust-1.75%2B-f74c00?style=flat-square&logo=rust)](https://www.rust-lang.org)
 [![License](https://img.shields.io/badge/License-MIT-eab308?style=flat-square)](LICENSE)
 
-[Install](#installation) · [Quick Start](#quick-start) · [Examples](#examples) · [API Reference](#api-reference) · [docs.rs](https://docs.rs/ferobot)
+[Install](#installation) · [Quick Start](#quick-start) · [Examples](#examples) · [Docs](https://ferobot.ankitchaubey.in) · [docs.rs](https://docs.rs/ferobot)
 
 </div>
 
@@ -62,8 +62,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 The recommended way to build a bot. Handlers are async functions; the dispatcher routes updates to the first match.
 
 ```rust
-use ferobot::{Bot, CommandHandler, Dispatcher, DispatcherOpts, HandlerResult, Updater};
-use ferobot::framework::Context;
+use ferobot::{Bot, CommandHandler, Context, Dispatcher, DispatcherOpts, HandlerResult, Updater};
 
 async fn start(bot: Bot, ctx: Context) -> HandlerResult {
     if let Some(msg) = ctx.effective_message() {
@@ -79,7 +78,7 @@ async fn main() {
     let mut dp = Dispatcher::new(DispatcherOpts::default());
     dp.add_handler(CommandHandler::new("start", start));
 
-    Updater::new(bot, dp).start_polling().await.unwrap();
+    Updater::new(bot, dp).poll_timeout(30).start_polling().await.unwrap();
 }
 ```
 
@@ -323,10 +322,10 @@ Multi-step flows with pluggable state storage (in-memory or Redis).
 
 ```rust
 use ferobot::{
-    Bot, CommandHandler, ConversationHandler, ConversationOpts,
+    Bot, CommandHandler, Context, ConversationHandler, ConversationOpts,
     Dispatcher, DispatcherOpts, HandlerResult, MessageHandler, NextState, Updater,
 };
-use ferobot::framework::{Context, filters::message as mf};
+use ferobot::framework::filters::message as mf;
 
 async fn ask_name(bot: Bot, ctx: Context) -> HandlerResult {
     if let Some(msg) = ctx.effective_message() {
@@ -359,7 +358,7 @@ async fn main() {
     let mut dp = Dispatcher::new(DispatcherOpts::default());
     dp.add_handler(conv);
 
-    Updater::new(bot, dp).start_polling().await.unwrap();
+    Updater::new(bot, dp).poll_timeout(30).start_polling().await.unwrap();
 }
 ```
 
@@ -383,6 +382,8 @@ let opts = ConversationOpts { storage: Some(storage), ..Default::default() };
 ---
 
 ## API Reference
+
+Full reference at [ferobot.ankitchaubey.in](https://ferobot.ankitchaubey.in) and [docs.rs/ferobot](https://docs.rs/ferobot).
 
 ### Bot constructors
 
@@ -490,16 +491,17 @@ One concern per PR. Run fmt and clippy before submitting. Open a GitHub issue fo
 
 ---
 
-## License
+## Author
 
-MIT License - Copyright (c) 2026 [Ankit Chaubey](https://github.com/ankit-chaubey)
+Built by [Ankit Chaubey](https://github.com/ankit-chaubey).
+
+- Telegram: [@ankify](https://t.me/ankify)
+- Docs: [ferobot.ankitchaubey.in](https://ferobot.ankitchaubey.in)
+- crates.io: [crates.io/crates/ferobot](https://crates.io/crates/ferobot)
+- docs.rs: [docs.rs/ferobot](https://docs.rs/ferobot)
 
 ---
 
-<div align="center">
+## License
 
-Built by [Ankit Chaubey](https://github.com/ankit-chaubey) · [Telegram](https://t.me/ankify) · [docs.rs](https://docs.rs/ferobot) · [crates.io](https://crates.io/crates/ferobot)
-
-*If ferobot saved you time, a star on GitHub means a lot.*
-
-</div>
+MIT License - Copyright (c) 2026 [Ankit Chaubey](https://github.com/ankit-chaubey)
