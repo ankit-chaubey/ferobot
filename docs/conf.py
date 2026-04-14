@@ -6,7 +6,7 @@ import os
 # -- Project information -------------------------------------------------------
 
 project   = "ferobot"
-copyright = "2026, Ankit Chaubey"
+copyright = '2026, <a href="https://github.com/ankit-chaubey" target="_blank" rel="noopener">Ankit Chaubey</a>'
 author    = "Ankit Chaubey"
 release   = "0.1.0"
 version   = "0.1"

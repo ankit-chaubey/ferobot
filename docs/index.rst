@@ -17,7 +17,7 @@ ferobot
 
 Async Telegram Bot API framework for Rust. No proc macros. No hidden magic. Just clean async code.
 
-All **165 methods** and **285 types** are auto-generated from the official Telegram spec — always current, never wrong.
+All **165 methods** and **285 types** are auto-generated from the official Telegram spec: always current, never wrong.
 
 .. code-block:: toml
 
@@ -49,12 +49,12 @@ All **165 methods** and **285 types** are auto-generated from the official Teleg
 Features
 --------
 
-- **Fully async** — built on Tokio; every update runs in its own task
-- **Codegen API** — all 165 methods generated from the official Telegram spec
-- **Dispatcher** — ``CommandHandler``, ``MessageHandler``, ``ConversationHandler`` with composable filters
-- **Webhook + Polling** — production Axum webhook server and long-polling ``Updater``
-- **Fluent builder** — chain optional params, then ``.await``; zero boilerplate
-- **Termux ready** — compiles and runs on Android/ARM64
+- **Fully async**: built on Tokio; every update runs in its own task
+- **Codegen API**: all 165 methods generated from the official Telegram spec
+- **Dispatcher**: ``CommandHandler``, ``MessageHandler``, ``ConversationHandler`` with composable filters
+- **Webhook + Polling**: production Axum webhook server and long-polling ``Updater``
+- **Fluent builder**: chain optional params, then ``.await``; zero boilerplate
+- **Termux ready**: compiles and runs on Android/ARM64
 
 .. toctree::
    :maxdepth: 2

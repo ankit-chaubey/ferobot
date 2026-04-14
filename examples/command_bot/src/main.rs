@@ -12,7 +12,7 @@
 // If you use or modify this code, keep this notice at the top of your file
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 
-// command_bot — demonstrates CommandHandler, filters, middleware, and RetryPolicy.
+// command_bot - demonstrates CommandHandler, filters, middleware, and RetryPolicy.
 //
 // Run:
 //   BOT_TOKEN=<your token> cargo run --example command_bot

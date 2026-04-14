@@ -32,7 +32,7 @@ Sending media
    // File ID already on Telegram
    bot.send_photo(chat_id, "AgACAgIAAxkBAAI...", None).await?;
 
-   // URL — Telegram fetches it
+   // URL: Telegram fetches it
    bot.send_photo(chat_id, "https://example.com/img.jpg", None).await?;
 
    // Raw bytes from disk
@@ -120,10 +120,10 @@ InputFile
 
 .. code-block:: rust
 
-   // File already on Telegram — pass file_id string directly
+   // File already on Telegram: pass file_id string directly
    bot.send_photo(chat_id, "AgACAgIAAxkBAAI...", None).await?;
 
-   // URL — pass URL string directly
+   // URL: pass URL string directly
    bot.send_photo(chat_id, "https://example.com/img.jpg", None).await?;
 
    // Raw bytes

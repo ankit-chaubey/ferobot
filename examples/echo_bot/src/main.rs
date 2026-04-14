@@ -12,7 +12,7 @@
 // If you use or modify this code, keep this notice at the top of your file
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 
-// echo_bot — the simplest ferobot example.
+// echo_bot - the simplest ferobot example.
 //
 // Run:
 //   BOT_TOKEN=<your token> cargo run --example echo_bot

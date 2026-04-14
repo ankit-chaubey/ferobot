@@ -1,7 +1,7 @@
 Contributing
 ============
 
-Contributions are welcome. ferobot is an auto-generated Telegram Bot API library for Rust —
+Contributions are welcome. ferobot is an auto-generated Telegram Bot API library for Rust;
 understanding the architecture will help you contribute effectively.
 
 Architecture
@@ -14,8 +14,8 @@ Architecture
     v
    codegen/codegen.py
     |
-    +---> ferobot/src/gen_types.rs    (auto-generated — do not edit)
-    +---> ferobot/src/gen_methods.rs  (auto-generated — do not edit)
+    +---> ferobot/src/gen_types.rs    (auto-generated; do not edit)
+    +---> ferobot/src/gen_methods.rs  (auto-generated; do not edit)
 
    Handwritten files:
      ferobot/src/bot.rs
@@ -94,16 +94,16 @@ What to contribute
 
 **High value:**
 
-- Tests — unit and integration tests
-- Examples — more example bots in ``examples/``
-- Codegen improvements — better type generation, edge case handling
-- Runtime improvements — better error messages, helper methods
-- Documentation — doc comments on public types and methods
+- Tests: unit and integration tests
+- Examples: more example bots in ``examples/``
+- Codegen improvements: better type generation, edge case handling
+- Runtime improvements: better error messages, helper methods
+- Documentation: doc comments on public types and methods
 
 **Do not change:**
 
-- ``gen_types.rs`` and ``gen_methods.rs`` — auto-generated; edit ``codegen.py`` instead
-- ``api.json`` — auto-updated by the workflow
+- ``gen_types.rs`` and ``gen_methods.rs``: auto-generated; edit ``codegen.py`` instead
+- ``api.json``: auto-updated by the workflow
 
 Pull request process
 --------------------

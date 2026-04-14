@@ -41,7 +41,7 @@ Routes ``/command`` messages, optionally with args.
    }
 
    dp.add_handler(CommandHandler::new("greet", greet));
-   // matches /greet @username — args = ["@username"]
+   // matches /greet @username: args = ["@username"]
 
 MessageHandler with filters
 ----------------------------

@@ -54,7 +54,7 @@
 ///     .disable_notification(true)
 ///     .await?;
 ///
-/// // No options — just await directly
+/// // No options - just await directly
 /// bot.send_message(chat_id, "Hello!").await?;
 ///
 /// // Or use the raw method with a params struct
