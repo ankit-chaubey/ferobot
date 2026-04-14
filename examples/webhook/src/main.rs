@@ -14,9 +14,7 @@
 
 
 use ferobot::{
-    gen_methods::{
-        AnswerCallbackQueryParams, EditMessageTextParams, SendMessageParams,
-    },
+    gen_methods::EditMessageTextParams,
     InlineKeyboardButton, InlineKeyboardMarkup, MaybeInaccessibleMessage,
     Bot, ReplyMarkup, UpdateHandler, WebhookServer,
 };
@@ -52,65 +50,34 @@ fn make_handler() -> UpdateHandler {
 
                 match text {
                     "/start" => {
-                        let params = SendMessageParams::new()
-                            .parse_mode("HTML")
-                            .reply_markup(ReplyMarkup::InlineKeyboard(inline_kb(vec![
+                        let _ = bot
+                            .send_message(chat_id, format!("👋 Hello, <b>{name}</b>!\n\nI'm a webhook bot built with <a href=\"https://github.com/ankit-chaubey/ferobot\">ferobot</a> 🦀\n\nPick an option below or just send me a message."))
+                            .html()
+                            .keyboard(ReplyMarkup::InlineKeyboard(inline_kb(vec![
                                 vec![("📖 Help", "help"), ("🎲 Random fact", "fact")],
                                 vec![("🌐 GitHub", "github")],
-                            ])));
-
-                        let _ = bot
-                            .send_message(
-                                chat_id,
-                                format!(
-                                    "👋 Hello, <b>{name}</b>!\n\n\
-                                    I'm a webhook bot built with \
-                                    <a href=\"https://github.com/ankit-chaubey/ferobot\">ferobot</a> 🦀\n\n\
-                                    Pick an option below or just send me a message."
-                                ),
-                                Some(params),
-                            )
+                            ])))
                             .await;
                     }
 
                     "/help" => {
-                        let params = SendMessageParams::new().parse_mode("HTML");
                         let _ = bot
-                            .send_message(
-                                chat_id,
-                                "<b>Available commands:</b>\n\
-                                /start - welcome message\n\
-                                /help  - this list\n\
-                                /about - about this bot\n\n\
-                                Or just type anything and I'll echo it back! 🦜",
-                                Some(params),
-                            )
+                            .send_message(chat_id, "<b>Available commands:</b>\n/start - welcome message\n/help  - this list\n/about - about this bot\n\nOr just type anything and I'll echo it back! 🦜")
+                            .html()
                             .await;
                     }
 
                     "/about" => {
-                        let params = SendMessageParams::new().parse_mode("HTML");
                         let _ = bot
-                            .send_message(
-                                chat_id,
-                                "🤖 <b>mybot</b>\n\n\
-                                Built with <code>ferobot</code> - \
-                                a fully-generated Rust Telegram Bot API library \
-                                covering all 285 types and 165 methods.\n\n\
-                                🔗 <a href=\"https://github.com/ankit-chaubey/ferobot\">Source on GitHub</a>",
-                                Some(params),
-                            )
+                            .send_message(chat_id, "🤖 <b>mybot</b>\n\nBuilt with <code>ferobot</code> - a fully-generated Rust Telegram Bot API library covering all 285 types and 165 methods.\n\n🔗 <a href=\"https://github.com/ankit-chaubey/ferobot\">Source on GitHub</a>")
+                            .html()
                             .await;
                     }
 
                     _ if !text.is_empty() => {
-                        let params = SendMessageParams::new().parse_mode("HTML");
                         let _ = bot
-                            .send_message(
-                                chat_id,
-                                format!("🦜 You said:\n<blockquote>{text}</blockquote>"),
-                                Some(params),
-                            )
+                            .send_message(chat_id, format!("🦜 You said:\n<blockquote>{text}</blockquote>"))
+                            .html()
                             .await;
                     }
 
@@ -123,12 +90,7 @@ fn make_handler() -> UpdateHandler {
                 let data = cbq.data.as_deref().unwrap_or("").to_string();
 
                 // Acknowledge immediately so the button stops spinning
-                let _ = bot
-                    .answer_callback_query(
-                        &query_id,
-                        Some(AnswerCallbackQueryParams::new()),
-                    )
-                    .await;
+                let _ = bot.answer_callback_query(&query_id).await;
 
                 if let Some(maybe_msg) = cbq.message {
                     if let MaybeInaccessibleMessage::Message(msg) = *maybe_msg {

@@ -25,7 +25,6 @@
 //!   BOT_TOKEN=your_token cargo run --example color_buttons_bot
 
 use ferobot::{
-    gen_methods::{AnswerCallbackQueryParams, AnswerInlineQueryParams, SendMessageParams},
     types::{
         InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResult,
         InlineQueryResultArticle, InputMessageContent, InputTextMessageContent,
@@ -172,35 +171,17 @@ async fn main() {
 
                 match text {
                     "/start" => {
-                        let params = SendMessageParams::new()
-                            .parse_mode("HTML".to_string())
-                            .reply_markup(ReplyMarkup::InlineKeyboard(
-                                colored_inline_keyboard(),
-                            ));
                         let _ = bot
-                            .send_message(
-                                chat_id,
-                                "<b>🎨 Button Styles</b> - Bot API 9.4\n\n\
-                                <code>primary</code> -> 🔵 blue\n\
-                                <code>success</code> -> 🟢 green\n\
-                                <code>danger</code>  -> 🔴 red\n\
-                                (none)          -> ⬜ default",
-                                Some(params),
-                            )
+                            .send_message(chat_id, "<b>🎨 Button Styles</b> - Bot API 9.4\n\n<code>primary</code> -> 🔵 blue\n<code>success</code> -> 🟢 green\n<code>danger</code>  -> 🔴 red\n(none)          -> ⬜ default")
+                            .html()
+                            .keyboard(ReplyMarkup::InlineKeyboard(colored_inline_keyboard()))
                             .await;
                     }
 
                     "/reply" => {
-                        let params = SendMessageParams::new()
-                            .reply_markup(ReplyMarkup::ReplyKeyboard(
-                                colored_reply_keyboard(),
-                            ));
                         let _ = bot
-                            .send_message(
-                                chat_id,
-                                "⌨️ Colored reply keyboard - tap any button:",
-                                Some(params),
-                            )
+                            .send_message(chat_id, "⌨️ Colored reply keyboard - tap any button:")
+                            .keyboard(ReplyMarkup::ReplyKeyboard(colored_reply_keyboard()))
                             .await;
                     }
 
@@ -220,25 +201,17 @@ async fn main() {
                                 ],
                             ],
                         };
-                        let params = SendMessageParams::new()
-                            .parse_mode("HTML".to_string())
-                            .reply_markup(ReplyMarkup::InlineKeyboard(keyboard));
                         let _ = bot
-                            .send_message(
-                                chat_id,
-                                "<b>All styles at a glance</b>\n\nAlso try inline: type <code>@YourBot</code> in any chat",
-                                Some(params),
-                            )
+                            .send_message(chat_id, "<b>All styles at a glance</b>\n\nAlso try inline: type <code>@YourBot</code> in any chat")
+                            .html()
+                            .keyboard(ReplyMarkup::InlineKeyboard(keyboard))
                             .await;
                     }
 
                     other if !other.is_empty() && !other.starts_with('/') => {
                         let _ = bot
-                            .send_message(
-                                chat_id,
-                                format!("You pressed: <b>{}</b>", other),
-                                Some(SendMessageParams::new().parse_mode("HTML".to_string())),
-                            )
+                            .send_message(chat_id, format!("You pressed: <b>{}</b>", other))
+                            .html()
                             .await;
                     }
 
@@ -259,25 +232,17 @@ async fn main() {
                 };
 
                 let _ = bot
-                    .answer_callback_query(
-                        cq.id.clone(),
-                        Some(
-                            AnswerCallbackQueryParams::new()
-                                .text(label.to_string())
-                                .show_alert(true),
-                        ),
-                    )
+                    .answer_callback_query(cq.id.clone())
+                    .text(label)
+                    .show_alert(true)
                     .await;
             }
 
             if let Some(iq) = update.inline_query {
                 let results = inline_results(&iq.query);
                 let _ = bot
-                    .answer_inline_query(
-                        iq.id.clone(),
-                        results,
-                        Some(AnswerInlineQueryParams::new().cache_time(0i64)),
-                    )
+                    .answer_inline_query(iq.id.clone(), results)
+                    .cache_time(0i64)
                     .await;
             }
         })

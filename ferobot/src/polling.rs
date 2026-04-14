@@ -163,16 +163,18 @@ impl Poller {
         );
 
         loop {
-            let mut p = crate::gen_methods::GetUpdatesParams::new()
+            let mut req = self
+                .poll_bot
+                .get_updates()
                 .offset(offset)
                 .timeout(self.timeout)
                 .limit(self.limit);
 
             if let Some(ref au) = allowed_updates {
-                p = p.allowed_updates(au.clone());
+                req = req.allowed_updates(au.clone());
             }
 
-            let updates = match self.poll_bot.get_updates(Some(p)).await {
+            let updates = match req.await {
                 Ok(u) => u,
                 Err(e) => {
                     let sleep_secs = match &e {

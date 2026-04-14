@@ -18,7 +18,7 @@
 //!
 //! Instead of writing:
 //! ```rust,ignore
-//! bot.send_message(chat_id, "Hi", Some(SendMessageParams {
+//! bot.send_message_with_params(chat_id, "Hi", Some(SendMessageParams {
 //!     parse_mode: Some("HTML".into()),
 //!     disable_notification: Some(true),
 //!     ..Default::default()
@@ -30,10 +30,10 @@
 //! use ferobot::p;
 //! use ferobot::gen_methods::SendMessageParams;
 //!
-//! bot.send_message(chat_id, "Hi", p!(SendMessageParams {
-//!     parse_mode: "HTML",
-//!     disable_notification: true,
-//! })).await?;
+//! bot.send_message(chat_id, "Hi")
+//!     .parse_mode("HTML")
+//!     .disable_notification(true)
+//!     .await?;
 //! ```
 
 /// Build an optional Telegram params struct with named fields.
@@ -48,17 +48,17 @@
 /// ```rust,ignore
 /// use ferobot::{p, gen_methods::{SendMessageParams, BanChatMemberParams}};
 ///
-/// // With options
-/// bot.send_message(chat_id, "Hello!", p!(SendMessageParams {
-///     parse_mode: "HTML",
-///     disable_notification: true,
-/// })).await?;
+/// // With options (fluent chain)
+/// bot.send_message(chat_id, "Hello!")
+///     .parse_mode("HTML")
+///     .disable_notification(true)
+///     .await?;
 ///
-/// // No options
-/// bot.send_message(chat_id, "Hello!", p!(SendMessageParams)).await?;
+/// // No options — just await directly
+/// bot.send_message(chat_id, "Hello!").await?;
 ///
-/// // Or just use None directly
-/// bot.send_message(chat_id, "Hello!", None).await?;
+/// // Or use the raw method with a params struct
+/// bot.send_message_with_params(chat_id, "Hello!", None).await?;
 /// ```
 #[macro_export]
 macro_rules! p {

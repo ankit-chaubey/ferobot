@@ -30,7 +30,7 @@ use crate::{Bot, BotError, ChatId, InputFile, InputFileOrString, ReplyMarkup, In
 impl Bot {
     /// Use this method to add a new sticker to a set created by the bot. Emoji sticker sets can have up to 200 stickers. Other sticker sets can have up to 120 stickers. Returns True on success.
     /// See: https://core.telegram.org/bots/api#addstickertoset
-    pub async fn add_sticker_to_set(
+    pub(crate) async fn raw_add_sticker_to_set(
         &self,
         user_id: i64,
         name: impl Into<String>,
@@ -96,7 +96,7 @@ impl AnswerCallbackQueryParams {
 impl Bot {
     /// Use this method to send answers to callback queries sent from inline keyboards. The answer will be displayed to the user as a notification at the top of the chat screen or as an alert. On success, True is returned.
     /// See: https://core.telegram.org/bots/api#answercallbackquery
-    pub async fn answer_callback_query(
+    pub async fn answer_callback_query_with_params(
         &self,
         callback_query_id: impl Into<String>,
         params: Option<AnswerCallbackQueryParams>,
@@ -164,7 +164,7 @@ impl Bot {
     /// Use this method to send answers to an inline query. On success, True is returned.
     /// No more than 50 results per query are allowed.
     /// See: https://core.telegram.org/bots/api#answerinlinequery
-    pub async fn answer_inline_query(
+    pub async fn answer_inline_query_with_params(
         &self,
         inline_query_id: impl Into<String>,
         results: Vec<InlineQueryResult>,
@@ -215,7 +215,7 @@ impl AnswerPreCheckoutQueryParams {
 impl Bot {
     /// Once the user has confirmed their payment and shipping details, the Bot API sends the final confirmation in the form of an Update with the field pre_checkout_query. Use this method to respond to such pre-checkout queries. On success, True is returned. Note: The Bot API must receive an answer within 10 seconds after the pre-checkout query was sent.
     /// See: https://core.telegram.org/bots/api#answerprecheckoutquery
-    pub async fn answer_pre_checkout_query(
+    pub async fn answer_pre_checkout_query_with_params(
         &self,
         pre_checkout_query_id: impl Into<String>,
         ok: bool,
@@ -270,7 +270,7 @@ impl AnswerShippingQueryParams {
 impl Bot {
     /// If you sent an invoice requesting a shipping address and the parameter is_flexible was specified, the Bot API will send an Update with a shipping_query field to the bot. Use this method to reply to shipping queries. On success, True is returned.
     /// See: https://core.telegram.org/bots/api#answershippingquery
-    pub async fn answer_shipping_query(
+    pub async fn answer_shipping_query_with_params(
         &self,
         shipping_query_id: impl Into<String>,
         ok: bool,
@@ -300,7 +300,7 @@ impl Bot {
 impl Bot {
     /// Use this method to set the result of an interaction with a Web App and send a corresponding message on behalf of the user to the chat from which the query originated. On success, a SentWebAppMessage object is returned.
     /// See: https://core.telegram.org/bots/api#answerwebappquery
-    pub async fn answer_web_app_query(
+    pub(crate) async fn raw_answer_web_app_query(
         &self,
         web_app_query_id: impl Into<String>,
         result: InlineQueryResult,
@@ -322,7 +322,7 @@ impl Bot {
 impl Bot {
     /// Use this method to approve a chat join request. The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right. Returns True on success.
     /// See: https://core.telegram.org/bots/api#approvechatjoinrequest
-    pub async fn approve_chat_join_request(
+    pub(crate) async fn raw_approve_chat_join_request(
         &self,
         chat_id: impl Into<ChatId>,
         user_id: i64,
@@ -362,7 +362,7 @@ impl ApproveSuggestedPostParams {
 impl Bot {
     /// Use this method to approve a suggested post in a direct messages chat. The bot must have the 'can_post_messages' administrator right in the corresponding channel chat. Returns True on success.
     /// See: https://core.telegram.org/bots/api#approvesuggestedpost
-    pub async fn approve_suggested_post(
+    pub async fn approve_suggested_post_with_params(
         &self,
         chat_id: i64,
         message_id: i64,
@@ -420,7 +420,7 @@ impl BanChatMemberParams {
 impl Bot {
     /// Use this method to ban a user in a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless unbanned first. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
     /// See: https://core.telegram.org/bots/api#banchatmember
-    pub async fn ban_chat_member(
+    pub async fn ban_chat_member_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         user_id: i64,
@@ -453,7 +453,7 @@ impl Bot {
 impl Bot {
     /// Use this method to ban a channel chat in a supergroup or a channel. Until the chat is unbanned, the owner of the banned chat won't be able to send messages on behalf of any of their channels. The bot must be an administrator in the supergroup or channel for this to work and must have the appropriate administrator rights. Returns True on success.
     /// See: https://core.telegram.org/bots/api#banchatsenderchat
-    pub async fn ban_chat_sender_chat(
+    pub(crate) async fn raw_ban_chat_sender_chat(
         &self,
         chat_id: impl Into<ChatId>,
         sender_chat_id: i64,
@@ -475,7 +475,7 @@ impl Bot {
 impl Bot {
     /// Use this method to close the bot instance before moving it from one local server to another. You need to delete the webhook before calling this method to ensure that the bot isn't launched again after server restart. The method will return error 429 in the first 10 minutes after the bot is launched. Returns True on success. Requires no parameters.
     /// See: https://core.telegram.org/bots/api#close
-    pub async fn close(&self) -> Result<bool, BotError> {
+    pub(crate) async fn raw_close(&self) -> Result<bool, BotError> {
         let mut req = serde_json::Map::new();
         self.call_api("close", serde_json::Value::Object(req)).await
     }
@@ -484,7 +484,7 @@ impl Bot {
 impl Bot {
     /// Use this method to close an open topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success.
     /// See: https://core.telegram.org/bots/api#closeforumtopic
-    pub async fn close_forum_topic(
+    pub(crate) async fn raw_close_forum_topic(
         &self,
         chat_id: impl Into<ChatId>,
         message_thread_id: i64,
@@ -506,7 +506,7 @@ impl Bot {
 impl Bot {
     /// Use this method to close an open 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success.
     /// See: https://core.telegram.org/bots/api#closegeneralforumtopic
-    pub async fn close_general_forum_topic(
+    pub(crate) async fn raw_close_general_forum_topic(
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
@@ -523,7 +523,7 @@ impl Bot {
 impl Bot {
     /// Converts a given regular gift to Telegram Stars. Requires the can_convert_gifts_to_stars business bot right. Returns True on success.
     /// See: https://core.telegram.org/bots/api#convertgifttostars
-    pub async fn convert_gift_to_stars(
+    pub(crate) async fn raw_convert_gift_to_stars(
         &self,
         business_connection_id: impl Into<String>,
         owned_gift_id: impl Into<String>,
@@ -654,7 +654,7 @@ impl CopyMessageParams {
 impl Bot {
     /// Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success.
     /// See: https://core.telegram.org/bots/api#copymessage
-    pub async fn copy_message(
+    pub async fn copy_message_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         from_chat_id: impl Into<ChatId>,
@@ -738,7 +738,7 @@ impl CopyMessagesParams {
 impl Bot {
     /// Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of MessageId of the sent messages is returned.
     /// See: https://core.telegram.org/bots/api#copymessages
-    pub async fn copy_messages(
+    pub async fn copy_messages_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         from_chat_id: impl Into<ChatId>,
@@ -815,7 +815,7 @@ impl CreateChatInviteLinkParams {
 impl Bot {
     /// Use this method to create an additional invite link for a chat. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. The link can be revoked using the method revokeChatInviteLink. Returns the new invite link as ChatInviteLink object.
     /// See: https://core.telegram.org/bots/api#createchatinvitelink
-    pub async fn create_chat_invite_link(
+    pub async fn create_chat_invite_link_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         params: Option<CreateChatInviteLinkParams>,
@@ -861,7 +861,7 @@ impl CreateChatSubscriptionInviteLinkParams {
 impl Bot {
     /// Use this method to create a subscription invite link for a channel chat. The bot must have the can_invite_users administrator rights. The link can be edited using the method editChatSubscriptionInviteLink or revoked using the method revokeChatInviteLink. Returns the new invite link as a ChatInviteLink object.
     /// See: https://core.telegram.org/bots/api#createchatsubscriptioninvitelink
-    pub async fn create_chat_subscription_invite_link(
+    pub async fn create_chat_subscription_invite_link_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         subscription_period: i64,
@@ -927,7 +927,7 @@ impl CreateForumTopicParams {
 impl Bot {
     /// Use this method to create a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator right. Returns information about the created topic as a ForumTopic object.
     /// See: https://core.telegram.org/bots/api#createforumtopic
-    pub async fn create_forum_topic(
+    pub async fn create_forum_topic_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         name: impl Into<String>,
@@ -1090,7 +1090,7 @@ impl CreateInvoiceLinkParams {
 impl Bot {
     /// Use this method to create a link for an invoice. Returns the created invoice link as String on success.
     /// See: https://core.telegram.org/bots/api#createinvoicelink
-    pub async fn create_invoice_link(
+    pub async fn create_invoice_link_with_params(
         &self,
         title: impl Into<String>,
         description: impl Into<String>,
@@ -1163,7 +1163,7 @@ impl CreateNewStickerSetParams {
 impl Bot {
     /// Use this method to create a new sticker set owned by a user. The bot will be able to edit the sticker set thus created. Returns True on success.
     /// See: https://core.telegram.org/bots/api#createnewstickerset
-    pub async fn create_new_sticker_set(
+    pub async fn create_new_sticker_set_with_params(
         &self,
         user_id: i64,
         name: impl Into<String>,
@@ -1206,7 +1206,7 @@ impl Bot {
 impl Bot {
     /// Use this method to decline a chat join request. The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right. Returns True on success.
     /// See: https://core.telegram.org/bots/api#declinechatjoinrequest
-    pub async fn decline_chat_join_request(
+    pub(crate) async fn raw_decline_chat_join_request(
         &self,
         chat_id: impl Into<ChatId>,
         user_id: i64,
@@ -1246,7 +1246,7 @@ impl DeclineSuggestedPostParams {
 impl Bot {
     /// Use this method to decline a suggested post in a direct messages chat. The bot must have the 'can_manage_direct_messages' administrator right in the corresponding channel chat. Returns True on success.
     /// See: https://core.telegram.org/bots/api#declinesuggestedpost
-    pub async fn decline_suggested_post(
+    pub async fn decline_suggested_post_with_params(
         &self,
         chat_id: i64,
         message_id: i64,
@@ -1279,7 +1279,7 @@ impl Bot {
 impl Bot {
     /// Delete messages on behalf of a business account. Requires the can_delete_sent_messages business bot right to delete messages sent by the bot itself, or the can_delete_all_messages business bot right to delete any message. Returns True on success.
     /// See: https://core.telegram.org/bots/api#deletebusinessmessages
-    pub async fn delete_business_messages(
+    pub(crate) async fn raw_delete_business_messages(
         &self,
         business_connection_id: impl Into<String>,
         message_ids: Vec<i64>,
@@ -1301,7 +1301,10 @@ impl Bot {
 impl Bot {
     /// Use this method to delete a chat photo. Photos can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
     /// See: https://core.telegram.org/bots/api#deletechatphoto
-    pub async fn delete_chat_photo(&self, chat_id: impl Into<ChatId>) -> Result<bool, BotError> {
+    pub(crate) async fn raw_delete_chat_photo(
+        &self,
+        chat_id: impl Into<ChatId>,
+    ) -> Result<bool, BotError> {
         let mut req = serde_json::Map::new();
         req.insert(
             "chat_id".into(),
@@ -1315,7 +1318,7 @@ impl Bot {
 impl Bot {
     /// Use this method to delete a group sticker set from a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field can_set_sticker_set optionally returned in getChat requests to check if the bot can use this method. Returns True on success.
     /// See: https://core.telegram.org/bots/api#deletechatstickerset
-    pub async fn delete_chat_sticker_set(
+    pub(crate) async fn raw_delete_chat_sticker_set(
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
@@ -1332,7 +1335,7 @@ impl Bot {
 impl Bot {
     /// Use this method to delete a forum topic along with all its messages in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_delete_messages administrator rights. Returns True on success.
     /// See: https://core.telegram.org/bots/api#deleteforumtopic
-    pub async fn delete_forum_topic(
+    pub(crate) async fn raw_delete_forum_topic(
         &self,
         chat_id: impl Into<ChatId>,
         message_thread_id: i64,
@@ -1364,7 +1367,7 @@ impl Bot {
     /// - If the bot has can_manage_direct_messages administrator right in a channel, it can delete any message in the corresponding direct messages chat.
     /// Returns True on success.
     /// See: https://core.telegram.org/bots/api#deletemessage
-    pub async fn delete_message(
+    pub(crate) async fn raw_delete_message(
         &self,
         chat_id: impl Into<ChatId>,
         message_id: i64,
@@ -1386,7 +1389,7 @@ impl Bot {
 impl Bot {
     /// Use this method to delete multiple messages simultaneously. If some of the specified messages can't be found, they are skipped. Returns True on success.
     /// See: https://core.telegram.org/bots/api#deletemessages
-    pub async fn delete_messages(
+    pub(crate) async fn raw_delete_messages(
         &self,
         chat_id: impl Into<ChatId>,
         message_ids: Vec<i64>,
@@ -1433,7 +1436,7 @@ impl DeleteMyCommandsParams {
 impl Bot {
     /// Use this method to delete the list of the bot's commands for the given scope and user language. After deletion, higher level commands will be shown to affected users. Returns True on success.
     /// See: https://core.telegram.org/bots/api#deletemycommands
-    pub async fn delete_my_commands(
+    pub async fn delete_my_commands_with_params(
         &self,
         params: Option<DeleteMyCommandsParams>,
     ) -> Result<bool, BotError> {
@@ -1456,7 +1459,7 @@ impl Bot {
 impl Bot {
     /// Use this method to delete a sticker from a set created by the bot. Returns True on success.
     /// See: https://core.telegram.org/bots/api#deletestickerfromset
-    pub async fn delete_sticker_from_set(
+    pub(crate) async fn raw_delete_sticker_from_set(
         &self,
         sticker: impl Into<String>,
     ) -> Result<bool, BotError> {
@@ -1473,7 +1476,10 @@ impl Bot {
 impl Bot {
     /// Use this method to delete a sticker set that was created by the bot. Returns True on success.
     /// See: https://core.telegram.org/bots/api#deletestickerset
-    pub async fn delete_sticker_set(&self, name: impl Into<String>) -> Result<bool, BotError> {
+    pub(crate) async fn raw_delete_sticker_set(
+        &self,
+        name: impl Into<String>,
+    ) -> Result<bool, BotError> {
         let mut req = serde_json::Map::new();
         req.insert(
             "name".into(),
@@ -1487,7 +1493,7 @@ impl Bot {
 impl Bot {
     /// Deletes a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns True on success.
     /// See: https://core.telegram.org/bots/api#deletestory
-    pub async fn delete_story(
+    pub(crate) async fn raw_delete_story(
         &self,
         business_connection_id: impl Into<String>,
         story_id: i64,
@@ -1527,7 +1533,7 @@ impl DeleteWebhookParams {
 impl Bot {
     /// Use this method to remove webhook integration if you decide to switch back to getUpdates. Returns True on success.
     /// See: https://core.telegram.org/bots/api#deletewebhook
-    pub async fn delete_webhook(
+    pub async fn delete_webhook_with_params(
         &self,
         params: Option<DeleteWebhookParams>,
     ) -> Result<bool, BotError> {
@@ -1589,7 +1595,7 @@ impl EditChatInviteLinkParams {
 impl Bot {
     /// Use this method to edit a non-primary invite link created by the bot. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the edited invite link as a ChatInviteLink object.
     /// See: https://core.telegram.org/bots/api#editchatinvitelink
-    pub async fn edit_chat_invite_link(
+    pub async fn edit_chat_invite_link_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         invite_link: impl Into<String>,
@@ -1640,7 +1646,7 @@ impl EditChatSubscriptionInviteLinkParams {
 impl Bot {
     /// Use this method to edit a subscription invite link created by the bot. The bot must have the can_invite_users administrator rights. Returns the edited invite link as a ChatInviteLink object.
     /// See: https://core.telegram.org/bots/api#editchatsubscriptioninvitelink
-    pub async fn edit_chat_subscription_invite_link(
+    pub async fn edit_chat_subscription_invite_link_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         invite_link: impl Into<String>,
@@ -1701,7 +1707,7 @@ impl EditForumTopicParams {
 impl Bot {
     /// Use this method to edit name and icon of a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success.
     /// See: https://core.telegram.org/bots/api#editforumtopic
-    pub async fn edit_forum_topic(
+    pub async fn edit_forum_topic_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         message_thread_id: i64,
@@ -1734,7 +1740,7 @@ impl Bot {
 impl Bot {
     /// Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success.
     /// See: https://core.telegram.org/bots/api#editgeneralforumtopic
-    pub async fn edit_general_forum_topic(
+    pub(crate) async fn raw_edit_general_forum_topic(
         &self,
         chat_id: impl Into<ChatId>,
         name: impl Into<String>,
@@ -1830,7 +1836,7 @@ impl EditMessageCaptionParams {
 impl Bot {
     /// Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
     /// See: https://core.telegram.org/bots/api#editmessagecaption
-    pub async fn edit_message_caption(
+    pub async fn edit_message_caption_with_params(
         &self,
         params: Option<EditMessageCaptionParams>,
     ) -> Result<serde_json::Value, BotError> {
@@ -1871,7 +1877,7 @@ impl EditMessageChecklistParams {
 impl Bot {
     /// Use this method to edit a checklist on behalf of a connected business account. On success, the edited Message is returned.
     /// See: https://core.telegram.org/bots/api#editmessagechecklist
-    pub async fn edit_message_checklist(
+    pub async fn edit_message_checklist_with_params(
         &self,
         business_connection_id: impl Into<String>,
         chat_id: i64,
@@ -1988,7 +1994,7 @@ impl EditMessageLiveLocationParams {
 impl Bot {
     /// Use this method to edit live location messages. A location can be edited until its live_period expires or editing is explicitly disabled by a call to stopMessageLiveLocation. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned.
     /// See: https://core.telegram.org/bots/api#editmessagelivelocation
-    pub async fn edit_message_live_location(
+    pub async fn edit_message_live_location_with_params(
         &self,
         latitude: f64,
         longitude: f64,
@@ -2067,7 +2073,7 @@ impl EditMessageMediaParams {
 impl Bot {
     /// Use this method to edit animation, audio, document, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
     /// See: https://core.telegram.org/bots/api#editmessagemedia
-    pub async fn edit_message_media(
+    pub async fn edit_message_media_with_params(
         &self,
         media: Vec<InputMedia>,
         params: Option<EditMessageMediaParams>,
@@ -2141,7 +2147,7 @@ impl EditMessageReplyMarkupParams {
 impl Bot {
     /// Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
     /// See: https://core.telegram.org/bots/api#editmessagereplymarkup
-    pub async fn edit_message_reply_markup(
+    pub async fn edit_message_reply_markup_with_params(
         &self,
         params: Option<EditMessageReplyMarkupParams>,
     ) -> Result<serde_json::Value, BotError> {
@@ -2231,7 +2237,7 @@ impl EditMessageTextParams {
 impl Bot {
     /// Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
     /// See: https://core.telegram.org/bots/api#editmessagetext
-    pub async fn edit_message_text(
+    pub async fn edit_message_text_with_params(
         &self,
         text: impl Into<String>,
         params: Option<EditMessageTextParams>,
@@ -2298,7 +2304,7 @@ impl EditStoryParams {
 impl Bot {
     /// Edits a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns Story on success.
     /// See: https://core.telegram.org/bots/api#editstory
-    pub async fn edit_story(
+    pub async fn edit_story_with_params(
         &self,
         business_connection_id: impl Into<String>,
         story_id: i64,
@@ -2336,7 +2342,7 @@ impl Bot {
 impl Bot {
     /// Allows the bot to cancel or re-enable extension of a subscription paid in Telegram Stars. Returns True on success.
     /// See: https://core.telegram.org/bots/api#edituserstarsubscription
-    pub async fn edit_user_star_subscription(
+    pub(crate) async fn raw_edit_user_star_subscription(
         &self,
         user_id: i64,
         telegram_payment_charge_id: impl Into<String>,
@@ -2363,7 +2369,7 @@ impl Bot {
 impl Bot {
     /// Use this method to generate a new primary invite link for a chat; any previously generated primary link is revoked. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the new invite link as String on success.
     /// See: https://core.telegram.org/bots/api#exportchatinvitelink
-    pub async fn export_chat_invite_link(
+    pub(crate) async fn raw_export_chat_invite_link(
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<String, BotError> {
@@ -2440,7 +2446,7 @@ impl ForwardMessageParams {
 impl Bot {
     /// Use this method to forward messages of any kind. Service messages and messages with protected content can't be forwarded. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#forwardmessage
-    pub async fn forward_message(
+    pub async fn forward_message_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         from_chat_id: impl Into<ChatId>,
@@ -2517,7 +2523,7 @@ impl ForwardMessagesParams {
 impl Bot {
     /// Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an array of MessageId of the sent messages is returned.
     /// See: https://core.telegram.org/bots/api#forwardmessages
-    pub async fn forward_messages(
+    pub async fn forward_messages_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         from_chat_id: impl Into<ChatId>,
@@ -2555,7 +2561,7 @@ impl Bot {
 impl Bot {
     /// Returns the list of gifts that can be sent by the bot to users and channel chats. Requires no parameters. Returns a Gifts object.
     /// See: https://core.telegram.org/bots/api#getavailablegifts
-    pub async fn get_available_gifts(&self) -> Result<Gifts, BotError> {
+    pub(crate) async fn raw_get_available_gifts(&self) -> Result<Gifts, BotError> {
         let mut req = serde_json::Map::new();
         self.call_api("getAvailableGifts", serde_json::Value::Object(req))
             .await
@@ -2646,7 +2652,7 @@ impl GetBusinessAccountGiftsParams {
 impl Bot {
     /// Returns the gifts received and owned by a managed business account. Requires the can_view_gifts_and_stars business bot right. Returns OwnedGifts on success.
     /// See: https://core.telegram.org/bots/api#getbusinessaccountgifts
-    pub async fn get_business_account_gifts(
+    pub async fn get_business_account_gifts_with_params(
         &self,
         business_connection_id: impl Into<String>,
         params: Option<GetBusinessAccountGiftsParams>,
@@ -2674,7 +2680,7 @@ impl Bot {
 impl Bot {
     /// Returns the amount of Telegram Stars owned by a managed business account. Requires the can_view_gifts_and_stars business bot right. Returns StarAmount on success.
     /// See: https://core.telegram.org/bots/api#getbusinessaccountstarbalance
-    pub async fn get_business_account_star_balance(
+    pub(crate) async fn raw_get_business_account_star_balance(
         &self,
         business_connection_id: impl Into<String>,
     ) -> Result<StarAmount, BotError> {
@@ -2694,7 +2700,7 @@ impl Bot {
 impl Bot {
     /// Use this method to get information about the connection of the bot with a business account. Returns a BusinessConnection object on success.
     /// See: https://core.telegram.org/bots/api#getbusinessconnection
-    pub async fn get_business_connection(
+    pub(crate) async fn raw_get_business_connection(
         &self,
         business_connection_id: impl Into<String>,
     ) -> Result<BusinessConnection, BotError> {
@@ -2711,7 +2717,10 @@ impl Bot {
 impl Bot {
     /// Use this method to get up-to-date information about the chat. Returns a ChatFullInfo object on success.
     /// See: https://core.telegram.org/bots/api#getchat
-    pub async fn get_chat(&self, chat_id: impl Into<ChatId>) -> Result<ChatFullInfo, BotError> {
+    pub(crate) async fn raw_get_chat(
+        &self,
+        chat_id: impl Into<ChatId>,
+    ) -> Result<ChatFullInfo, BotError> {
         let mut req = serde_json::Map::new();
         req.insert(
             "chat_id".into(),
@@ -2725,7 +2734,7 @@ impl Bot {
 impl Bot {
     /// Use this method to get a list of administrators in a chat, which aren't bots. Returns an Array of ChatMember objects.
     /// See: https://core.telegram.org/bots/api#getchatadministrators
-    pub async fn get_chat_administrators(
+    pub(crate) async fn raw_get_chat_administrators(
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<Vec<ChatMember>, BotError> {
@@ -2823,7 +2832,7 @@ impl GetChatGiftsParams {
 impl Bot {
     /// Returns the gifts owned by a chat. Returns OwnedGifts on success.
     /// See: https://core.telegram.org/bots/api#getchatgifts
-    pub async fn get_chat_gifts(
+    pub async fn get_chat_gifts_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         params: Option<GetChatGiftsParams>,
@@ -2851,7 +2860,7 @@ impl Bot {
 impl Bot {
     /// Use this method to get information about a member of a chat. The method is only guaranteed to work for other users if the bot is an administrator in the chat. Returns a ChatMember object on success.
     /// See: https://core.telegram.org/bots/api#getchatmember
-    pub async fn get_chat_member(
+    pub(crate) async fn raw_get_chat_member(
         &self,
         chat_id: impl Into<ChatId>,
         user_id: i64,
@@ -2873,7 +2882,10 @@ impl Bot {
 impl Bot {
     /// Use this method to get the number of members in a chat. Returns Int on success.
     /// See: https://core.telegram.org/bots/api#getchatmembercount
-    pub async fn get_chat_member_count(&self, chat_id: impl Into<ChatId>) -> Result<i64, BotError> {
+    pub(crate) async fn raw_get_chat_member_count(
+        &self,
+        chat_id: impl Into<ChatId>,
+    ) -> Result<i64, BotError> {
         let mut req = serde_json::Map::new();
         req.insert(
             "chat_id".into(),
@@ -2905,7 +2917,7 @@ impl GetChatMenuButtonParams {
 impl Bot {
     /// Use this method to get the current value of the bot's menu button in a private chat, or the default menu button. Returns MenuButton on success.
     /// See: https://core.telegram.org/bots/api#getchatmenubutton
-    pub async fn get_chat_menu_button(
+    pub async fn get_chat_menu_button_with_params(
         &self,
         params: Option<GetChatMenuButtonParams>,
     ) -> Result<MenuButton, BotError> {
@@ -2928,7 +2940,7 @@ impl Bot {
 impl Bot {
     /// Use this method to get information about custom emoji stickers by their identifiers. Returns an Array of Sticker objects.
     /// See: https://core.telegram.org/bots/api#getcustomemojistickers
-    pub async fn get_custom_emoji_stickers(
+    pub(crate) async fn raw_get_custom_emoji_stickers(
         &self,
         custom_emoji_ids: Vec<String>,
     ) -> Result<Vec<Sticker>, BotError> {
@@ -2946,7 +2958,7 @@ impl Bot {
     /// Use this method to get basic information about a file and prepare it for downloading. For the moment, bots can download files of up to 20MB in size. On success, a File object is returned. The file can then be downloaded via the link https://api.telegram.org/file/bot<token>/<file_path>, where <file_path> is taken from the response. It is guaranteed that the link will be valid for at least 1 hour. When the link expires, a new one can be requested by calling getFile again.
     /// Note: This function may not preserve the original file name and MIME type. You should save the file's MIME type and name (if available) when the File object is received.
     /// See: https://core.telegram.org/bots/api#getfile
-    pub async fn get_file(&self, file_id: impl Into<String>) -> Result<File, BotError> {
+    pub(crate) async fn raw_get_file(&self, file_id: impl Into<String>) -> Result<File, BotError> {
         let mut req = serde_json::Map::new();
         req.insert(
             "file_id".into(),
@@ -2960,7 +2972,7 @@ impl Bot {
 impl Bot {
     /// Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user. Requires no parameters. Returns an Array of Sticker objects.
     /// See: https://core.telegram.org/bots/api#getforumtopiciconstickers
-    pub async fn get_forum_topic_icon_stickers(&self) -> Result<Vec<Sticker>, BotError> {
+    pub(crate) async fn raw_get_forum_topic_icon_stickers(&self) -> Result<Vec<Sticker>, BotError> {
         let mut req = serde_json::Map::new();
         self.call_api("getForumTopicIconStickers", serde_json::Value::Object(req))
             .await
@@ -3002,7 +3014,7 @@ impl GetGameHighScoresParams {
 impl Bot {
     /// Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects.
     /// See: https://core.telegram.org/bots/api#getgamehighscores
-    pub async fn get_game_high_scores(
+    pub async fn get_game_high_scores_with_params(
         &self,
         user_id: i64,
         params: Option<GetGameHighScoresParams>,
@@ -3030,7 +3042,7 @@ impl Bot {
 impl Bot {
     /// Use this method to get the token of a managed bot. Returns the token as String on success.
     /// See: https://core.telegram.org/bots/api#getmanagedbottoken
-    pub async fn get_managed_bot_token(&self, user_id: i64) -> Result<String, BotError> {
+    pub(crate) async fn raw_get_managed_bot_token(&self, user_id: i64) -> Result<String, BotError> {
         let mut req = serde_json::Map::new();
         req.insert(
             "user_id".into(),
@@ -3044,7 +3056,7 @@ impl Bot {
 impl Bot {
     /// A simple method for testing your bot's authentication token. Requires no parameters. Returns basic information about the bot in form of a User object.
     /// See: https://core.telegram.org/bots/api#getme
-    pub async fn get_me(&self) -> Result<User, BotError> {
+    pub(crate) async fn raw_get_me(&self) -> Result<User, BotError> {
         let mut req = serde_json::Map::new();
         self.call_api("getMe", serde_json::Value::Object(req)).await
     }
@@ -3078,7 +3090,7 @@ impl GetMyCommandsParams {
 impl Bot {
     /// Use this method to get the current list of the bot's commands for the given scope and user language. Returns an Array of BotCommand objects. If commands aren't set, an empty list is returned.
     /// See: https://core.telegram.org/bots/api#getmycommands
-    pub async fn get_my_commands(
+    pub async fn get_my_commands_with_params(
         &self,
         params: Option<GetMyCommandsParams>,
     ) -> Result<Vec<BotCommand>, BotError> {
@@ -3119,7 +3131,7 @@ impl GetMyDefaultAdministratorRightsParams {
 impl Bot {
     /// Use this method to get the current default administrator rights of the bot. Returns ChatAdministratorRights on success.
     /// See: https://core.telegram.org/bots/api#getmydefaultadministratorrights
-    pub async fn get_my_default_administrator_rights(
+    pub async fn get_my_default_administrator_rights_with_params(
         &self,
         params: Option<GetMyDefaultAdministratorRightsParams>,
     ) -> Result<ChatAdministratorRights, BotError> {
@@ -3163,7 +3175,7 @@ impl GetMyDescriptionParams {
 impl Bot {
     /// Use this method to get the current bot description for the given user language. Returns BotDescription on success.
     /// See: https://core.telegram.org/bots/api#getmydescription
-    pub async fn get_my_description(
+    pub async fn get_my_description_with_params(
         &self,
         params: Option<GetMyDescriptionParams>,
     ) -> Result<BotDescription, BotError> {
@@ -3204,7 +3216,10 @@ impl GetMyNameParams {
 impl Bot {
     /// Use this method to get the current bot name for the given user language. Returns BotName on success.
     /// See: https://core.telegram.org/bots/api#getmyname
-    pub async fn get_my_name(&self, params: Option<GetMyNameParams>) -> Result<BotName, BotError> {
+    pub async fn get_my_name_with_params(
+        &self,
+        params: Option<GetMyNameParams>,
+    ) -> Result<BotName, BotError> {
         let mut req = serde_json::Map::new();
         if let Some(p) = params {
             let extra = serde_json::to_value(&p).unwrap_or_default();
@@ -3242,7 +3257,7 @@ impl GetMyShortDescriptionParams {
 impl Bot {
     /// Use this method to get the current bot short description for the given user language. Returns BotShortDescription on success.
     /// See: https://core.telegram.org/bots/api#getmyshortdescription
-    pub async fn get_my_short_description(
+    pub async fn get_my_short_description_with_params(
         &self,
         params: Option<GetMyShortDescriptionParams>,
     ) -> Result<BotShortDescription, BotError> {
@@ -3265,7 +3280,7 @@ impl Bot {
 impl Bot {
     /// A method to get the current Telegram Stars balance of the bot. Requires no parameters. On success, returns a StarAmount object.
     /// See: https://core.telegram.org/bots/api#getmystarbalance
-    pub async fn get_my_star_balance(&self) -> Result<StarAmount, BotError> {
+    pub(crate) async fn raw_get_my_star_balance(&self) -> Result<StarAmount, BotError> {
         let mut req = serde_json::Map::new();
         self.call_api("getMyStarBalance", serde_json::Value::Object(req))
             .await
@@ -3300,7 +3315,7 @@ impl GetStarTransactionsParams {
 impl Bot {
     /// Returns the bot's Telegram Star transactions in chronological order. On success, returns a StarTransactions object.
     /// See: https://core.telegram.org/bots/api#getstartransactions
-    pub async fn get_star_transactions(
+    pub async fn get_star_transactions_with_params(
         &self,
         params: Option<GetStarTransactionsParams>,
     ) -> Result<StarTransactions, BotError> {
@@ -3323,7 +3338,10 @@ impl Bot {
 impl Bot {
     /// Use this method to get a sticker set. On success, a StickerSet object is returned.
     /// See: https://core.telegram.org/bots/api#getstickerset
-    pub async fn get_sticker_set(&self, name: impl Into<String>) -> Result<StickerSet, BotError> {
+    pub(crate) async fn raw_get_sticker_set(
+        &self,
+        name: impl Into<String>,
+    ) -> Result<StickerSet, BotError> {
         let mut req = serde_json::Map::new();
         req.insert(
             "name".into(),
@@ -3376,7 +3394,7 @@ impl GetUpdatesParams {
 impl Bot {
     /// Use this method to receive incoming updates using long polling (wiki). Returns an Array of Update objects.
     /// See: https://core.telegram.org/bots/api#getupdates
-    pub async fn get_updates(
+    pub async fn get_updates_with_params(
         &self,
         params: Option<GetUpdatesParams>,
     ) -> Result<Vec<Update>, BotError> {
@@ -3399,7 +3417,7 @@ impl Bot {
 impl Bot {
     /// Use this method to get the list of boosts added to a chat by a user. Requires administrator rights in the chat. Returns a UserChatBoosts object.
     /// See: https://core.telegram.org/bots/api#getuserchatboosts
-    pub async fn get_user_chat_boosts(
+    pub(crate) async fn raw_get_user_chat_boosts(
         &self,
         chat_id: impl Into<ChatId>,
         user_id: i64,
@@ -3488,7 +3506,7 @@ impl GetUserGiftsParams {
 impl Bot {
     /// Returns the gifts owned and hosted by a user. Returns OwnedGifts on success.
     /// See: https://core.telegram.org/bots/api#getusergifts
-    pub async fn get_user_gifts(
+    pub async fn get_user_gifts_with_params(
         &self,
         user_id: i64,
         params: Option<GetUserGiftsParams>,
@@ -3541,7 +3559,7 @@ impl GetUserProfileAudiosParams {
 impl Bot {
     /// Use this method to get a list of profile audios for a user. Returns a UserProfileAudios object.
     /// See: https://core.telegram.org/bots/api#getuserprofileaudios
-    pub async fn get_user_profile_audios(
+    pub async fn get_user_profile_audios_with_params(
         &self,
         user_id: i64,
         params: Option<GetUserProfileAudiosParams>,
@@ -3594,7 +3612,7 @@ impl GetUserProfilePhotosParams {
 impl Bot {
     /// Use this method to get a list of profile pictures for a user. Returns a UserProfilePhotos object.
     /// See: https://core.telegram.org/bots/api#getuserprofilephotos
-    pub async fn get_user_profile_photos(
+    pub async fn get_user_profile_photos_with_params(
         &self,
         user_id: i64,
         params: Option<GetUserProfilePhotosParams>,
@@ -3622,7 +3640,7 @@ impl Bot {
 impl Bot {
     /// Use this method to get current webhook status. Requires no parameters. On success, returns a WebhookInfo object. If the bot is using getUpdates, will return an object with the url field empty.
     /// See: https://core.telegram.org/bots/api#getwebhookinfo
-    pub async fn get_webhook_info(&self) -> Result<WebhookInfo, BotError> {
+    pub(crate) async fn raw_get_webhook_info(&self) -> Result<WebhookInfo, BotError> {
         let mut req = serde_json::Map::new();
         self.call_api("getWebhookInfo", serde_json::Value::Object(req))
             .await
@@ -3664,7 +3682,7 @@ impl GiftPremiumSubscriptionParams {
 impl Bot {
     /// Gifts a Telegram Premium subscription to the given user. Returns True on success.
     /// See: https://core.telegram.org/bots/api#giftpremiumsubscription
-    pub async fn gift_premium_subscription(
+    pub async fn gift_premium_subscription_with_params(
         &self,
         user_id: i64,
         month_count: i64,
@@ -3702,7 +3720,7 @@ impl Bot {
 impl Bot {
     /// Use this method to hide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. The topic will be automatically closed if it was open. Returns True on success.
     /// See: https://core.telegram.org/bots/api#hidegeneralforumtopic
-    pub async fn hide_general_forum_topic(
+    pub(crate) async fn raw_hide_general_forum_topic(
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
@@ -3719,7 +3737,10 @@ impl Bot {
 impl Bot {
     /// Use this method for your bot to leave a group, supergroup or channel. Returns True on success.
     /// See: https://core.telegram.org/bots/api#leavechat
-    pub async fn leave_chat(&self, chat_id: impl Into<ChatId>) -> Result<bool, BotError> {
+    pub(crate) async fn raw_leave_chat(
+        &self,
+        chat_id: impl Into<ChatId>,
+    ) -> Result<bool, BotError> {
         let mut req = serde_json::Map::new();
         req.insert(
             "chat_id".into(),
@@ -3733,7 +3754,7 @@ impl Bot {
 impl Bot {
     /// Use this method to log out from the cloud Bot API server before launching the bot locally. You must log out the bot before running it locally, otherwise there is no guarantee that the bot will receive updates. After a successful call, you can immediately log in on a local server, but will not be able to log in back to the cloud Bot API server for 10 minutes. Returns True on success. Requires no parameters.
     /// See: https://core.telegram.org/bots/api#logout
-    pub async fn log_out(&self) -> Result<bool, BotError> {
+    pub(crate) async fn raw_log_out(&self) -> Result<bool, BotError> {
         let mut req = serde_json::Map::new();
         self.call_api("logOut", serde_json::Value::Object(req))
             .await
@@ -3768,7 +3789,7 @@ impl PinChatMessageParams {
 impl Bot {
     /// Use this method to add a message to the list of pinned messages in a chat. In private chats and channel direct messages chats, all non-service messages can be pinned. Conversely, the bot must be an administrator with the 'can_pin_messages' right or the 'can_edit_messages' right to pin messages in groups and channels respectively. Returns True on success.
     /// See: https://core.telegram.org/bots/api#pinchatmessage
-    pub async fn pin_chat_message(
+    pub async fn pin_chat_message_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         message_id: i64,
@@ -3854,7 +3875,7 @@ impl PostStoryParams {
 impl Bot {
     /// Posts a story on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns Story on success.
     /// See: https://core.telegram.org/bots/api#poststory
-    pub async fn post_story(
+    pub async fn post_story_with_params(
         &self,
         business_connection_id: impl Into<String>,
         content: InputStoryContent,
@@ -4022,7 +4043,7 @@ impl PromoteChatMemberParams {
 impl Bot {
     /// Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Pass False for all boolean parameters to demote a user. Returns True on success.
     /// See: https://core.telegram.org/bots/api#promotechatmember
-    pub async fn promote_chat_member(
+    pub async fn promote_chat_member_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         user_id: i64,
@@ -4055,7 +4076,7 @@ impl Bot {
 impl Bot {
     /// Marks incoming message as read on behalf of a business account. Requires the can_read_messages business bot right. Returns True on success.
     /// See: https://core.telegram.org/bots/api#readbusinessmessage
-    pub async fn read_business_message(
+    pub(crate) async fn raw_read_business_message(
         &self,
         business_connection_id: impl Into<String>,
         chat_id: i64,
@@ -4082,7 +4103,7 @@ impl Bot {
 impl Bot {
     /// Refunds a successful payment in Telegram Stars. Returns True on success.
     /// See: https://core.telegram.org/bots/api#refundstarpayment
-    pub async fn refund_star_payment(
+    pub(crate) async fn raw_refund_star_payment(
         &self,
         user_id: i64,
         telegram_payment_charge_id: impl Into<String>,
@@ -4122,7 +4143,7 @@ impl RemoveBusinessAccountProfilePhotoParams {
 impl Bot {
     /// Removes the current profile photo of a managed business account. Requires the can_edit_profile_photo business bot right. Returns True on success.
     /// See: https://core.telegram.org/bots/api#removebusinessaccountprofilephoto
-    pub async fn remove_business_account_profile_photo(
+    pub async fn remove_business_account_profile_photo_with_params(
         &self,
         business_connection_id: impl Into<String>,
         params: Option<RemoveBusinessAccountProfilePhotoParams>,
@@ -4153,7 +4174,7 @@ impl Bot {
 impl Bot {
     /// Removes verification from a chat that is currently verified on behalf of the organization represented by the bot. Returns True on success.
     /// See: https://core.telegram.org/bots/api#removechatverification
-    pub async fn remove_chat_verification(
+    pub(crate) async fn raw_remove_chat_verification(
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
@@ -4170,7 +4191,7 @@ impl Bot {
 impl Bot {
     /// Removes the profile photo of the bot. Requires no parameters. Returns True on success.
     /// See: https://core.telegram.org/bots/api#removemyprofilephoto
-    pub async fn remove_my_profile_photo(&self) -> Result<bool, BotError> {
+    pub(crate) async fn raw_remove_my_profile_photo(&self) -> Result<bool, BotError> {
         let mut req = serde_json::Map::new();
         self.call_api("removeMyProfilePhoto", serde_json::Value::Object(req))
             .await
@@ -4180,7 +4201,10 @@ impl Bot {
 impl Bot {
     /// Removes verification from a user who is currently verified on behalf of the organization represented by the bot. Returns True on success.
     /// See: https://core.telegram.org/bots/api#removeuserverification
-    pub async fn remove_user_verification(&self, user_id: i64) -> Result<bool, BotError> {
+    pub(crate) async fn raw_remove_user_verification(
+        &self,
+        user_id: i64,
+    ) -> Result<bool, BotError> {
         let mut req = serde_json::Map::new();
         req.insert(
             "user_id".into(),
@@ -4194,7 +4218,7 @@ impl Bot {
 impl Bot {
     /// Use this method to reopen a closed topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success.
     /// See: https://core.telegram.org/bots/api#reopenforumtopic
-    pub async fn reopen_forum_topic(
+    pub(crate) async fn raw_reopen_forum_topic(
         &self,
         chat_id: impl Into<ChatId>,
         message_thread_id: i64,
@@ -4216,7 +4240,7 @@ impl Bot {
 impl Bot {
     /// Use this method to reopen a closed 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. The topic will be automatically unhidden if it was hidden. Returns True on success.
     /// See: https://core.telegram.org/bots/api#reopengeneralforumtopic
-    pub async fn reopen_general_forum_topic(
+    pub(crate) async fn raw_reopen_general_forum_topic(
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
@@ -4233,7 +4257,10 @@ impl Bot {
 impl Bot {
     /// Use this method to revoke the current token of a managed bot and generate a new one. Returns the new token as String on success.
     /// See: https://core.telegram.org/bots/api#replacemanagedbottoken
-    pub async fn replace_managed_bot_token(&self, user_id: i64) -> Result<String, BotError> {
+    pub(crate) async fn raw_replace_managed_bot_token(
+        &self,
+        user_id: i64,
+    ) -> Result<String, BotError> {
         let mut req = serde_json::Map::new();
         req.insert(
             "user_id".into(),
@@ -4247,7 +4274,7 @@ impl Bot {
 impl Bot {
     /// Use this method to replace an existing sticker in a sticker set with a new one. The method is equivalent to calling deleteStickerFromSet, then addStickerToSet, then setStickerPositionInSet. Returns True on success.
     /// See: https://core.telegram.org/bots/api#replacestickerinset
-    pub async fn replace_sticker_in_set(
+    pub(crate) async fn raw_replace_sticker_in_set(
         &self,
         user_id: i64,
         name: impl Into<String>,
@@ -4304,7 +4331,7 @@ impl RepostStoryParams {
 impl Bot {
     /// Reposts a story on behalf of a business account from another business account. Both business accounts must be managed by the same bot, and the story on the source account must have been posted (or reposted) by the bot. Requires the can_manage_stories business bot right for both business accounts. Returns Story on success.
     /// See: https://core.telegram.org/bots/api#repoststory
-    pub async fn repost_story(
+    pub async fn repost_story_with_params(
         &self,
         business_connection_id: impl Into<String>,
         from_chat_id: i64,
@@ -4372,7 +4399,7 @@ impl RestrictChatMemberParams {
 impl Bot {
     /// Use this method to restrict a user in a supergroup. The bot must be an administrator in the supergroup for this to work and must have the appropriate administrator rights. Pass True for all permissions to lift restrictions from a user. Returns True on success.
     /// See: https://core.telegram.org/bots/api#restrictchatmember
-    pub async fn restrict_chat_member(
+    pub async fn restrict_chat_member_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         user_id: i64,
@@ -4410,7 +4437,7 @@ impl Bot {
 impl Bot {
     /// Use this method to revoke an invite link created by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the revoked invite link as ChatInviteLink object.
     /// See: https://core.telegram.org/bots/api#revokechatinvitelink
-    pub async fn revoke_chat_invite_link(
+    pub(crate) async fn raw_revoke_chat_invite_link(
         &self,
         chat_id: impl Into<ChatId>,
         invite_link: impl Into<String>,
@@ -4471,7 +4498,7 @@ impl SavePreparedInlineMessageParams {
 impl Bot {
     /// Stores a message that can be sent by a user of a Mini App. Returns a PreparedInlineMessage object.
     /// See: https://core.telegram.org/bots/api#savepreparedinlinemessage
-    pub async fn save_prepared_inline_message(
+    pub async fn save_prepared_inline_message_with_params(
         &self,
         user_id: i64,
         result: InlineQueryResult,
@@ -4504,7 +4531,7 @@ impl Bot {
 impl Bot {
     /// Stores a keyboard button that can be used by a user within a Mini App. Returns a PreparedKeyboardButton object.
     /// See: https://core.telegram.org/bots/api#savepreparedkeyboardbutton
-    pub async fn save_prepared_keyboard_button(
+    pub(crate) async fn raw_save_prepared_keyboard_button(
         &self,
         user_id: i64,
         button: KeyboardButton,
@@ -4670,7 +4697,7 @@ impl SendAnimationParams {
 impl Bot {
     /// Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound). On success, the sent Message is returned. Bots can currently send animation files of up to 50 MB in size, this limit may be changed in the future.
     /// See: https://core.telegram.org/bots/api#sendanimation
-    pub async fn send_animation(
+    pub async fn send_animation_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         animation: impl Into<InputFileOrString>,
@@ -4830,7 +4857,7 @@ impl Bot {
     /// Use this method to send audio files, if you want Telegram clients to display them in the music player. Your audio must be in the .MP3 or .M4A format. On success, the sent Message is returned. Bots can currently send audio files of up to 50 MB in size, this limit may be changed in the future.
     /// For sending voice messages, use the sendVoice method instead.
     /// See: https://core.telegram.org/bots/api#sendaudio
-    pub async fn send_audio(
+    pub async fn send_audio_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         audio: impl Into<InputFileOrString>,
@@ -4885,7 +4912,7 @@ impl Bot {
     /// Use this method when you need to tell the user that something is happening on the bot's side. The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status). Returns True on success.
     /// We only recommend using this method when a response from the bot will take a noticeable amount of time to arrive.
     /// See: https://core.telegram.org/bots/api#sendchataction
-    pub async fn send_chat_action(
+    pub async fn send_chat_action_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         action: impl Into<String>,
@@ -4964,7 +4991,7 @@ impl SendChecklistParams {
 impl Bot {
     /// Use this method to send a checklist on behalf of a connected business account. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendchecklist
-    pub async fn send_checklist(
+    pub async fn send_checklist_with_params(
         &self,
         business_connection_id: impl Into<String>,
         chat_id: i64,
@@ -5097,7 +5124,7 @@ impl SendContactParams {
 impl Bot {
     /// Use this method to send phone contacts. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendcontact
-    pub async fn send_contact(
+    pub async fn send_contact_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         phone_number: impl Into<String>,
@@ -5223,7 +5250,7 @@ impl SendDiceParams {
 impl Bot {
     /// Use this method to send an animated emoji that will display a random value. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#senddice
-    pub async fn send_dice(
+    pub async fn send_dice_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         params: Option<SendDiceParams>,
@@ -5367,7 +5394,7 @@ impl SendDocumentParams {
 impl Bot {
     /// Use this method to send general files. On success, the sent Message is returned. Bots can currently send files of any type of up to 50 MB in size, this limit may be changed in the future.
     /// See: https://core.telegram.org/bots/api#senddocument
-    pub async fn send_document(
+    pub async fn send_document_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         document: impl Into<InputFileOrString>,
@@ -5463,7 +5490,7 @@ impl SendGameParams {
 impl Bot {
     /// Use this method to send a game. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendgame
-    pub async fn send_game(
+    pub async fn send_game_with_params(
         &self,
         chat_id: i64,
         game_short_name: impl Into<String>,
@@ -5549,7 +5576,7 @@ impl SendGiftParams {
 impl Bot {
     /// Sends a gift to the given user or channel chat. The gift can't be converted to Telegram Stars by the receiver. Returns True on success.
     /// See: https://core.telegram.org/bots/api#sendgift
-    pub async fn send_gift(
+    pub async fn send_gift_with_params(
         &self,
         gift_id: impl Into<String>,
         params: Option<SendGiftParams>,
@@ -5763,7 +5790,7 @@ impl SendInvoiceParams {
 impl Bot {
     /// Use this method to send invoices. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendinvoice
-    pub async fn send_invoice(
+    pub async fn send_invoice_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         title: impl Into<String>,
@@ -5925,7 +5952,7 @@ impl SendLocationParams {
 impl Bot {
     /// Use this method to send point on the map. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendlocation
-    pub async fn send_location(
+    pub async fn send_location_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         latitude: f64,
@@ -6030,7 +6057,7 @@ impl SendMediaGroupParams {
 impl Bot {
     /// Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of Message objects that were sent is returned.
     /// See: https://core.telegram.org/bots/api#sendmediagroup
-    pub async fn send_media_group(
+    pub async fn send_media_group_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         media: Vec<InputMedia>,
@@ -6165,7 +6192,7 @@ impl SendMessageParams {
 impl Bot {
     /// Use this method to send text messages. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendmessage
-    pub async fn send_message(
+    pub async fn send_message_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         text: impl Into<String>,
@@ -6230,7 +6257,7 @@ impl SendMessageDraftParams {
 impl Bot {
     /// Use this method to stream a partial message to a user while the message is being generated. Returns True on success.
     /// See: https://core.telegram.org/bots/api#sendmessagedraft
-    pub async fn send_message_draft(
+    pub async fn send_message_draft_with_params(
         &self,
         chat_id: i64,
         draft_id: i64,
@@ -6377,7 +6404,7 @@ impl SendPaidMediaParams {
 impl Bot {
     /// Use this method to send paid media. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendpaidmedia
-    pub async fn send_paid_media(
+    pub async fn send_paid_media_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         star_count: i64,
@@ -6531,7 +6558,7 @@ impl SendPhotoParams {
 impl Bot {
     /// Use this method to send photos. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendphoto
-    pub async fn send_photo(
+    pub async fn send_photo_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         photo: impl Into<InputFileOrString>,
@@ -6761,7 +6788,7 @@ impl SendPollParams {
 impl Bot {
     /// Use this method to send a native poll. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendpoll
-    pub async fn send_poll(
+    pub async fn send_poll_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         question: impl Into<String>,
@@ -6887,7 +6914,7 @@ impl SendStickerParams {
 impl Bot {
     /// Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendsticker
-    pub async fn send_sticker(
+    pub async fn send_sticker_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         sticker: impl Into<InputFileOrString>,
@@ -7025,7 +7052,7 @@ impl SendVenueParams {
 impl Bot {
     /// Use this method to send information about a venue. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendvenue
-    pub async fn send_venue(
+    pub async fn send_venue_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         latitude: f64,
@@ -7238,7 +7265,7 @@ impl SendVideoParams {
 impl Bot {
     /// Use this method to send video files, Telegram clients support MPEG4 videos (other formats may be sent as Document). On success, the sent Message is returned. Bots can currently send video files of up to 50 MB in size, this limit may be changed in the future.
     /// See: https://core.telegram.org/bots/api#sendvideo
-    pub async fn send_video(
+    pub async fn send_video_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         video: impl Into<InputFileOrString>,
@@ -7369,7 +7396,7 @@ impl SendVideoNoteParams {
 impl Bot {
     /// As of v.4.0, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendvideonote
-    pub async fn send_video_note(
+    pub async fn send_video_note_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         video_note: impl Into<InputFileOrString>,
@@ -7507,7 +7534,7 @@ impl SendVoiceParams {
 impl Bot {
     /// Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .OGG file encoded with OPUS, or in .MP3 format, or in .M4A format (other formats may be sent as Audio or Document). On success, the sent Message is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future.
     /// See: https://core.telegram.org/bots/api#sendvoice
-    pub async fn send_voice(
+    pub async fn send_voice_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         voice: impl Into<InputFileOrString>,
@@ -7554,7 +7581,7 @@ impl SetBusinessAccountBioParams {
 impl Bot {
     /// Changes the bio of a managed business account. Requires the can_change_bio business bot right. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setbusinessaccountbio
-    pub async fn set_business_account_bio(
+    pub async fn set_business_account_bio_with_params(
         &self,
         business_connection_id: impl Into<String>,
         params: Option<SetBusinessAccountBioParams>,
@@ -7582,7 +7609,7 @@ impl Bot {
 impl Bot {
     /// Changes the privacy settings pertaining to incoming gifts in a managed business account. Requires the can_change_gift_settings business bot right. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setbusinessaccountgiftsettings
-    pub async fn set_business_account_gift_settings(
+    pub(crate) async fn raw_set_business_account_gift_settings(
         &self,
         business_connection_id: impl Into<String>,
         show_gift_button: bool,
@@ -7630,7 +7657,7 @@ impl SetBusinessAccountNameParams {
 impl Bot {
     /// Changes the first and last name of a managed business account. Requires the can_change_name business bot right. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setbusinessaccountname
-    pub async fn set_business_account_name(
+    pub async fn set_business_account_name_with_params(
         &self,
         business_connection_id: impl Into<String>,
         first_name: impl Into<String>,
@@ -7681,7 +7708,7 @@ impl SetBusinessAccountProfilePhotoParams {
 impl Bot {
     /// Changes the profile photo of a managed business account. Requires the can_edit_profile_photo business bot right. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setbusinessaccountprofilephoto
-    pub async fn set_business_account_profile_photo(
+    pub async fn set_business_account_profile_photo_with_params(
         &self,
         business_connection_id: impl Into<String>,
         photo: InputProfilePhoto,
@@ -7735,7 +7762,7 @@ impl SetBusinessAccountUsernameParams {
 impl Bot {
     /// Changes the username of a managed business account. Requires the can_change_username business bot right. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setbusinessaccountusername
-    pub async fn set_business_account_username(
+    pub async fn set_business_account_username_with_params(
         &self,
         business_connection_id: impl Into<String>,
         params: Option<SetBusinessAccountUsernameParams>,
@@ -7763,7 +7790,7 @@ impl Bot {
 impl Bot {
     /// Use this method to set a custom title for an administrator in a supergroup promoted by the bot. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setchatadministratorcustomtitle
-    pub async fn set_chat_administrator_custom_title(
+    pub(crate) async fn raw_set_chat_administrator_custom_title(
         &self,
         chat_id: impl Into<ChatId>,
         user_id: i64,
@@ -7811,7 +7838,7 @@ impl SetChatDescriptionParams {
 impl Bot {
     /// Use this method to change the description of a group, a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setchatdescription
-    pub async fn set_chat_description(
+    pub async fn set_chat_description_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         params: Option<SetChatDescriptionParams>,
@@ -7857,7 +7884,7 @@ impl SetChatMemberTagParams {
 impl Bot {
     /// Use this method to set a tag for a regular member in a group or a supergroup. The bot must be an administrator in the chat for this to work and must have the can_manage_tags administrator right. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setchatmembertag
-    pub async fn set_chat_member_tag(
+    pub async fn set_chat_member_tag_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         user_id: i64,
@@ -7915,7 +7942,7 @@ impl SetChatMenuButtonParams {
 impl Bot {
     /// Use this method to change the bot's menu button in a private chat, or the default menu button. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setchatmenubutton
-    pub async fn set_chat_menu_button(
+    pub async fn set_chat_menu_button_with_params(
         &self,
         params: Option<SetChatMenuButtonParams>,
     ) -> Result<bool, BotError> {
@@ -7956,7 +7983,7 @@ impl SetChatPermissionsParams {
 impl Bot {
     /// Use this method to set default chat permissions for all members. The bot must be an administrator in the group or a supergroup for this to work and must have the can_restrict_members administrator rights. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setchatpermissions
-    pub async fn set_chat_permissions(
+    pub async fn set_chat_permissions_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         permissions: ChatPermissions,
@@ -7989,7 +8016,7 @@ impl Bot {
 impl Bot {
     /// Use this method to set a new profile photo for the chat. Photos can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setchatphoto
-    pub async fn set_chat_photo(
+    pub(crate) async fn raw_set_chat_photo(
         &self,
         chat_id: impl Into<ChatId>,
         photo: InputFile,
@@ -8011,7 +8038,7 @@ impl Bot {
 impl Bot {
     /// Use this method to set a new group sticker set for a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field can_set_sticker_set optionally returned in getChat requests to check if the bot can use this method. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setchatstickerset
-    pub async fn set_chat_sticker_set(
+    pub(crate) async fn raw_set_chat_sticker_set(
         &self,
         chat_id: impl Into<ChatId>,
         sticker_set_name: impl Into<String>,
@@ -8033,7 +8060,7 @@ impl Bot {
 impl Bot {
     /// Use this method to change the title of a chat. Titles can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setchattitle
-    pub async fn set_chat_title(
+    pub(crate) async fn raw_set_chat_title(
         &self,
         chat_id: impl Into<ChatId>,
         title: impl Into<String>,
@@ -8073,7 +8100,7 @@ impl SetCustomEmojiStickerSetThumbnailParams {
 impl Bot {
     /// Use this method to set the thumbnail of a custom emoji sticker set. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setcustomemojistickersetthumbnail
-    pub async fn set_custom_emoji_sticker_set_thumbnail(
+    pub async fn set_custom_emoji_sticker_set_thumbnail_with_params(
         &self,
         name: impl Into<String>,
         params: Option<SetCustomEmojiStickerSetThumbnailParams>,
@@ -8150,7 +8177,7 @@ impl SetGameScoreParams {
 impl Bot {
     /// Use this method to set the score of the specified user in a game message. On success, if the message is not an inline message, the Message is returned, otherwise True is returned. Returns an error, if the new score is not greater than the user's current score in the chat and force is False.
     /// See: https://core.telegram.org/bots/api#setgamescore
-    pub async fn set_game_score(
+    pub async fn set_game_score_with_params(
         &self,
         user_id: i64,
         score: i64,
@@ -8208,7 +8235,7 @@ impl SetMessageReactionParams {
 impl Bot {
     /// Use this method to change the chosen reactions on a message. Service messages of some types can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Bots can't use paid reactions. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setmessagereaction
-    pub async fn set_message_reaction(
+    pub async fn set_message_reaction_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         message_id: i64,
@@ -8266,7 +8293,7 @@ impl SetMyCommandsParams {
 impl Bot {
     /// Use this method to change the list of the bot's commands. See this manual for more details about bot commands. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setmycommands
-    pub async fn set_my_commands(
+    pub async fn set_my_commands_with_params(
         &self,
         commands: Vec<BotCommand>,
         params: Option<SetMyCommandsParams>,
@@ -8319,7 +8346,7 @@ impl SetMyDefaultAdministratorRightsParams {
 impl Bot {
     /// Use this method to change the default administrator rights requested by the bot when it's added as an administrator to groups or channels. These rights will be suggested to users, but they are free to modify the list before adding the bot. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setmydefaultadministratorrights
-    pub async fn set_my_default_administrator_rights(
+    pub async fn set_my_default_administrator_rights_with_params(
         &self,
         params: Option<SetMyDefaultAdministratorRightsParams>,
     ) -> Result<bool, BotError> {
@@ -8370,7 +8397,7 @@ impl SetMyDescriptionParams {
 impl Bot {
     /// Use this method to change the bot's description, which is shown in the chat with the bot if the chat is empty. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setmydescription
-    pub async fn set_my_description(
+    pub async fn set_my_description_with_params(
         &self,
         params: Option<SetMyDescriptionParams>,
     ) -> Result<bool, BotError> {
@@ -8418,7 +8445,10 @@ impl SetMyNameParams {
 impl Bot {
     /// Use this method to change the bot's name. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setmyname
-    pub async fn set_my_name(&self, params: Option<SetMyNameParams>) -> Result<bool, BotError> {
+    pub async fn set_my_name_with_params(
+        &self,
+        params: Option<SetMyNameParams>,
+    ) -> Result<bool, BotError> {
         let mut req = serde_json::Map::new();
         if let Some(p) = params {
             let extra = serde_json::to_value(&p).unwrap_or_default();
@@ -8438,7 +8468,10 @@ impl Bot {
 impl Bot {
     /// Changes the profile photo of the bot. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setmyprofilephoto
-    pub async fn set_my_profile_photo(&self, photo: InputProfilePhoto) -> Result<bool, BotError> {
+    pub(crate) async fn raw_set_my_profile_photo(
+        &self,
+        photo: InputProfilePhoto,
+    ) -> Result<bool, BotError> {
         let mut req = serde_json::Map::new();
         req.insert(
             "photo".into(),
@@ -8477,7 +8510,7 @@ impl SetMyShortDescriptionParams {
 impl Bot {
     /// Use this method to change the bot's short description, which is shown on the bot's profile page and is sent together with the link when users share the bot. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setmyshortdescription
-    pub async fn set_my_short_description(
+    pub async fn set_my_short_description_with_params(
         &self,
         params: Option<SetMyShortDescriptionParams>,
     ) -> Result<bool, BotError> {
@@ -8501,7 +8534,7 @@ impl Bot {
     /// Informs a user that some of the Telegram Passport elements they provided contains errors. The user will not be able to re-submit their Passport to you until the errors are fixed (the contents of the field for which you returned the error must change). Returns True on success.
     /// Use this if the data submitted by the user doesn't satisfy the standards your service requires for any reason. For example, if a birthday date seems invalid, a submitted document is blurry, a scan shows evidence of tampering, etc. Supply some details in the error message to make sure the user knows how to correct the issues.
     /// See: https://core.telegram.org/bots/api#setpassportdataerrors
-    pub async fn set_passport_data_errors(
+    pub(crate) async fn raw_set_passport_data_errors(
         &self,
         user_id: i64,
         errors: Vec<PassportElementError>,
@@ -8523,7 +8556,7 @@ impl Bot {
 impl Bot {
     /// Use this method to change the list of emoji assigned to a regular or custom emoji sticker. The sticker must belong to a sticker set created by the bot. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setstickeremojilist
-    pub async fn set_sticker_emoji_list(
+    pub(crate) async fn raw_set_sticker_emoji_list(
         &self,
         sticker: impl Into<String>,
         emoji_list: Vec<String>,
@@ -8563,7 +8596,7 @@ impl SetStickerKeywordsParams {
 impl Bot {
     /// Use this method to change search keywords assigned to a regular or custom emoji sticker. The sticker must belong to a sticker set created by the bot. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setstickerkeywords
-    pub async fn set_sticker_keywords(
+    pub async fn set_sticker_keywords_with_params(
         &self,
         sticker: impl Into<String>,
         params: Option<SetStickerKeywordsParams>,
@@ -8609,7 +8642,7 @@ impl SetStickerMaskPositionParams {
 impl Bot {
     /// Use this method to change the mask position of a mask sticker. The sticker must belong to a sticker set that was created by the bot. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setstickermaskposition
-    pub async fn set_sticker_mask_position(
+    pub async fn set_sticker_mask_position_with_params(
         &self,
         sticker: impl Into<String>,
         params: Option<SetStickerMaskPositionParams>,
@@ -8637,7 +8670,7 @@ impl Bot {
 impl Bot {
     /// Use this method to move a sticker in a set created by the bot to a specific position. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setstickerpositioninset
-    pub async fn set_sticker_position_in_set(
+    pub(crate) async fn raw_set_sticker_position_in_set(
         &self,
         sticker: impl Into<String>,
         position: i64,
@@ -8677,7 +8710,7 @@ impl SetStickerSetThumbnailParams {
 impl Bot {
     /// Use this method to set the thumbnail of a regular or mask sticker set. The format of the thumbnail file must match the format of the stickers in the set. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setstickersetthumbnail
-    pub async fn set_sticker_set_thumbnail(
+    pub async fn set_sticker_set_thumbnail_with_params(
         &self,
         name: impl Into<String>,
         user_id: i64,
@@ -8715,7 +8748,7 @@ impl Bot {
 impl Bot {
     /// Use this method to set the title of a created sticker set. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setstickersettitle
-    pub async fn set_sticker_set_title(
+    pub(crate) async fn raw_set_sticker_set_title(
         &self,
         name: impl Into<String>,
         title: impl Into<String>,
@@ -8762,7 +8795,7 @@ impl SetUserEmojiStatusParams {
 impl Bot {
     /// Changes the emoji status for a given user that previously allowed the bot to manage their emoji status via the Mini App method requestEmojiStatusAccess. Returns True on success.
     /// See: https://core.telegram.org/bots/api#setuseremojistatus
-    pub async fn set_user_emoji_status(
+    pub async fn set_user_emoji_status_with_params(
         &self,
         user_id: i64,
         params: Option<SetUserEmojiStatusParams>,
@@ -8844,7 +8877,7 @@ impl Bot {
     /// Use this method to specify a URL and receive incoming updates via an outgoing webhook. Whenever there is an update for the bot, we will send an HTTPS POST request to the specified URL, containing a JSON-serialized Update. In case of an unsuccessful request (a request with response HTTP status code different from 2XY), we will repeat the request and give up after a reasonable amount of attempts. Returns True on success.
     /// If you'd like to make sure that the webhook was set by you, you can specify secret data in the parameter secret_token. If specified, the request will contain a header "X-Telegram-Bot-Api-Secret-Token" with the secret token as content.
     /// See: https://core.telegram.org/bots/api#setwebhook
-    pub async fn set_webhook(
+    pub async fn set_webhook_with_params(
         &self,
         url: impl Into<String>,
         params: Option<SetWebhookParams>,
@@ -8918,7 +8951,7 @@ impl StopMessageLiveLocationParams {
 impl Bot {
     /// Use this method to stop updating a live location message before live_period expires. On success, if the message is not an inline message, the edited Message is returned, otherwise True is returned.
     /// See: https://core.telegram.org/bots/api#stopmessagelivelocation
-    pub async fn stop_message_live_location(
+    pub async fn stop_message_live_location_with_params(
         &self,
         params: Option<StopMessageLiveLocationParams>,
     ) -> Result<serde_json::Value, BotError> {
@@ -8966,7 +8999,7 @@ impl StopPollParams {
 impl Bot {
     /// Use this method to stop a poll which was sent by the bot. On success, the stopped Poll is returned.
     /// See: https://core.telegram.org/bots/api#stoppoll
-    pub async fn stop_poll(
+    pub async fn stop_poll_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         message_id: i64,
@@ -8999,7 +9032,7 @@ impl Bot {
 impl Bot {
     /// Transfers Telegram Stars from the business account balance to the bot's balance. Requires the can_transfer_stars business bot right. Returns True on success.
     /// See: https://core.telegram.org/bots/api#transferbusinessaccountstars
-    pub async fn transfer_business_account_stars(
+    pub(crate) async fn raw_transfer_business_account_stars(
         &self,
         business_connection_id: impl Into<String>,
         star_count: i64,
@@ -9042,7 +9075,7 @@ impl TransferGiftParams {
 impl Bot {
     /// Transfers an owned unique gift to another user. Requires the can_transfer_and_upgrade_gifts business bot right. Requires can_transfer_stars business bot right if the transfer is paid. Returns True on success.
     /// See: https://core.telegram.org/bots/api#transfergift
-    pub async fn transfer_gift(
+    pub async fn transfer_gift_with_params(
         &self,
         business_connection_id: impl Into<String>,
         owned_gift_id: impl Into<String>,
@@ -9098,7 +9131,7 @@ impl UnbanChatMemberParams {
 impl Bot {
     /// Use this method to unban a previously banned user in a supergroup or channel. The user will not return to the group or channel automatically, but will be able to join via link, etc. The bot must be an administrator for this to work. By default, this method guarantees that after the call the user is not a member of the chat, but will be able to join it. So if the user is a member of the chat they will also be removed from the chat. If you don't want this, use the parameter only_if_banned. Returns True on success.
     /// See: https://core.telegram.org/bots/api#unbanchatmember
-    pub async fn unban_chat_member(
+    pub async fn unban_chat_member_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         user_id: i64,
@@ -9131,7 +9164,7 @@ impl Bot {
 impl Bot {
     /// Use this method to unban a previously banned channel chat in a supergroup or channel. The bot must be an administrator for this to work and must have the appropriate administrator rights. Returns True on success.
     /// See: https://core.telegram.org/bots/api#unbanchatsenderchat
-    pub async fn unban_chat_sender_chat(
+    pub(crate) async fn raw_unban_chat_sender_chat(
         &self,
         chat_id: impl Into<ChatId>,
         sender_chat_id: i64,
@@ -9153,7 +9186,7 @@ impl Bot {
 impl Bot {
     /// Use this method to unhide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success.
     /// See: https://core.telegram.org/bots/api#unhidegeneralforumtopic
-    pub async fn unhide_general_forum_topic(
+    pub(crate) async fn raw_unhide_general_forum_topic(
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
@@ -9170,7 +9203,7 @@ impl Bot {
 impl Bot {
     /// Use this method to clear the list of pinned messages in a chat. In private chats and channel direct messages chats, no additional rights are required to unpin all pinned messages. Conversely, the bot must be an administrator with the 'can_pin_messages' right or the 'can_edit_messages' right to unpin all pinned messages in groups and channels respectively. Returns True on success.
     /// See: https://core.telegram.org/bots/api#unpinallchatmessages
-    pub async fn unpin_all_chat_messages(
+    pub(crate) async fn raw_unpin_all_chat_messages(
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
@@ -9187,7 +9220,7 @@ impl Bot {
 impl Bot {
     /// Use this method to clear the list of pinned messages in a forum topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True on success.
     /// See: https://core.telegram.org/bots/api#unpinallforumtopicmessages
-    pub async fn unpin_all_forum_topic_messages(
+    pub(crate) async fn raw_unpin_all_forum_topic_messages(
         &self,
         chat_id: impl Into<ChatId>,
         message_thread_id: i64,
@@ -9209,7 +9242,7 @@ impl Bot {
 impl Bot {
     /// Use this method to clear the list of pinned messages in a General forum topic. The bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True on success.
     /// See: https://core.telegram.org/bots/api#unpinallgeneralforumtopicmessages
-    pub async fn unpin_all_general_forum_topic_messages(
+    pub(crate) async fn raw_unpin_all_general_forum_topic_messages(
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
@@ -9254,7 +9287,7 @@ impl UnpinChatMessageParams {
 impl Bot {
     /// Use this method to remove a message from the list of pinned messages in a chat. In private chats and channel direct messages chats, all messages can be unpinned. Conversely, the bot must be an administrator with the 'can_pin_messages' right or the 'can_edit_messages' right to unpin messages in groups and channels respectively. Returns True on success.
     /// See: https://core.telegram.org/bots/api#unpinchatmessage
-    pub async fn unpin_chat_message(
+    pub async fn unpin_chat_message_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         params: Option<UnpinChatMessageParams>,
@@ -9307,7 +9340,7 @@ impl UpgradeGiftParams {
 impl Bot {
     /// Upgrades a given regular gift to a unique gift. Requires the can_transfer_and_upgrade_gifts business bot right. Additionally requires the can_transfer_stars business bot right if the upgrade is paid. Returns True on success.
     /// See: https://core.telegram.org/bots/api#upgradegift
-    pub async fn upgrade_gift(
+    pub async fn upgrade_gift_with_params(
         &self,
         business_connection_id: impl Into<String>,
         owned_gift_id: impl Into<String>,
@@ -9340,7 +9373,7 @@ impl Bot {
 impl Bot {
     /// Use this method to upload a file with a sticker for later use in the createNewStickerSet, addStickerToSet, or replaceStickerInSet methods (the file can be used multiple times). Returns the uploaded File on success.
     /// See: https://core.telegram.org/bots/api#uploadstickerfile
-    pub async fn upload_sticker_file(
+    pub(crate) async fn raw_upload_sticker_file(
         &self,
         user_id: i64,
         sticker: InputFile,
@@ -9385,7 +9418,7 @@ impl VerifyChatParams {
 impl Bot {
     /// Verifies a chat on behalf of the organization which is represented by the bot. Returns True on success.
     /// See: https://core.telegram.org/bots/api#verifychat
-    pub async fn verify_chat(
+    pub async fn verify_chat_with_params(
         &self,
         chat_id: impl Into<ChatId>,
         params: Option<VerifyChatParams>,
@@ -9431,7 +9464,7 @@ impl VerifyUserParams {
 impl Bot {
     /// Verifies a user on behalf of the organization which is represented by the bot. Returns True on success.
     /// See: https://core.telegram.org/bots/api#verifyuser
-    pub async fn verify_user(
+    pub async fn verify_user_with_params(
         &self,
         user_id: i64,
         params: Option<VerifyUserParams>,

@@ -28,7 +28,7 @@
 //!     let bot = Bot::new("YOUR_BOT_TOKEN").await.unwrap();
 //!     println!("Running as @{}", bot.me.username.as_deref().unwrap_or("unknown"));
 //!
-//!     let msg = bot.send_message(123456789i64, "Hello from ferobot! 🦀", None).await.unwrap();
+//!     let msg = bot.send_message(123456789i64, "Hello from ferobot! 🦀").await.unwrap();
 //!     println!("Sent: #{}", msg.message_id);
 //! }
 //! ```
@@ -148,6 +148,7 @@ mod reply_markup;
 pub mod types;
 mod updater;
 
+pub mod fluent;
 pub mod gen_methods;
 mod gen_types;
 
