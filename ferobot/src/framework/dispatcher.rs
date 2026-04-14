@@ -260,7 +260,13 @@ impl Dispatcher {
                 );
                 // try_send is non-blocking: if the 256-slot buffer is full the
                 // update falls through to regular parallel dispatch below.
-                if tx.try_send(ChatWork { bot, update }).is_ok() {
+                if tx
+                    .try_send(ChatWork {
+                        bot: bot.clone(),
+                        update: update.clone(),
+                    })
+                    .is_ok()
+                {
                     return;
                 }
             }
