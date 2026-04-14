@@ -97,7 +97,6 @@ pub trait ConversationStorage: Send + Sync {
     fn delete(&self, key: &str);
 }
 
-// In-memory storage
 /// Thread-safe in-memory storage (default).
 #[derive(Debug, Default)]
 pub struct InMemoryStorage {
@@ -131,7 +130,6 @@ impl ConversationStorage for InMemoryStorage {
     }
 }
 
-// State change sentinels
 /// Return this from a handler to transition to the named state.
 #[derive(Debug, Clone)]
 pub struct NextState(pub String);
@@ -152,7 +150,6 @@ impl fmt::Display for EndConversation {
 }
 impl Error for EndConversation {}
 
-// ConversationHandler
 /// Options for `ConversationHandler`.
 #[derive(Default)]
 pub struct ConversationOpts {

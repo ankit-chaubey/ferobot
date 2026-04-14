@@ -19,7 +19,10 @@ pub mod message;
 
 pub use callback_query::CallbackQueryHandler;
 pub use command::CommandHandler;
+#[cfg(feature = "redis-storage")]
+pub use conversation::redis_storage::RedisStorage;
 pub use conversation::{
-    ConversationHandler, ConversationOpts, EndConversation, InMemoryStorage, KeyStrategy, NextState,
+    ConversationHandler, ConversationOpts, ConversationStorage, EndConversation, InMemoryStorage,
+    KeyStrategy, NextState,
 };
 pub use message::MessageHandler;

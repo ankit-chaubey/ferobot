@@ -1,6 +1,6 @@
 name: Deploy Docs
 
-# Only runs on versioned tags and published releases.
+# Runs on versioned tags, published releases, and manual trigger.
 on:
   push:
     tags:
@@ -9,7 +9,6 @@ on:
   release:
     types: [published]
 
-  # Manual trigger (useful for hotfixing docs without a code change)
   workflow_dispatch:
     inputs:
       message:
@@ -27,8 +26,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  generate-and-deploy:
-    name: Build and deploy docs
+  build-and-deploy:
+    name: Build and deploy Sphinx docs
     runs-on: ubuntu-latest
 
     steps:
@@ -42,17 +41,24 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Python deps
-        run: pip install beautifulsoup4 lxml 2>/dev/null || true
-
-      - name: Generate docs
-        run: python3 scripts/generate_docs.py
-
-      - name: Show output size
+      - name: Install Sphinx + extensions
         run: |
+          pip install \
+            sphinx \
+            furo \
+            myst-parser \
+            sphinx-copybutton \
+            sphinx-autosectionlabel
+
+      - name: Generate RST reference pages from api.json
+        run: python3 scripts/generate_rst.py
+
+      - name: Build HTML docs
+        run: |
+          sphinx-build -b html docs/ site/ -W --keep-going
           echo "--- Generated files ---"
           ls -lah site/
-          du -sh site/*
+          du -sh site/
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4

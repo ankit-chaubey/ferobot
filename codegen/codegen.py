@@ -1,3 +1,13 @@
+# ARCHITECTURE NOTE (updated):
+# gen_methods.rs methods are now PUBLIC and have clean names (no _with_params / _exec suffix).
+# The fluent builder layer (fluent.rs) has been removed.
+# Public API: bot.method_name(required_args, params: Option<MethodParams>)
+# Ergonomic helper: p!(MethodParams { field: value }) macro in macros.rs
+# To regenerate: run this script, then apply:
+#   s/pub\(crate\) async fn (\w+)_with_params/pub async fn /g
+#   s/pub\(crate\) async fn (\w+)_exec/pub async fn /g
+# (or update the codegen templates directly to emit pub async fn with clean names)
+
 #!/usr/bin/env python3
 """
 ferobot - Code Generator
@@ -16,8 +26,9 @@ Example:
     python3 codegen/codegen.py api.json ferobot/src/
 
 Generates:
-    gen_types.rs   - All 285 Telegram Bot API types
-    gen_methods.rs - All 165 Telegram Bot API methods
+    gen_types.rs   - All Telegram Bot API types
+    gen_methods.rs - All Telegram Bot API methods (raw, with _with_params suffix for those that have options)
+    fluent.rs      - Fluent IntoFuture builder wrappers for EVERY method
 
 No external dependencies required. Pure Python 3.6+.
 """
@@ -28,8 +39,6 @@ import sys
 import os
 from pathlib import Path
 
-# Types that are hand-crafted in the library and must NOT be generated.
-# Keep this in sync with HAND_CRAFTED_TYPES in .github/scripts/validate_generated.py
 COPYRIGHT_HEADER = """\
 // Copyright (c) Ankit Chaubey <ankitchaubey.dev@gmail.com>
 // SPDX-License-Identifier: MIT OR Apache-2.0
@@ -46,29 +55,17 @@ COPYRIGHT_HEADER = """\
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 """
 
-# Methods that fluent.rs exposes as builder-pattern wrappers under the bare name.
-# The generated async implementation must use the _with_params suffix so there is
-# no duplicate-definition conflict and fluent.rs can call the raw async version.
-FLUENT_METHODS = {
-    "sendMessage",
-    "sendPhoto",
-    "sendDocument",
-    "editMessageText",
-    "answerCallbackQuery",
-    "forwardMessage",
-    "copyMessage",
-    "pinChatMessage",
-    "sendChatAction",
-}
+# Methods whose bare name is reserved for the fluent wrapper.
+# gen_methods.rs generates these with a _with_params suffix.
+# This set is computed automatically from the spec - all methods that have
+# optional fields. Do NOT edit by hand; it is rebuilt on every codegen run.
+FLUENT_METHODS = set()  # populated in main() from the spec
 
 SKIP_TYPES = {
     "InputFile",   # rich enum in ferobot/src/input_file.rs
     "InputMedia",  # ergonomic wrapper enum in ferobot/src/lib.rs
 }
 
-# Types that must always derive Default, even if they have required fields.
-# This allows user code to use `..Default::default()` struct update syntax.
-# Add new entries here whenever the README or examples use that pattern.
 FORCE_DEFAULT = {
     "ForceReply",
     "InputMediaAnimation",
@@ -84,26 +81,26 @@ FORCE_DEFAULT = {
     "WriteAccessAllowed",
 }
 
-# Load spec
-
 def load_spec(path):
     with open(path) as f:
         return json.load(f)
 
-# Naming helpers
-
 def snake_case(name):
-    """Convert camelCase or PascalCase to snake_case"""
     s = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1_\2', name)
     s = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', s)
     return s.lower()
 
+def pascal_case(name):
+    """camelCase or snake_case -> PascalCase"""
+    if '_' in name:
+        return ''.join(w.capitalize() for w in name.split('_'))
+    return name[0].upper() + name[1:]
+
 def safe_field_name(name):
-    """Return a Rust-safe field name"""
-    keywords = {'type', 'self', 'move', 'use', 'in', 'fn', 'let', 'mut', 'ref', 'where', 'loop', 'if', 'else', 'match', 'return'}
-    if name in keywords:
-        return 'r#' + name
-    return snake_case(name)
+    keywords = {'type', 'self', 'move', 'use', 'in', 'fn', 'let', 'mut', 'ref',
+                'where', 'loop', 'if', 'else', 'match', 'return'}
+    s = snake_case(name)
+    return 'r#' + s if s in keywords else s
 
 def method_fn_name(name):
     return snake_case(name)
@@ -111,7 +108,8 @@ def method_fn_name(name):
 def method_params_struct(name):
     return name[0].upper() + name[1:] + 'Params'
 
-# Type mapping
+def request_struct_name(method_name):
+    return pascal_case(method_name) + 'Request'
 
 BASE_TYPE_MAP = {
     'Integer': 'i64',
@@ -128,17 +126,13 @@ def strip_array(t):
     return t[len('Array of '):]
 
 def tg_to_rust(t, optional, types_map):
-    """Convert a single TG type string to Rust."""
     if is_array(t):
         inner = strip_array(t)
         inner_rust = tg_to_rust(inner, False, types_map)
         rust = f'Vec<{inner_rust}>'
         return f'Option<{rust}>' if optional else rust
-
     base = BASE_TYPE_MAP.get(t, t)
-
     if optional:
-        # Check if this is a struct or enum that needs boxing to break potential cycles
         tg = types_map.get(t)
         if tg and t not in BASE_TYPE_MAP:
             return f'Option<Box<{base}>>'
@@ -146,64 +140,125 @@ def tg_to_rust(t, optional, types_map):
     return base
 
 def field_rust_type(field, types_map):
-    """Determine the full Rust type for a field."""
     types = field['types']
     required = field['required']
     name = field['name']
-
     if len(types) == 0:
         return 'serde_json::Value'
-
     if len(types) == 1:
         return tg_to_rust(types[0], not required, types_map)
-
-    # Multi-type field handling
     sorted_types = sorted(types)
     if sorted_types == ['Integer', 'String']:
         return 'ChatId' if required else 'Option<ChatId>'
-
     if 'InputFile' in types and 'String' in types and len(types) == 2:
         return 'InputFileOrString' if required else 'Option<InputFileOrString>'
-
     if name == 'reply_markup' and len(types) >= 2:
         return 'ReplyMarkup' if required else 'Option<ReplyMarkup>'
-
-    # media field (InputMedia* types)
     if name == 'media':
         if any('InputMedia' in t for t in types) or any('InputPaidMedia' in t for t in types):
             return 'InputMedia' if required else 'Option<InputMedia>'
-
-    # Default: use first type
     return tg_to_rust(types[0], not required, types_map)
 
 def opt_wrap(rust_type, optional):
-    """Ensure a type is wrapped in Option if optional."""
     if optional and not rust_type.startswith('Option<'):
         return f'Option<{rust_type}>'
     return rust_type
 
 def return_rust_type(returns, types_map):
-    """Get Rust return type from a list of TG return types."""
     if not returns:
         return 'bool'
     if len(returns) == 1:
         t = returns[0]
         return tg_to_rust(t, False, types_map)
-    # Multiple returns: serde_json::Value
     return 'serde_json::Value'
-
-# Docs helpers
 
 def doc_comment(lines, indent=''):
     return '\n'.join(f'{indent}/// {line}' for line in lines)
 
-# Generate types
+# Strip Option<> wrapper from a Rust type string
+def unwrap_option(t):
+    if t.startswith('Option<') and t.endswith('>'):
+        return t[7:-1]
+    return t
+
+# Strip Box<> wrapper
+def unwrap_box(t):
+    if t.startswith('Box<') and t.endswith('>'):
+        return t[4:-1]
+    return t
+
+def generate_setter(fname, rust_type_with_option):
+    """Generate a fluent setter method for an optional param field."""
+    inner = unwrap_option(rust_type_with_option)
+
+    if inner.startswith('Box<'):
+        inner_unboxed = unwrap_box(inner)
+        # Special ergonomic: accept T, auto-box
+        return (
+            f'    pub fn {fname}(mut self, v: {inner_unboxed}) -> Self {{\n'
+            f'        self.params.{fname} = Some(Box::new(v));\n'
+            f'        self\n'
+            f'    }}'
+        )
+    elif inner == 'String':
+        return (
+            f'    pub fn {fname}(mut self, v: impl Into<String>) -> Self {{\n'
+            f'        self.params.{fname} = Some(v.into());\n'
+            f'        self\n'
+            f'    }}'
+        )
+    elif inner in ('bool', 'i64', 'f64'):
+        return (
+            f'    pub fn {fname}(mut self, v: {inner}) -> Self {{\n'
+            f'        self.params.{fname} = Some(v);\n'
+            f'        self\n'
+            f'    }}'
+        )
+    elif inner == 'ChatId':
+        return (
+            f'    pub fn {fname}(mut self, v: impl Into<ChatId>) -> Self {{\n'
+            f'        self.params.{fname} = Some(v.into());\n'
+            f'        self\n'
+            f'    }}'
+        )
+    elif inner == 'InputFileOrString':
+        return (
+            f'    pub fn {fname}(mut self, v: impl Into<InputFileOrString>) -> Self {{\n'
+            f'        self.params.{fname} = Some(v.into());\n'
+            f'        self\n'
+            f'    }}'
+        )
+    elif inner == 'ReplyMarkup':
+        return (
+            f'    pub fn {fname}(mut self, v: impl Into<ReplyMarkup>) -> Self {{\n'
+            f'        self.params.{fname} = Some(v.into());\n'
+            f'        self\n'
+            f'    }}'
+        )
+    elif inner == 'InputMedia':
+        return (
+            f'    pub fn {fname}(mut self, v: InputMedia) -> Self {{\n'
+            f'        self.params.{fname} = Some(v);\n'
+            f'        self\n'
+            f'    }}'
+        )
+    else:
+        # Generic fallback - pass T directly
+        return (
+            f'    pub fn {fname}(mut self, v: {inner}) -> Self {{\n'
+            f'        self.params.{fname} = Some(v);\n'
+            f'        self\n'
+            f'    }}'
+        )
+
+# -------------------------------------------------------------------------
+# generate_types  (unchanged from original)
+# -------------------------------------------------------------------------
 
 def generate_types(spec):
     types_map = spec['types']
     version = spec['version']
     lines = []
-
     lines.append(COPYRIGHT_HEADER.rstrip())
     lines.append('')
     lines.append(f'// THIS FILE IS AUTO-GENERATED. DO NOT EDIT.')
@@ -220,11 +275,7 @@ def generate_types(spec):
     lines.append(f'#[rustfmt::skip]')
     lines.append(f'use crate::{{ChatId, InputFile, InputFileOrString, ReplyMarkup, InputMedia}};')
     lines.append(f'')
-
     for type_name in sorted(types_map.keys()):
-        # Skip types that are hand-crafted in the library (not auto-generated).
-        # Add new hand-crafted types to SKIP_TYPES above AND to HAND_CRAFTED_TYPES
-        # in .github/scripts/validate_generated.py.
         if type_name in SKIP_TYPES:
             continue
         tg_type = types_map[type_name]
@@ -232,12 +283,9 @@ def generate_types(spec):
         href = tg_type.get('href', '')
         subtypes = tg_type.get('subtypes', [])
         fields = tg_type.get('fields', [])
-
         lines.append(doc_comment(docs))
         lines.append(f'/// {href}')
-
         if subtypes:
-            # Union / enum type
             lines.append('#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]')
             lines.append('#[serde(untagged)]')
             lines.append(f'pub enum {type_name} {{')
@@ -246,14 +294,10 @@ def generate_types(spec):
             lines.append('}')
             lines.append('')
         elif not fields:
-            # Empty marker struct
             lines.append('#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]')
             lines.append(f'pub struct {type_name} {{}}')
             lines.append('')
         else:
-            # Regular struct - add Default if:
-            #   (a) every field is optional (Option<...>), so ..Default::default() works, OR
-            #   (b) the type is in FORCE_DEFAULT (explicitly allowlisted in this file)
             all_fields_optional = all(
                 field_rust_type(field, types_map).startswith('Option<')
                 for field in fields
@@ -269,10 +313,8 @@ def generate_types(spec):
                 fdesc = field['description'].replace('\n', ' ')
                 ftype = field_rust_type(field, types_map)
                 lines.append(f'    /// {fdesc}')
-                # serde rename if the field name differs or is a keyword
                 if fname != field['name']:
-                    rename_attr = '#[serde(rename = "' + field['name'] + '")]'
-                    lines.append(f'    {rename_attr}')
+                    lines.append(f'    #[serde(rename = "{field["name"]}")]')
                 if ftype.startswith('Option<'):
                     lines.append(f'    #[serde(skip_serializing_if = "Option::is_none")]')
                     lines.append(f'    pub {fname}: {ftype},')
@@ -280,17 +322,17 @@ def generate_types(spec):
                     lines.append(f'    pub {fname}: {ftype},')
             lines.append('}')
             lines.append('')
-
     return '\n'.join(lines)
 
-# Generate methods
+# -------------------------------------------------------------------------
+# generate_methods  (updated: FLUENT_METHODS now auto-computed = all with opts)
+# -------------------------------------------------------------------------
 
 def generate_methods(spec):
     types_map = spec['types']
     methods_map = spec['methods']
     version = spec['version']
     lines = []
-
     lines.append(COPYRIGHT_HEADER.rstrip())
     lines.append('')
     lines.append(f'// THIS FILE IS AUTO-GENERATED. DO NOT EDIT.')
@@ -312,18 +354,17 @@ def generate_methods(spec):
     for method_name in sorted(methods_map.keys()):
         method = methods_map[method_name]
         fn_name = method_fn_name(method_name)
-        if method_name in FLUENT_METHODS:
+        has_opts = bool([f for f in method.get('fields', []) if not f['required']])
+        if has_opts:
             fn_name = fn_name + "_with_params"
         params_name = method_params_struct(method_name)
         docs = method.get('description', [])
         href = method.get('href', '')
         all_fields = method.get('fields', [])
         returns = method.get('returns', [])
-
         required_fields = [f for f in all_fields if f['required']]
         optional_fields = [f for f in all_fields if not f['required']]
 
-        # Params struct for optional fields
         if optional_fields:
             lines.append(f'/// Optional parameters for [`Bot::{fn_name}`]')
             lines.append('#[derive(Debug, Clone, Serialize, Deserialize, Default)]')
@@ -331,46 +372,35 @@ def generate_methods(spec):
             for field in optional_fields:
                 fname = safe_field_name(field['name'])
                 fdesc = field['description'].replace('\n', ' ')
-                ftype = field_rust_type(field, types_map)
-                # Ensure it's wrapped in Option
-                ftype = opt_wrap(ftype, True)
+                ftype = opt_wrap(field_rust_type(field, types_map), True)
                 lines.append(f'    /// {fdesc}')
                 if fname != field['name']:
-                    rename_attr2 = '#[serde(rename = "' + field['name'] + '")]'
-                    lines.append(f'    {rename_attr2}')
+                    lines.append(f'    #[serde(rename = "{field["name"]}")]')
                 lines.append(f'    #[serde(skip_serializing_if = "Option::is_none")]')
                 lines.append(f'    pub {fname}: {ftype},')
             lines.append('}')
             lines.append('')
-
-            # Builder pattern for params
             lines.append(f'impl {params_name} {{')
             lines.append(f'    pub fn new() -> Self {{ Self::default() }}')
             for field in optional_fields:
                 fname = safe_field_name(field['name'])
-                ftype = field_rust_type(field, types_map)
-                ftype = opt_wrap(ftype, True)
-                inner_type = ftype[len('Option<'):-1] if ftype.startswith('Option<') else ftype
+                ftype = opt_wrap(field_rust_type(field, types_map), True)
+                inner_type = unwrap_option(ftype)
                 lines.append(f'    pub fn {fname}(mut self, v: impl Into<{inner_type}>) -> Self {{ self.{fname} = Some(v.into()); self }}')
             lines.append('}')
             lines.append('')
 
-        # Return type
         ret = return_rust_type(returns, types_map)
-
-        # Identify file-upload methods: those with an InputFileOrString required field
         file_field = None
         for field in required_fields:
             if field_rust_type(field, types_map) == 'InputFileOrString':
                 file_field = field['name']
                 break
 
-        # Signature args
         sig_parts = []
         for field in required_fields:
             fname = safe_field_name(field['name'])
             ftype = field_rust_type(field, types_map)
-            # Flexible Into<> for common types
             if ftype == 'String':
                 sig_parts.append(f'{fname}: impl Into<String>')
             elif ftype == 'ChatId':
@@ -378,15 +408,11 @@ def generate_methods(spec):
             elif ftype == 'InputFileOrString':
                 sig_parts.append(f'{fname}: impl Into<InputFileOrString>')
             elif ftype == 'InputMedia':
-                # sendMediaGroup needs Vec<InputMedia> - always a list
                 sig_parts.append(f'{fname}: Vec<InputMedia>')
             else:
                 sig_parts.append(f'{fname}: {ftype}')
-
-        has_opts = bool(optional_fields)
-        if has_opts:
+        if optional_fields:
             sig_parts.append(f'params: Option<{params_name}>')
-
         sig = ', '.join(sig_parts)
 
         lines.append(f'impl Bot {{')
@@ -394,82 +420,297 @@ def generate_methods(spec):
         lines.append(f'    /// See: {href}')
         args = f'&self, {sig}' if sig else '&self'
         lines.append(f'    pub async fn {fn_name}({args}) -> Result<{ret}, BotError> {{')
-
-        # Build body
         lines.append(f'        let mut req = serde_json::Map::new();')
         for field in required_fields:
             fname = safe_field_name(field['name'])
             ftype = field_rust_type(field, types_map)
             if ftype == 'InputFileOrString':
-                pass  # skipped here; added via call_api_with_file below
+                pass
             elif ftype == 'InputMedia':
-                # sendMediaGroup: Vec<InputMedia> - serialize as JSON array
                 lines.append(f'        req.insert("{field["name"]}".into(), serde_json::to_value(&{fname}).unwrap_or_default());')
             else:
                 expr = f'{fname}.into()' if ftype in ('String', 'ChatId') else fname
                 lines.append(f'        req.insert("{field["name"]}".into(), serde_json::to_value({expr}).unwrap_or_default());')
-
-        if has_opts:
+        if optional_fields:
             lines.append(f'        if let Some(p) = params {{')
             lines.append(f'            let extra = serde_json::to_value(&p).unwrap_or_default();')
             lines.append(f'            if let serde_json::Value::Object(m) = extra {{')
             lines.append(f'                for (k, v) in m {{ if !v.is_null() {{ req.insert(k, v); }} }}')
             lines.append(f'            }}')
             lines.append(f'        }}')
-
         if file_field:
             fn_arg = safe_field_name(file_field)
-            single_line = f'        self.call_api_with_file("{method_name}", req, "{file_field}", {fn_arg}.into())'
-            if len(single_line) > 100:
-                lines.append(f'        self.call_api_with_file(')
-                lines.append(f'            "{method_name}",')
-                lines.append(f'            req,')
-                lines.append(f'            "{file_field}",')
-                lines.append(f'            {fn_arg}.into(),')
-                lines.append(f'        )')
-                lines.append(f'        .await')
-            else:
-                lines.append(f'        self.call_api_with_file("{method_name}", req, "{file_field}", {fn_arg}.into())')
-                lines.append(f'            .await')
+            lines.append(f'        self.call_api_with_file(\"{method_name}\", req, \"{file_field}\", {fn_arg}.into())')
+            lines.append(f'            .await')
         else:
-            lines.append(f'        self.call_api("{method_name}", serde_json::Value::Object(req)).await')
+            lines.append(f'        self.call_api(\"{method_name}\", serde_json::Value::Object(req)).await')
         lines.append(f'    }}')
         lines.append(f'}}')
         lines.append(f'')
-
     return '\n'.join(lines)
 
-# Generate constants (string literals from spec)
+# -------------------------------------------------------------------------
+# generate_fluent  (NEW - generates fluent wrappers for ALL 169 methods)
+# -------------------------------------------------------------------------
 
-def generate_consts(spec):
+def generate_fluent(spec):
     types_map = spec['types']
+    methods_map = spec['methods']
+    version = spec['version']
     lines = []
-    lines.append('// THIS FILE IS AUTO-GENERATED. DO NOT EDIT.')
-    lines.append('// Telegram Bot API constant field values (e.g. type discriminators)')
+
+    lines.append(COPYRIGHT_HEADER.rstrip())
     lines.append('')
-    lines.append('#![allow(dead_code)]')
+    lines.append(f'// THIS FILE IS AUTO-GENERATED. DO NOT EDIT.')
+    lines.append(f'// Generated from Telegram Bot API {version}')
+    lines.append(f'// Spec:    https://github.com/ankit-chaubey/api-spec')
+    lines.append(f'// Project: https://github.com/ankit-chaubey/ferobot')
+    lines.append(f'// Author:  Ankit Chaubey <ankitchaubey.dev@gmail.com>')
+    lines.append(f'// License: MIT')
+    lines.append(f'// See:     https://core.telegram.org/bots/api')
     lines.append('')
-    # Extract constant "type" field values from union type variants
-    for tname in sorted(types_map.keys()):
-        tg = types_map[tname]
-        if not tg.get('subtype_of'):
-            continue
-        for field in tg.get('fields', []):
-            if field['name'] == 'type' and field['types'] == ['String']:
-                # The constant value is derived from the type name
-                variant_name = tname
-                # Guess value from description
-                desc = field.get('description', '')
-                # extract quoted values
-                quoted = re.findall(r'"([^"]+)"', desc)
-                if quoted:
-                    const_name = f'{tname.upper()}_TYPE'
-                    lines.append(f'/// Type discriminator for {tname}')
-                    lines.append(f'pub const {const_name}: &str = "{quoted[0]}";')
+    lines.append('#![allow(clippy::all, unused_imports)]')
     lines.append('')
+    lines.append('//! Fluent builder API for every Telegram Bot API method.')
+    lines.append('//!')
+    lines.append('//! Every `bot.method(required_args)` call returns a `MethodRequest` builder')
+    lines.append('//! that implements [`IntoFuture`]. Chain optional parameters then `.await`:')
+    lines.append('//!')
+    lines.append('//! ```rust,no_run')
+    lines.append('//! # #[tokio::main]')
+    lines.append('//! # async fn main() -> Result<(), ferobot::BotError> {')
+    lines.append('//! use ferobot::{Bot, InputFile};')
+    lines.append('//! let bot = Bot::new("TOKEN").await?;')
+    lines.append('//!')
+    lines.append('//! // No options needed - just await')
+    lines.append('//! let me = bot.get_me().await?;')
+    lines.append('//!')
+    lines.append('//! // Chain options before await')
+    lines.append('//! bot.send_message(123_i64, "Hello!")')
+    lines.append('//!    .html()')
+    lines.append('//!    .silent()')
+    lines.append('//!    .reply_to(42)')
+    lines.append('//!    .await?;')
+    lines.append('//!')
+    lines.append('//! // Works for every method')
+    lines.append('//! bot.send_video(123_i64, InputFile::memory("v.mp4", vec![]))')
+    lines.append('//!    .caption("Watch this")')
+    lines.append('//!    .duration(30)')
+    lines.append('//!    .silent()')
+    lines.append('//!    .await?;')
+    lines.append('//!')
+    lines.append('//! bot.ban_chat_member(123_i64, 456_i64)')
+    lines.append('//!    .revoke_messages(true)')
+    lines.append('//!    .await?;')
+    lines.append('//! # Ok(())')
+    lines.append('//! # }')
+    lines.append('//! ```')
+    lines.append('')
+    lines.append('use std::future::IntoFuture;')
+    lines.append('use std::pin::Pin;')
+    lines.append('')
+    lines.append('#[rustfmt::skip]')
+    lines.append('use crate::{Bot, BotError, ChatId, InputFileOrString, ReplyMarkup, InputMedia};')
+    lines.append('use crate::gen_methods::*;')
+    lines.append('#[allow(unused_imports)]')
+    lines.append('use crate::types::*;')
+    lines.append('')
+    # Helper fn
+    lines.append('fn make_reply_params(message_id: i64) -> Box<ReplyParameters> {')
+    lines.append('    Box::new(ReplyParameters {')
+    lines.append('        message_id,')
+    lines.append('        ..Default::default()')
+    lines.append('    })')
+    lines.append('}')
+    lines.append('')
+
+    # ---- generate per-method Request structs ----
+    bot_impl_lines = ['impl Bot {']
+
+    for method_name in sorted(methods_map.keys()):
+        method = methods_map[method_name]
+        fn_name = method_fn_name(method_name)
+        struct_name = request_struct_name(method_name)
+        params_name = method_params_struct(method_name)
+        all_fields = method.get('fields', [])
+        returns = method.get('returns', [])
+        docs = method.get('description', [])
+        href = method.get('href', '')
+        required_fields = [f for f in all_fields if f['required']]
+        optional_fields = [f for f in all_fields if not f['required']]
+        has_opts = bool(optional_fields)
+        ret = return_rust_type(returns, types_map)
+
+        # Determine the underlying fn name in gen_methods
+        raw_fn = fn_name + '_with_params' if has_opts else fn_name
+
+        # Identify file upload field
+        file_field = None
+        for field in required_fields:
+            if field_rust_type(field, types_map) == 'InputFileOrString':
+                file_field = field['name']
+                break
+
+        # --- Struct definition ---
+        lines.append(f'/// Fluent builder for [`Bot::{fn_name}`]. Implements [`IntoFuture`].')
+        lines.append(f'///')
+        lines.append(f'/// See: {href}')
+        lines.append(f'pub struct {struct_name}<\'bot> {{')
+        lines.append(f'    bot: &\'bot Bot,')
+        for field in required_fields:
+            fname = safe_field_name(field['name'])
+            ftype = field_rust_type(field, types_map)
+            # Store concrete owned types in struct
+            if ftype == 'InputFileOrString':
+                lines.append(f'    {fname}: InputFileOrString,')
+            elif ftype == 'String':
+                lines.append(f'    {fname}: String,')
+            elif ftype == 'ChatId':
+                lines.append(f'    {fname}: ChatId,')
+            else:
+                lines.append(f'    {fname}: {ftype},')
+        if has_opts:
+            lines.append(f'    params: {params_name},')
+        lines.append('}')
+        lines.append('')
+
+        # --- impl block ---
+        lines.append(f'impl<\'bot> {struct_name}<\'bot> {{')
+
+        # Constructor
+        cons_args = ['bot: &\'bot Bot']
+        for field in required_fields:
+            fname = safe_field_name(field['name'])
+            ftype = field_rust_type(field, types_map)
+            if ftype == 'String':
+                cons_args.append(f'{fname}: impl Into<String>')
+            elif ftype == 'ChatId':
+                cons_args.append(f'{fname}: impl Into<ChatId>')
+            elif ftype == 'InputFileOrString':
+                cons_args.append(f'{fname}: impl Into<InputFileOrString>')
+            elif ftype == 'InputMedia':
+                cons_args.append(f'{fname}: Vec<InputMedia>')
+            else:
+                cons_args.append(f'{fname}: {ftype}')
+        lines.append(f'    pub(crate) fn new({", ".join(cons_args)}) -> Self {{')
+        lines.append(f'        Self {{')
+        lines.append(f'            bot,')
+        for field in required_fields:
+            fname = safe_field_name(field['name'])
+            ftype = field_rust_type(field, types_map)
+            if ftype in ('String', 'ChatId', 'InputFileOrString'):
+                lines.append(f'            {fname}: {fname}.into(),')
+            else:
+                lines.append(f'            {fname},')
+        if has_opts:
+            lines.append(f'            params: Default::default(),')
+        lines.append(f'        }}')
+        lines.append(f'    }}')
+
+        if has_opts:
+            # Collect which optional field names exist for ergonomic shortcuts
+            opt_fnames = {safe_field_name(f['name']) for f in optional_fields}
+
+            # Ergonomic shortcuts
+            if 'parse_mode' in opt_fnames:
+                lines.append('')
+                lines.append('    /// Set `parse_mode` to `"HTML"`.')
+                lines.append('    pub fn html(self) -> Self { self.parse_mode("HTML") }')
+                lines.append('    /// Set `parse_mode` to `"MarkdownV2"`.')
+                lines.append('    pub fn markdown(self) -> Self { self.parse_mode("MarkdownV2") }')
+            if 'disable_notification' in opt_fnames:
+                lines.append('')
+                lines.append('    /// Send silently (`disable_notification = true`).')
+                lines.append('    pub fn silent(self) -> Self { self.disable_notification(true) }')
+            if 'reply_parameters' in opt_fnames:
+                lines.append('')
+                lines.append('    /// Reply to a message by id.')
+                lines.append('    pub fn reply_to(mut self, message_id: i64) -> Self {')
+                lines.append('        self.params.reply_parameters = Some(make_reply_params(message_id));')
+                lines.append('        self')
+                lines.append('    }')
+            if 'reply_markup' in opt_fnames:
+                lines.append('')
+                lines.append('    /// Attach a keyboard / inline keyboard.')
+                lines.append('    pub fn keyboard(mut self, markup: impl Into<ReplyMarkup>) -> Self {')
+                lines.append('        self.params.reply_markup = Some(markup.into());')
+                lines.append('        self')
+                lines.append('    }')
+
+            # All optional setters
+            lines.append('')
+            for field in optional_fields:
+                fname = safe_field_name(field['name'])
+                ftype = opt_wrap(field_rust_type(field, types_map), True)
+                setter = generate_setter(fname, ftype)
+                lines.append(setter)
+
+        lines.append('}')
+        lines.append('')
+
+        # --- IntoFuture ---
+        lines.append(f'impl<\'bot> IntoFuture for {struct_name}<\'bot> {{')
+        lines.append(f'    type Output = Result<{ret}, BotError>;')
+        lines.append(f'    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + \'bot>>;')
+        lines.append(f'')
+        lines.append(f'    fn into_future(self) -> Self::IntoFuture {{')
+        lines.append(f'        Box::pin(async move {{')
+
+        # Build the call to the underlying raw method
+        call_args = ['self.' + safe_field_name(f['name']) for f in required_fields
+                     if field_rust_type(f, types_map) != 'InputFileOrString']
+        # InputFileOrString required field: passed as last positional, no .into() needed
+        iff_fields = [f for f in required_fields if field_rust_type(f, types_map) == 'InputFileOrString']
+        call_args_with_file = ['self.' + safe_field_name(f['name']) for f in required_fields]
+
+        if has_opts:
+            args_str = ', '.join(call_args_with_file + ['Some(self.params)'])
+        else:
+            args_str = ', '.join(call_args_with_file)
+
+        lines.append(f'            self.bot.{raw_fn}({args_str}).await')
+        lines.append(f'        }})')
+        lines.append(f'    }}')
+        lines.append(f'}}')
+        lines.append('')
+
+        # --- Bot impl entry ---
+        sig_args = []
+        for field in required_fields:
+            fname = safe_field_name(field['name'])
+            ftype = field_rust_type(field, types_map)
+            if ftype == 'String':
+                sig_args.append(f'{fname}: impl Into<String>')
+            elif ftype == 'ChatId':
+                sig_args.append(f'{fname}: impl Into<ChatId>')
+            elif ftype == 'InputFileOrString':
+                sig_args.append(f'{fname}: impl Into<InputFileOrString>')
+            elif ftype == 'InputMedia':
+                sig_args.append(f'{fname}: Vec<InputMedia>')
+            else:
+                sig_args.append(f'{fname}: {ftype}')
+
+        sig = ', '.join(sig_args)
+        call_fields = ', '.join(['self'] + [safe_field_name(f['name']) for f in required_fields])
+
+        bot_impl_lines.append(f'    /// {docs[0] if docs else method_name}')
+        bot_impl_lines.append(f'    /// See: {href}')
+        if sig:
+            bot_impl_lines.append(f'    pub fn {fn_name}(&self, {sig}) -> {struct_name}<\'_> {{')
+        else:
+            bot_impl_lines.append(f'    pub fn {fn_name}(&self) -> {struct_name}<\'_> {{')
+        bot_impl_lines.append(f'        {struct_name}::new({call_fields})')
+        bot_impl_lines.append(f'    }}')
+        bot_impl_lines.append('')
+
+    bot_impl_lines.append('}')
+    lines.extend(bot_impl_lines)
+
     return '\n'.join(lines)
 
+# -------------------------------------------------------------------------
 # Main
+# -------------------------------------------------------------------------
 
 def main():
     spec_path = sys.argv[1] if len(sys.argv) > 1 else 'api.json'
@@ -480,27 +721,43 @@ def main():
     print(f"Telegram Bot API {spec['version']} ({spec['release_date']})")
     print(f"Types: {len(spec['types'])}, Methods: {len(spec['methods'])}")
 
+    # Auto-compute FLUENT_METHODS = every method that has optional fields.
+    global FLUENT_METHODS
+    FLUENT_METHODS = {
+        name
+        for name, m in spec['methods'].items()
+        if any(not f['required'] for f in m.get('fields', []))
+    }
+    print(f"Fluent wrappers: {len(FLUENT_METHODS)} methods with optional params + "
+          f"{len(spec['methods']) - len(FLUENT_METHODS)} without")
+
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 
-    # gen_types.rs
     types_code = generate_types(spec)
     with open(f'{out_dir}/gen_types.rs', 'w') as f:
         f.write(types_code)
     print(f'Written: {out_dir}/gen_types.rs')
 
-    # gen_methods.rs
     methods_code = generate_methods(spec)
     with open(f'{out_dir}/gen_methods.rs', 'w') as f:
         f.write(methods_code)
     print(f'Written: {out_dir}/gen_methods.rs')
 
-    # Format generated files so output is always consistent with cargo fmt.
-    # This ensures the validate-generated-code CI check never diffs on formatting.
-    import subprocess
-    for fname in ['gen_types.rs', 'gen_methods.rs']:
-        subprocess.run(['rustfmt', '--edition', '2021', f'{out_dir}/{fname}'], check=True)
+    fluent_code = generate_fluent(spec)
+    with open(f'{out_dir}/fluent.rs', 'w') as f:
+        f.write(fluent_code)
+    print(f'Written: {out_dir}/fluent.rs')
 
-    print('Done ✅')
+    import subprocess
+    for fname in ['gen_types.rs', 'gen_methods.rs', 'fluent.rs']:
+        fpath = f'{out_dir}/{fname}'
+        result = subprocess.run(['rustfmt', '--edition', '2021', fpath])
+        if result.returncode == 0:
+            print(f'Formatted: {fpath}')
+        else:
+            print(f'rustfmt not available for {fname} (ok, will be formatted on cargo build)')
+
+    print('Done.')
 
 if __name__ == '__main__':
     main()

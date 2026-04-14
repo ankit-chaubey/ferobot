@@ -96,7 +96,7 @@ impl AnswerCallbackQueryParams {
 impl Bot {
     /// Use this method to send answers to callback queries sent from inline keyboards. The answer will be displayed to the user as a notification at the top of the chat screen or as an alert. On success, True is returned.
     /// See: https://core.telegram.org/bots/api#answercallbackquery
-    pub async fn answer_callback_query_with_params(
+    pub async fn answer_callback_query(
         &self,
         callback_query_id: impl Into<String>,
         params: Option<AnswerCallbackQueryParams>,
@@ -121,7 +121,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::answer_inline_query`]
+/// Optional parameters for [`Bot::answer_inline_query_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AnswerInlineQueryParams {
     /// The maximum amount of time in seconds that the result of the inline query may be cached on the server. Defaults to 300.
@@ -194,7 +194,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::answer_pre_checkout_query`]
+/// Optional parameters for [`Bot::answer_pre_checkout_query_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AnswerPreCheckoutQueryParams {
     /// Required if ok is False. Error message in human readable form that explains the reason for failure to proceed with the checkout (e.g. "Sorry, somebody just bought the last of our amazing black T-shirts while you were busy filling out your payment details. Please choose a different color or garment!"). Telegram will display this message to the user.
@@ -242,7 +242,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::answer_shipping_query`]
+/// Optional parameters for [`Bot::answer_shipping_query_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AnswerShippingQueryParams {
     /// Required if ok is True. A JSON-serialized array of available shipping options.
@@ -341,7 +341,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::approve_suggested_post`]
+/// Optional parameters for [`Bot::approve_suggested_post_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ApproveSuggestedPostParams {
     /// Point in time (Unix timestamp) when the post is expected to be published; omit if the date has already been specified when the suggested post was created. If specified, then the date must be not more than 2678400 seconds (30 days) in the future
@@ -392,7 +392,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::ban_chat_member`]
+/// Optional parameters for [`Bot::ban_chat_member_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct BanChatMemberParams {
     /// Date when the user will be unbanned; Unix time. If user is banned for more than 366 days or less than 30 seconds from the current time they are considered to be banned forever. Applied for supergroups and channels only.
@@ -654,7 +654,7 @@ impl CopyMessageParams {
 impl Bot {
     /// Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success.
     /// See: https://core.telegram.org/bots/api#copymessage
-    pub async fn copy_message_with_params(
+    pub async fn copy_message(
         &self,
         chat_id: impl Into<ChatId>,
         from_chat_id: impl Into<ChatId>,
@@ -689,7 +689,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::copy_messages`]
+/// Optional parameters for [`Bot::copy_messages_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CopyMessagesParams {
     /// Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only
@@ -773,7 +773,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::create_chat_invite_link`]
+/// Optional parameters for [`Bot::create_chat_invite_link_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CreateChatInviteLinkParams {
     /// Invite link name; 0-32 characters
@@ -840,7 +840,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::create_chat_subscription_invite_link`]
+/// Optional parameters for [`Bot::create_chat_subscription_invite_link_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CreateChatSubscriptionInviteLinkParams {
     /// Invite link name; 0-32 characters
@@ -899,7 +899,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::create_forum_topic`]
+/// Optional parameters for [`Bot::create_forum_topic_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CreateForumTopicParams {
     /// Color of the topic icon in RGB format. Currently, must be one of 7322096 (0x6FB9F0), 16766590 (0xFFD67E), 13338331 (0xCB86DB), 9367192 (0x8EEE98), 16749490 (0xFF93B2), or 16478047 (0xFB6F5F)
@@ -957,7 +957,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::create_invoice_link`]
+/// Optional parameters for [`Bot::create_invoice_link_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CreateInvoiceLinkParams {
     /// Unique identifier of the business connection on behalf of which the link will be created. For payments in Telegram Stars only.
@@ -1135,7 +1135,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::create_new_sticker_set`]
+/// Optional parameters for [`Bot::create_new_sticker_set_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CreateNewStickerSetParams {
     /// Type of stickers in the set, pass "regular", "mask", or "custom_emoji". By default, a regular sticker set is created.
@@ -1225,7 +1225,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::decline_suggested_post`]
+/// Optional parameters for [`Bot::decline_suggested_post_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct DeclineSuggestedPostParams {
     /// Comment for the creator of the suggested post; 0-128 characters
@@ -1405,7 +1405,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::delete_my_commands`]
+/// Optional parameters for [`Bot::delete_my_commands_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct DeleteMyCommandsParams {
     /// A JSON-serialized object, describing scope of users for which the commands are relevant. Defaults to BotCommandScopeDefault.
@@ -1506,7 +1506,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::delete_webhook`]
+/// Optional parameters for [`Bot::delete_webhook_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct DeleteWebhookParams {
     /// Pass True to drop all pending updates
@@ -1547,7 +1547,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::edit_chat_invite_link`]
+/// Optional parameters for [`Bot::edit_chat_invite_link_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct EditChatInviteLinkParams {
     /// Invite link name; 0-32 characters
@@ -1619,7 +1619,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::edit_chat_subscription_invite_link`]
+/// Optional parameters for [`Bot::edit_chat_subscription_invite_link_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct EditChatSubscriptionInviteLinkParams {
     /// Invite link name; 0-32 characters
@@ -1673,7 +1673,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::edit_forum_topic`]
+/// Optional parameters for [`Bot::edit_forum_topic_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct EditForumTopicParams {
     /// New topic name, 0-128 characters. If not specified or empty, the current name of the topic will be kept
@@ -1753,7 +1753,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::edit_message_caption`]
+/// Optional parameters for [`Bot::edit_message_caption_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct EditMessageCaptionParams {
     /// Unique identifier of the business connection on behalf of which the message to be edited was sent
@@ -1850,7 +1850,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::edit_message_checklist`]
+/// Optional parameters for [`Bot::edit_message_checklist_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct EditMessageChecklistParams {
     /// A JSON-serialized object for the new inline keyboard for the message
@@ -1911,7 +1911,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::edit_message_live_location`]
+/// Optional parameters for [`Bot::edit_message_live_location_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct EditMessageLiveLocationParams {
     /// Unique identifier of the business connection on behalf of which the message to be edited was sent
@@ -2018,7 +2018,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::edit_message_media`]
+/// Optional parameters for [`Bot::edit_message_media_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct EditMessageMediaParams {
     /// Unique identifier of the business connection on behalf of which the message to be edited was sent
@@ -2092,7 +2092,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::edit_message_reply_markup`]
+/// Optional parameters for [`Bot::edit_message_reply_markup_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct EditMessageReplyMarkupParams {
     /// Unique identifier of the business connection on behalf of which the message to be edited was sent
@@ -2231,7 +2231,7 @@ impl EditMessageTextParams {
 impl Bot {
     /// Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
     /// See: https://core.telegram.org/bots/api#editmessagetext
-    pub async fn edit_message_text_with_params(
+    pub async fn edit_message_text(
         &self,
         text: impl Into<String>,
         params: Option<EditMessageTextParams>,
@@ -2256,7 +2256,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::edit_story`]
+/// Optional parameters for [`Bot::edit_story_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct EditStoryParams {
     /// Caption of the story, 0-2048 characters after entities parsing
@@ -2440,7 +2440,7 @@ impl ForwardMessageParams {
 impl Bot {
     /// Use this method to forward messages of any kind. Service messages and messages with protected content can't be forwarded. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#forwardmessage
-    pub async fn forward_message_with_params(
+    pub async fn forward_message(
         &self,
         chat_id: impl Into<ChatId>,
         from_chat_id: impl Into<ChatId>,
@@ -2475,7 +2475,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::forward_messages`]
+/// Optional parameters for [`Bot::forward_messages_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ForwardMessagesParams {
     /// Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only
@@ -2562,7 +2562,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::get_business_account_gifts`]
+/// Optional parameters for [`Bot::get_business_account_gifts_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetBusinessAccountGiftsParams {
     /// Pass True to exclude gifts that aren't saved to the account's profile page
@@ -2739,7 +2739,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::get_chat_gifts`]
+/// Optional parameters for [`Bot::get_chat_gifts_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetChatGiftsParams {
     /// Pass True to exclude gifts that aren't saved to the chat's profile page. Always True, unless the bot has the can_post_messages administrator right in the channel.
@@ -2884,7 +2884,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::get_chat_menu_button`]
+/// Optional parameters for [`Bot::get_chat_menu_button_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetChatMenuButtonParams {
     /// Unique identifier for the target private chat. If not specified, default bot's menu button will be returned
@@ -2967,7 +2967,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::get_game_high_scores`]
+/// Optional parameters for [`Bot::get_game_high_scores_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetGameHighScoresParams {
     /// Required if inline_message_id is not specified. Unique identifier for the target chat
@@ -3050,7 +3050,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::get_my_commands`]
+/// Optional parameters for [`Bot::get_my_commands_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetMyCommandsParams {
     /// A JSON-serialized object, describing scope of users. Defaults to BotCommandScopeDefault.
@@ -3098,7 +3098,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::get_my_default_administrator_rights`]
+/// Optional parameters for [`Bot::get_my_default_administrator_rights_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetMyDefaultAdministratorRightsParams {
     /// Pass True to get default administrator rights of the bot in channels. Otherwise, default administrator rights of the bot for groups and supergroups will be returned.
@@ -3142,7 +3142,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::get_my_description`]
+/// Optional parameters for [`Bot::get_my_description_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetMyDescriptionParams {
     /// A two-letter ISO 639-1 language code or an empty string
@@ -3183,7 +3183,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::get_my_name`]
+/// Optional parameters for [`Bot::get_my_name_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetMyNameParams {
     /// A two-letter ISO 639-1 language code or an empty string
@@ -3221,7 +3221,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::get_my_short_description`]
+/// Optional parameters for [`Bot::get_my_short_description_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetMyShortDescriptionParams {
     /// A two-letter ISO 639-1 language code or an empty string
@@ -3272,7 +3272,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::get_star_transactions`]
+/// Optional parameters for [`Bot::get_star_transactions_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetStarTransactionsParams {
     /// Number of transactions to skip in the response
@@ -3334,7 +3334,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::get_updates`]
+/// Optional parameters for [`Bot::get_updates_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetUpdatesParams {
     /// Identifier of the first update to be returned. Must be greater by one than the highest among the identifiers of previously received updates. By default, updates starting with the earliest unconfirmed update are returned. An update is considered confirmed as soon as getUpdates is called with an offset higher than its update_id. The negative offset can be specified to retrieve updates starting from -offset update from the end of the updates queue. All previous updates will be forgotten.
@@ -3418,7 +3418,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::get_user_gifts`]
+/// Optional parameters for [`Bot::get_user_gifts_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetUserGiftsParams {
     /// Pass True to exclude gifts that can be purchased an unlimited number of times
@@ -3513,7 +3513,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::get_user_profile_audios`]
+/// Optional parameters for [`Bot::get_user_profile_audios_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetUserProfileAudiosParams {
     /// Sequential number of the first audio to be returned. By default, all audios are returned.
@@ -3566,7 +3566,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::get_user_profile_photos`]
+/// Optional parameters for [`Bot::get_user_profile_photos_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetUserProfilePhotosParams {
     /// Sequential number of the first photo to be returned. By default, all photos are returned.
@@ -3629,7 +3629,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::gift_premium_subscription`]
+/// Optional parameters for [`Bot::gift_premium_subscription_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GiftPremiumSubscriptionParams {
     /// Text that will be shown along with the service message about the subscription; 0-128 characters
@@ -3768,7 +3768,7 @@ impl PinChatMessageParams {
 impl Bot {
     /// Use this method to add a message to the list of pinned messages in a chat. In private chats and channel direct messages chats, all non-service messages can be pinned. Conversely, the bot must be an administrator with the 'can_pin_messages' right or the 'can_edit_messages' right to pin messages in groups and channels respectively. Returns True on success.
     /// See: https://core.telegram.org/bots/api#pinchatmessage
-    pub async fn pin_chat_message_with_params(
+    pub async fn pin_chat_message(
         &self,
         chat_id: impl Into<ChatId>,
         message_id: i64,
@@ -3798,7 +3798,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::post_story`]
+/// Optional parameters for [`Bot::post_story_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct PostStoryParams {
     /// Caption of the story, 0-2048 characters after entities parsing
@@ -3889,7 +3889,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::promote_chat_member`]
+/// Optional parameters for [`Bot::promote_chat_member_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct PromoteChatMemberParams {
     /// Pass True if the administrator's presence in the chat is hidden
@@ -4101,7 +4101,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::remove_business_account_profile_photo`]
+/// Optional parameters for [`Bot::remove_business_account_profile_photo_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct RemoveBusinessAccountProfilePhotoParams {
     /// Pass True to remove the public photo, which is visible even if the main photo is hidden by the business account's privacy settings. After the main photo is removed, the previous profile photo (if present) becomes the main photo.
@@ -4276,7 +4276,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::repost_story`]
+/// Optional parameters for [`Bot::repost_story_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct RepostStoryParams {
     /// Pass True to keep the story accessible after it expires
@@ -4344,7 +4344,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::restrict_chat_member`]
+/// Optional parameters for [`Bot::restrict_chat_member_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct RestrictChatMemberParams {
     /// Pass True if chat permissions are set independently. Otherwise, the can_send_other_messages and can_add_web_page_previews permissions will imply the can_send_messages, can_send_audios, can_send_documents, can_send_photos, can_send_videos, can_send_video_notes, and can_send_voice_notes permissions; the can_send_polls permission will imply the can_send_messages permission.
@@ -4429,7 +4429,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::save_prepared_inline_message`]
+/// Optional parameters for [`Bot::save_prepared_inline_message_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SavePreparedInlineMessageParams {
     /// Pass True if the message can be sent to private chats with users
@@ -4523,7 +4523,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_animation`]
+/// Optional parameters for [`Bot::send_animation_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendAnimationParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -4696,7 +4696,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_audio`]
+/// Optional parameters for [`Bot::send_audio_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendAudioParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -4885,7 +4885,7 @@ impl Bot {
     /// Use this method when you need to tell the user that something is happening on the bot's side. The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status). Returns True on success.
     /// We only recommend using this method when a response from the bot will take a noticeable amount of time to arrive.
     /// See: https://core.telegram.org/bots/api#sendchataction
-    pub async fn send_chat_action_with_params(
+    pub async fn send_chat_action(
         &self,
         chat_id: impl Into<ChatId>,
         action: impl Into<String>,
@@ -4915,7 +4915,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_checklist`]
+/// Optional parameters for [`Bot::send_checklist_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendChecklistParams {
     /// Sends the message silently. Users will receive a notification with no sound.
@@ -4999,7 +4999,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_contact`]
+/// Optional parameters for [`Bot::send_contact_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendContactParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -5132,7 +5132,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_dice`]
+/// Optional parameters for [`Bot::send_dice_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendDiceParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -5367,7 +5367,7 @@ impl SendDocumentParams {
 impl Bot {
     /// Use this method to send general files. On success, the sent Message is returned. Bots can currently send files of any type of up to 50 MB in size, this limit may be changed in the future.
     /// See: https://core.telegram.org/bots/api#senddocument
-    pub async fn send_document_with_params(
+    pub async fn send_document(
         &self,
         chat_id: impl Into<ChatId>,
         document: impl Into<InputFileOrString>,
@@ -5393,7 +5393,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_game`]
+/// Optional parameters for [`Bot::send_game_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendGameParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -5493,7 +5493,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_gift`]
+/// Optional parameters for [`Bot::send_gift_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendGiftParams {
     /// Required if chat_id is not specified. Unique identifier of the target user who will receive the gift.
@@ -5574,7 +5574,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_invoice`]
+/// Optional parameters for [`Bot::send_invoice_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendInvoiceParams {
     /// Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only
@@ -5813,7 +5813,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_location`]
+/// Optional parameters for [`Bot::send_location_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendLocationParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -5960,7 +5960,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_media_group`]
+/// Optional parameters for [`Bot::send_media_group_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendMediaGroupParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -6165,7 +6165,7 @@ impl SendMessageParams {
 impl Bot {
     /// Use this method to send text messages. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendmessage
-    pub async fn send_message_with_params(
+    pub async fn send_message(
         &self,
         chat_id: impl Into<ChatId>,
         text: impl Into<String>,
@@ -6195,7 +6195,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_message_draft`]
+/// Optional parameters for [`Bot::send_message_draft_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendMessageDraftParams {
     /// Unique identifier for the target message thread
@@ -6265,7 +6265,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_paid_media`]
+/// Optional parameters for [`Bot::send_paid_media_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendPaidMediaParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -6531,7 +6531,7 @@ impl SendPhotoParams {
 impl Bot {
     /// Use this method to send photos. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendphoto
-    pub async fn send_photo_with_params(
+    pub async fn send_photo(
         &self,
         chat_id: impl Into<ChatId>,
         photo: impl Into<InputFileOrString>,
@@ -6557,7 +6557,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_poll`]
+/// Optional parameters for [`Bot::send_poll_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendPollParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -6796,7 +6796,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_sticker`]
+/// Optional parameters for [`Bot::send_sticker_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendStickerParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -6913,7 +6913,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_venue`]
+/// Optional parameters for [`Bot::send_venue_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendVenueParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -7070,7 +7070,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_video`]
+/// Optional parameters for [`Bot::send_video_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendVideoParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -7264,7 +7264,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_video_note`]
+/// Optional parameters for [`Bot::send_video_note_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendVideoNoteParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -7395,7 +7395,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::send_voice`]
+/// Optional parameters for [`Bot::send_voice_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendVoiceParams {
     /// Unique identifier of the business connection on behalf of which the message will be sent
@@ -7533,7 +7533,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_business_account_bio`]
+/// Optional parameters for [`Bot::set_business_account_bio_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetBusinessAccountBioParams {
     /// The new value of the bio for the business account; 0-140 characters
@@ -7609,7 +7609,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_business_account_name`]
+/// Optional parameters for [`Bot::set_business_account_name_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetBusinessAccountNameParams {
     /// The new value of the last name for the business account; 0-64 characters
@@ -7660,7 +7660,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_business_account_profile_photo`]
+/// Optional parameters for [`Bot::set_business_account_profile_photo_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetBusinessAccountProfilePhotoParams {
     /// Pass True to set the public photo, which will be visible even if the main photo is hidden by the business account's privacy settings. An account can have only one public photo.
@@ -7714,7 +7714,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_business_account_username`]
+/// Optional parameters for [`Bot::set_business_account_username_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetBusinessAccountUsernameParams {
     /// The new value of the username for the business account; 0-32 characters
@@ -7790,7 +7790,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_chat_description`]
+/// Optional parameters for [`Bot::set_chat_description_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetChatDescriptionParams {
     /// New chat description, 0-255 characters
@@ -7836,7 +7836,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_chat_member_tag`]
+/// Optional parameters for [`Bot::set_chat_member_tag_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetChatMemberTagParams {
     /// New tag for the member; 0-16 characters, emoji are not allowed
@@ -7887,7 +7887,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_chat_menu_button`]
+/// Optional parameters for [`Bot::set_chat_menu_button_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetChatMenuButtonParams {
     /// Unique identifier for the target private chat. If not specified, default bot's menu button will be changed
@@ -7935,7 +7935,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_chat_permissions`]
+/// Optional parameters for [`Bot::set_chat_permissions_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetChatPermissionsParams {
     /// Pass True if chat permissions are set independently. Otherwise, the can_send_other_messages and can_add_web_page_previews permissions will imply the can_send_messages, can_send_audios, can_send_documents, can_send_photos, can_send_videos, can_send_video_notes, and can_send_voice_notes permissions; the can_send_polls permission will imply the can_send_messages permission.
@@ -8052,7 +8052,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_custom_emoji_sticker_set_thumbnail`]
+/// Optional parameters for [`Bot::set_custom_emoji_sticker_set_thumbnail_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetCustomEmojiStickerSetThumbnailParams {
     /// Custom emoji identifier of a sticker from the sticker set; pass an empty string to drop the thumbnail and use the first sticker as the thumbnail.
@@ -8101,7 +8101,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_game_score`]
+/// Optional parameters for [`Bot::set_game_score_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetGameScoreParams {
     /// Pass True if the high score is allowed to decrease. This can be useful when fixing mistakes or banning cheaters
@@ -8180,7 +8180,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_message_reaction`]
+/// Optional parameters for [`Bot::set_message_reaction_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetMessageReactionParams {
     /// A JSON-serialized list of reaction types to set on the message. Currently, as non-premium users, bots can set up to one reaction per message. A custom emoji reaction can be used if it is either already present on the message or explicitly allowed by chat administrators. Paid reactions can't be used by bots.
@@ -8238,7 +8238,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_my_commands`]
+/// Optional parameters for [`Bot::set_my_commands_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetMyCommandsParams {
     /// A JSON-serialized object, describing scope of users for which the commands are relevant. Defaults to BotCommandScopeDefault.
@@ -8291,7 +8291,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_my_default_administrator_rights`]
+/// Optional parameters for [`Bot::set_my_default_administrator_rights_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetMyDefaultAdministratorRightsParams {
     /// A JSON-serialized object describing new default administrator rights. If not specified, the default administrator rights will be cleared.
@@ -8342,7 +8342,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_my_description`]
+/// Optional parameters for [`Bot::set_my_description_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetMyDescriptionParams {
     /// New bot description; 0-512 characters. Pass an empty string to remove the dedicated description for the given language.
@@ -8390,7 +8390,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_my_name`]
+/// Optional parameters for [`Bot::set_my_name_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetMyNameParams {
     /// New bot name; 0-64 characters. Pass an empty string to remove the dedicated name for the given language.
@@ -8449,7 +8449,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_my_short_description`]
+/// Optional parameters for [`Bot::set_my_short_description_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetMyShortDescriptionParams {
     /// New short description for the bot; 0-120 characters. Pass an empty string to remove the dedicated short description for the given language.
@@ -8542,7 +8542,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_sticker_keywords`]
+/// Optional parameters for [`Bot::set_sticker_keywords_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetStickerKeywordsParams {
     /// A JSON-serialized list of 0-20 search keywords for the sticker with total length of up to 64 characters
@@ -8588,7 +8588,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_sticker_mask_position`]
+/// Optional parameters for [`Bot::set_sticker_mask_position_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetStickerMaskPositionParams {
     /// A JSON-serialized object with the position where the mask should be placed on faces. Omit the parameter to remove the mask position.
@@ -8656,7 +8656,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_sticker_set_thumbnail`]
+/// Optional parameters for [`Bot::set_sticker_set_thumbnail_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetStickerSetThumbnailParams {
     /// A .WEBP or .PNG image with the thumbnail, must be up to 128 kilobytes in size and have a width and height of exactly 100px, or a .TGS animation with a thumbnail up to 32 kilobytes in size (see https://core.telegram.org/stickers#animation-requirements for animated sticker technical requirements), or a .WEBM video with the thumbnail up to 32 kilobytes in size; see https://core.telegram.org/stickers#video-requirements for video sticker technical requirements. Pass a file_id as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Animated and video sticker set thumbnails can't be uploaded via HTTP URL. If omitted, then the thumbnail is dropped and the first sticker is used as the thumbnail.
@@ -8734,7 +8734,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_user_emoji_status`]
+/// Optional parameters for [`Bot::set_user_emoji_status_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetUserEmojiStatusParams {
     /// Custom emoji identifier of the emoji status to set. Pass an empty string to remove the status.
@@ -8787,7 +8787,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::set_webhook`]
+/// Optional parameters for [`Bot::set_webhook_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetWebhookParams {
     /// Upload your public key certificate so that the root certificate in use can be checked. See our self-signed guide for details.
@@ -8869,7 +8869,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::stop_message_live_location`]
+/// Optional parameters for [`Bot::stop_message_live_location_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct StopMessageLiveLocationParams {
     /// Unique identifier of the business connection on behalf of which the message to be edited was sent
@@ -8938,7 +8938,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::stop_poll`]
+/// Optional parameters for [`Bot::stop_poll_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct StopPollParams {
     /// Unique identifier of the business connection on behalf of which the message to be edited was sent
@@ -9021,7 +9021,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::transfer_gift`]
+/// Optional parameters for [`Bot::transfer_gift_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct TransferGiftParams {
     /// The amount of Telegram Stars that will be paid for the transfer from the business account balance. If positive, then the can_transfer_stars business bot right is required.
@@ -9077,7 +9077,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::unban_chat_member`]
+/// Optional parameters for [`Bot::unban_chat_member_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct UnbanChatMemberParams {
     /// Do nothing if the user is not banned
@@ -9226,7 +9226,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::unpin_chat_message`]
+/// Optional parameters for [`Bot::unpin_chat_message_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct UnpinChatMessageParams {
     /// Unique identifier of the business connection on behalf of which the message will be unpinned
@@ -9279,7 +9279,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::upgrade_gift`]
+/// Optional parameters for [`Bot::upgrade_gift_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct UpgradeGiftParams {
     /// Pass True to keep the original gift text, sender and receiver in the upgraded gift
@@ -9364,7 +9364,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::verify_chat`]
+/// Optional parameters for [`Bot::verify_chat_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct VerifyChatParams {
     /// Custom description for the verification; 0-70 characters. Must be empty if the organization isn't allowed to provide a custom verification description.
@@ -9410,7 +9410,7 @@ impl Bot {
     }
 }
 
-/// Optional parameters for [`Bot::verify_user`]
+/// Optional parameters for [`Bot::verify_user_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct VerifyUserParams {
     /// Custom description for the verification; 0-70 characters. Must be empty if the organization isn't allowed to provide a custom verification description.

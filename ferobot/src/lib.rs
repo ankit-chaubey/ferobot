@@ -28,7 +28,7 @@
 //!     let bot = Bot::new("YOUR_BOT_TOKEN").await.unwrap();
 //!     println!("Running as @{}", bot.me.username.as_deref().unwrap_or("unknown"));
 //!
-//!     let msg = bot.send_message(123456789i64, "Hello from ferobot! 🦀").await.unwrap();
+//!     let msg = bot.send_message(123456789i64, "Hello from ferobot! 🦀", None).await.unwrap();
 //!     println!("Sent: #{}", msg.message_id);
 //! }
 //! ```
@@ -139,9 +139,9 @@ mod chat_id;
 pub mod client;
 pub mod entities;
 mod error;
-pub mod fluent;
 mod helpers; // extension impls on Message, Chat, File, InaccessibleMessage
 mod input_file;
+mod macros;
 mod polling;
 pub mod raw;
 mod reply_markup;
@@ -150,6 +150,9 @@ mod updater;
 
 pub mod gen_methods;
 mod gen_types;
+
+pub mod middleware;
+pub mod retry;
 
 #[cfg(feature = "webhook")]
 mod webhook;
@@ -165,15 +168,12 @@ pub use chat_id::ChatId;
 pub use client::{BotClient, FormBody, FormPart, ReqwestClient};
 pub use entities::{parse_entities, parse_entity, MessageEntityExt, ParsedEntity};
 pub use error::BotError;
-pub use fluent::{
-    AnswerCallbackQueryRequest, CopyMessageRequest, EditMessageTextRequest, ForwardMessageRequest,
-    PinChatMessageRequest, SendChatActionRequest, SendDocumentRequest, SendMessageRequest,
-    SendPhotoRequest,
-};
 pub use input_file::{InputFile, InputFileOrString};
+pub use middleware::{LoggingMiddleware, Middleware, RateLimiter};
 pub use polling::{Poller, UpdateHandler};
 pub use raw::RawRequest;
 pub use reply_markup::ReplyMarkup;
+pub use retry::RetryPolicy;
 pub use types::*;
 pub use updater::Updater;
 
@@ -245,12 +245,16 @@ impl Default for crate::gen_types::InlineKeyboardButton {
 }
 
 pub mod framework;
+pub mod storage;
 
 // Top-level re-exports for convenience.
+#[cfg(feature = "redis-storage")]
+pub use framework::RedisStorage;
 pub use framework::{
     CallbackQueryHandler, CommandHandler, Context, ContinueGroups, ConversationHandler,
-    ConversationOpts, Dispatcher, DispatcherAction, DispatcherOpts, EndConversation, EndGroups,
-    FilterExt, Handler, HandlerResult, InMemoryStorage, KeyStrategy, MessageHandler, NextState,
+    ConversationOpts, ConversationStorage, Dispatcher, DispatcherAction, DispatcherOpts,
+    EndConversation, EndGroups, FilterExt, Handler, HandlerResult, InMemoryStorage, KeyStrategy,
+    MessageHandler, NextState,
 };
 
 #[cfg(test)]

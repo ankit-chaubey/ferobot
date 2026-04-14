@@ -12,6 +12,7 @@
 // If you use or modify this code, keep this notice at the top of your file
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 
+
 use ferobot::gen_methods::{
     AnswerCallbackQueryParams, EditMessageTextParams, SendMessageParams,
 };

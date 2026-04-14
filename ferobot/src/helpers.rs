@@ -126,8 +126,7 @@ impl Message {
                 poll_option_id: None,
             }));
         }
-        bot.send_message_with_params(self.chat.id, text, Some(p))
-            .await
+        bot.send_message(self.chat.id, text, Some(p)).await
     }
 }
 
@@ -150,7 +149,7 @@ impl Chat {
         text: impl Into<String>,
         params: Option<SendMessageParams>,
     ) -> Result<Message, BotError> {
-        bot.send_message_with_params(self.id, text, params).await
+        bot.send_message(self.id, text, params).await
     }
 }
 
@@ -174,7 +173,7 @@ impl File {
     pub fn url(&self, bot: &Bot) -> Option<String> {
         self.file_path
             .as_ref()
-            .map(|path| format!("{}/file/bot{}/{}", bot.api_url, bot.token, path))
+            .map(|path| format!("{}/file/bot{}/{}", bot.api_url, bot.token(), path))
     }
 }
 

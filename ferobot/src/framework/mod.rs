@@ -22,7 +22,9 @@ pub use context::Context;
 pub use dispatcher::{Dispatcher, DispatcherAction, DispatcherOpts, ErrorHook, PanicHook};
 pub use filters::FilterExt;
 pub use handler::{ContinueGroups, EndGroups, Handler, HandlerResult};
+#[cfg(feature = "redis-storage")]
+pub use handlers::RedisStorage;
 pub use handlers::{
-    CallbackQueryHandler, CommandHandler, ConversationHandler, ConversationOpts, EndConversation,
-    InMemoryStorage, KeyStrategy, MessageHandler, NextState,
+    CallbackQueryHandler, CommandHandler, ConversationHandler, ConversationOpts,
+    ConversationStorage, EndConversation, InMemoryStorage, KeyStrategy, MessageHandler, NextState,
 };

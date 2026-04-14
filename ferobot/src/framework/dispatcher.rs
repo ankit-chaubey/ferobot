@@ -57,6 +57,8 @@ pub struct DispatcherOpts {
     pub max_routines: Option<usize>,
     pub error_handler: Option<ErrorHook>,
     pub panic_handler: Option<PanicHook>,
+    /// Middleware chain run before and after every update.
+    pub middleware: Vec<crate::middleware::ArcMiddleware>,
     /// Route updates to per-chat sequential workers.
     ///
     /// When enabled, updates for the same `chat_id` are processed one-at-a-time
@@ -66,6 +68,9 @@ pub struct DispatcherOpts {
     /// Requires the `per-chat` feature and a multi-threaded tokio runtime.
     #[cfg(feature = "per-chat")]
     pub per_chat_concurrency: bool,
+    /// Per-chat worker channel buffer size (default: 256).
+    #[cfg(feature = "per-chat")]
+    pub per_chat_queue_size: usize,
 }
 
 impl DispatcherOpts {
@@ -99,6 +104,33 @@ impl DispatcherOpts {
         self.per_chat_concurrency = true;
         self
     }
+
+    /// Append a middleware to the chain.
+    ///
+    /// Middleware run in registration order before any handler, and in reverse
+    /// order after. Return `false` from [`Middleware::before`] to drop the update.
+    ///
+    /// ```rust,no_run
+    /// use ferobot::{DispatcherOpts, middleware::LoggingMiddleware};
+    ///
+    /// let opts = DispatcherOpts::default()
+    ///     .middleware(LoggingMiddleware);
+    /// ```
+    pub fn middleware(mut self, m: impl crate::middleware::Middleware) -> Self {
+        self.middleware.push(std::sync::Arc::new(m));
+        self
+    }
+
+    /// Set the per-chat worker channel buffer depth (default: `256`).
+    ///
+    /// When a chat's buffer is full the excess update falls through to
+    /// the standard concurrent pool so no updates are dropped.
+    /// Requires the `per-chat` feature.
+    #[cfg(feature = "per-chat")]
+    pub fn per_chat_queue(mut self, size: usize) -> Self {
+        self.per_chat_queue_size = if size == 0 { 256 } else { size };
+        self
+    }
 }
 
 type HandlerMap = BTreeMap<i32, Vec<Arc<dyn Handler>>>;
@@ -114,8 +146,11 @@ pub struct Dispatcher {
     error_handler: Option<ErrorHook>,
     panic_handler: Option<PanicHook>,
     semaphore: Option<Arc<Semaphore>>,
+    middleware: Vec<crate::middleware::ArcMiddleware>,
     #[cfg(feature = "per-chat")]
     chat_workers: Option<Arc<DashMap<i64, mpsc::Sender<ChatWork>>>>,
+    #[cfg(feature = "per-chat")]
+    per_chat_queue_size: usize,
 }
 
 impl Dispatcher {
@@ -125,6 +160,7 @@ impl Dispatcher {
             error_handler: opts.error_handler,
             panic_handler: opts.panic_handler,
             semaphore: opts.max_routines.map(|n| Arc::new(Semaphore::new(n))),
+            middleware: opts.middleware,
             #[cfg(feature = "per-chat")]
             chat_workers: {
                 #[allow(clippy::needless_bool)]
@@ -133,6 +169,12 @@ impl Dispatcher {
                 } else {
                     None
                 }
+            },
+            #[cfg(feature = "per-chat")]
+            per_chat_queue_size: if opts.per_chat_queue_size == 0 {
+                256
+            } else {
+                opts.per_chat_queue_size
             },
         }
     }
@@ -198,12 +240,14 @@ impl Dispatcher {
         let error_hook = self.error_handler.clone();
         let panic_hook = self.panic_handler.clone();
         let semaphore = self.semaphore.clone();
+        let middleware = self.middleware.clone();
 
         // per-chat routing send to per-chat sequential worker if enabled.
         #[cfg(feature = "per-chat")]
         if let Some(ref workers) = self.chat_workers {
             let chat_id = Context::new(update.clone()).effective_chat().map(|c| c.id);
             if let Some(id) = chat_id {
+                let queue_sz = self.per_chat_queue_size;
                 let tx = get_or_spawn_worker(
                     workers,
                     id,
@@ -211,6 +255,8 @@ impl Dispatcher {
                     error_hook.clone(),
                     panic_hook.clone(),
                     semaphore.clone(),
+                    middleware.clone(),
+                    queue_sz,
                 );
                 // try_send is non-blocking: if the 256-slot buffer is full the
                 // update falls through to regular parallel dispatch below.
@@ -221,16 +267,23 @@ impl Dispatcher {
         }
 
         tokio::spawn(async move {
+            // Run before-hooks; any hook returning false drops the update.
+            if !crate::middleware::run_before(&middleware, &bot, &update).await {
+                return;
+            }
+
             let _permit = if let Some(sem) = &semaphore {
                 Some(sem.clone().acquire_owned().await.ok())
             } else {
                 None
             };
 
-            let ctx = Context::new(update);
+            let ctx = Context::new(update.clone());
             let snapshot = handlers_arc.load_full();
+            run_handlers(snapshot, bot.clone(), ctx, error_hook, panic_hook).await;
 
-            run_handlers(snapshot, bot, ctx, error_hook, panic_hook).await;
+            // Run after-hooks regardless of handler outcome.
+            crate::middleware::run_after(&middleware, &bot, &update).await;
         });
     }
 
@@ -350,6 +403,8 @@ fn get_or_spawn_worker(
     error_hook: Option<ErrorHook>,
     panic_hook: Option<PanicHook>,
     semaphore: Option<Arc<Semaphore>>,
+    middleware: Vec<crate::middleware::ArcMiddleware>,
+    queue_size: usize,
 ) -> mpsc::Sender<ChatWork> {
     // Fast path: a live worker already exists for this chat.
     if let Some(entry) = workers.get(&chat_id) {
@@ -359,12 +414,17 @@ fn get_or_spawn_worker(
     }
 
     // Slow path: spawn a fresh sequential worker task.
-    let (tx, mut rx) = mpsc::channel::<ChatWork>(256);
+    let (tx, mut rx) = mpsc::channel::<ChatWork>(queue_size);
     workers.insert(chat_id, tx.clone());
 
     let workers_weak = Arc::downgrade(workers);
     tokio::spawn(async move {
         while let Some(work) = rx.recv().await {
+            // Run before-middleware; drop update if any hook returns false.
+            if !crate::middleware::run_before(&middleware, &work.bot, &work.update).await {
+                continue;
+            }
+
             // Each update in this chat is processed one at a time.
             let _permit = if let Some(sem) = &semaphore {
                 Some(sem.clone().acquire_owned().await.ok())
@@ -372,16 +432,18 @@ fn get_or_spawn_worker(
                 None
             };
 
-            let ctx = Context::new(work.update);
+            let ctx = Context::new(work.update.clone());
             let snapshot = handlers_arc.load_full();
             run_handlers(
                 snapshot,
-                work.bot,
+                work.bot.clone(),
                 ctx,
                 error_hook.clone(),
                 panic_hook.clone(),
             )
             .await;
+
+            crate::middleware::run_after(&middleware, &work.bot, &work.update).await;
         }
 
         // all senders dropped, channel closed; remove the entry so the next

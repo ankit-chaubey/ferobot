@@ -170,8 +170,6 @@ fn method_params_name(name: &str) -> String {
 }
 
 const COPYRIGHT_HEADER: &str = "\
-// Copyright (c) Ankit Chaubey <ankitchaubey.dev@gmail.com>\n\
-// SPDX-License-Identifier: MIT OR Apache-2.0\n\
 //\n\
 // ferobot: async Telegram Bot API framework written in Rust\n\
 // Repository: https://github.com/ankit-chaubey/ferobot\n\

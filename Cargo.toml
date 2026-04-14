@@ -3,5 +3,7 @@ members = [
     "ferobot",
     "codegen",
     "examples/mock_client",
+    "examples/echo_bot",
+    "examples/command_bot",
 ]
 resolver = "2"

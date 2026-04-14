@@ -47,9 +47,9 @@
 //! # }
 //! ```
 
-use crate::gen_methods::GetUpdatesParams;
 use crate::types::Update;
 use crate::{Bot, BotError};
+use futures::FutureExt as _;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
@@ -163,16 +163,16 @@ impl Poller {
         );
 
         loop {
-            let mut params = GetUpdatesParams::new()
+            let mut p = crate::gen_methods::GetUpdatesParams::new()
                 .offset(offset)
                 .timeout(self.timeout)
                 .limit(self.limit);
 
             if let Some(ref au) = allowed_updates {
-                params = params.allowed_updates(au.clone());
+                p = p.allowed_updates(au.clone());
             }
 
-            let updates = match self.poll_bot.get_updates(Some(params)).await {
+            let updates = match self.poll_bot.get_updates(Some(p)).await {
                 Ok(u) => u,
                 Err(e) => {
                     let sleep_secs = match &e {
@@ -209,16 +209,14 @@ impl Poller {
                 tokio::spawn(async move {
                     let _permit = permit;
 
-                    let result = tokio::spawn(async move {
-                        (handler)(bot, update).await;
-                    })
-                    .await;
+                    // Single catch_unwind replaces double-spawn.
+                    // Same panic isolation, half the task overhead.
+                    let result = std::panic::AssertUnwindSafe((handler)(bot, update))
+                        .catch_unwind()
+                        .await;
 
-                    if let Err(join_err) = result {
-                        if join_err.is_panic() {
-                            error!("handler panicked on update - task isolated, poller continues");
-                        }
-                        // Cancellation (JoinError::is_cancelled): runtime is shutting down.
+                    if result.is_err() {
+                        error!("handler panicked on update - caught, polling continues");
                     }
                 });
             }

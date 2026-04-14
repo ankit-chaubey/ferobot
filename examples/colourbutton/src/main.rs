@@ -12,6 +12,7 @@
 // If you use or modify this code, keep this notice at the top of your file
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 
+
 //! color_buttons_bot - demonstrates Bot API 9.4 button styles and inline queries.
 //!
 //! Button styles:

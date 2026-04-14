@@ -53,9 +53,15 @@ const DEFAULT_API_URL: &str = "https://api.telegram.org";
 /// println!("Running as @{}", bot.me.username.as_deref().unwrap_or(""));
 /// # }
 /// ```
-#[derive(Debug, Clone)]
+///
+/// # Debug output
+///
+/// The `Debug` implementation **masks the token** to avoid accidental leaks
+/// in logs: `token: "12345:****"`. Use [`Bot::token()`] if you genuinely
+/// need the full string.
+#[derive(Clone)]
 pub struct Bot {
-    pub token: String,
+    token: String,
     /// Bot info populated via `getMe` on creation.
     pub me: User,
     /// API base URL (default: `https://api.telegram.org`).
@@ -63,6 +69,20 @@ pub struct Bot {
     pub(crate) base: String,
     /// Pluggable HTTP back-end. Defaults to [`ReqwestClient`].
     pub(crate) client: Arc<dyn BotClient>,
+}
+
+impl std::fmt::Debug for Bot {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let masked = match self.token.find(':') {
+            Some(idx) => format!("{}:****", &self.token[..idx]),
+            None => "****".to_string(),
+        };
+        f.debug_struct("Bot")
+            .field("token", &masked)
+            .field("me", &self.me)
+            .field("api_url", &self.api_url)
+            .finish()
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -110,6 +130,15 @@ fn stub_user(id: i64) -> User {
 }
 
 impl Bot {
+    /// Returns the bot token.
+    ///
+    /// The token is kept private to avoid accidental `Debug` leaks. Access it
+    /// through this method when you genuinely need the raw string (e.g. to
+    /// build a webhook URL or call a raw HTTP endpoint).
+    pub fn token(&self) -> &str {
+        &self.token
+    }
+
     /// Create a new Bot and verify the token by calling `getMe`.
     pub async fn new(token: impl Into<String>) -> Result<Self, BotError> {
         Self::with_timeout(token, DEFAULT_API_URL, std::time::Duration::from_secs(30)).await
