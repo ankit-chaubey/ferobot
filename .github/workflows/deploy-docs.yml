@@ -66,6 +66,7 @@ jobs:
           publish_dir: ./site
           publish_branch: gh-pages
           force_orphan: true
+          cname: ferobot.ankitchaubey.in
           commit_message: |
             docs: deploy ${{ github.ref_name }}
 

@@ -100,6 +100,7 @@ html_css_files = [
 ]
 
 html_static_path = ["_static"]
+html_extra_path   = ["_static/CNAME"]
 
 # -- Copybutton ----------------------------------------------------------------
 
