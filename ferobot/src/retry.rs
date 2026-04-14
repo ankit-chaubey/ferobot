@@ -29,7 +29,7 @@
 //! let policy = RetryPolicy::default(); // 3 attempts, exponential back-off
 //!
 //! let msg = policy
-//!     .run(|| bot.send_message(123456789_i64, "hello"))
+//!     .run(|| async { bot.send_message(123456789_i64, "hello").await })
 //!     .await?;
 //! # Ok(())
 //! # }
@@ -123,7 +123,7 @@ impl RetryPolicy {
     ///
     /// // send_message is an async fn on Bot that returns Result<Message, BotError>.
     /// // Wrap it in a closure so the policy can call it again on failure.
-    /// let msg = policy.run(|| bot.send_message(123456789_i64, "hello")).await?;
+    /// let msg = policy.run(|| async { bot.send_message(123456789_i64, "hello").await }).await?;
     /// # Ok(())
     /// # }
     /// ```
