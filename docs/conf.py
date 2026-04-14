@@ -6,8 +6,7 @@ import os
 # -- Project information -------------------------------------------------------
 
 project   = "ferobot"
-from markupsafe import Markup
-copyright = Markup('2026, <a href="https://github.com/ankit-chaubey" target="_blank" rel="noopener">Ankit Chaubey</a>')
+copyright = "2026, Ankit Chaubey"
 author    = "Ankit Chaubey"
 release   = "0.1.0"
 version   = "0.1"
@@ -114,7 +113,6 @@ html_css_files = [
 ]
 
 html_static_path = ["_static"]
-html_extra_path   = ["_static/CNAME"]
 
 # -- Copybutton ----------------------------------------------------------------
 
