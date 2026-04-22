@@ -1,9 +1,63 @@
-[workspace]
-members = [
-    "ferobot",
-    "codegen",
-    "examples/mock_client",
-    "examples/echo_bot",
-    "examples/command_bot",
-]
-resolver = "2"
+[package]
+name = "ferobot"
+version = "0.1.1"
+edition = "2021"
+description = "A fully-featured, auto-generated Telegram Bot API library for Rust. All 285 types and 165 methods - strongly typed, fully async."
+license = "MIT"
+repository = "https://github.com/ankit-chaubey/ferobot"
+homepage = "https://github.com/ankit-chaubey/ferobot"
+documentation = "https://docs.rs/ferobot"
+authors = ["Ankit Chaubey <ankitchaubey.dev@gmail.com>"]
+keywords = ["telegram", "bot", "api", "async", "tokio"]
+categories = ["api-bindings", "asynchronous", "network-programming"]
+readme = "README.md"
+
+[package.metadata.docs.rs]
+all-features = true
+
+[features]
+## Enable the built-in webhook server (pulls in axum + http).
+webhook = ["dep:axum", "dep:http"]
+## Enable multi-bot webhook routing.
+bot-mapping = ["webhook"]
+## Enable the synchronous ureq-backed client.
+client-ureq = ["dep:ureq"]
+## Enable per-chat sequential concurrency (one worker task per chat_id).
+## Updates for the same chat are serialized; different chats run in parallel.
+## Requires tokio multi-thread runtime.
+per-chat = ["dep:dashmap"]
+## Enable Redis-backed ConversationStorage for distributed / multi-process bots.
+## Requires tokio multi-thread runtime (uses block_in_place internally).
+redis-storage = ["dep:redis"]
+
+[dependencies]
+serde       = { version = "1",   features = ["derive"] }
+serde_json  = "1"
+tokio       = { version = "1",   features = ["full"] }
+thiserror   = "1"
+async-trait = "0.1"
+bytes       = "1"
+mime        = "0.3"
+tracing     = "0.1"
+regex       = "1"
+# Fix 1: zero-copy atomic handler-map swapping (replaces RwLock clone on every update)
+arc-swap    = "1"
+# Fix 2: catch_unwind for panic isolation without a nested spawn
+futures     = { version = "0.3", default-features = false, features = ["std"] }
+axum        = { version = "0.7", optional = true }
+http        = { version = "1",   optional = true }
+ureq        = { version = "2",   optional = true }
+# Fix 3: per-chat concurrent worker map
+dashmap     = { version = "6",   optional = true }
+# Fix 4: Redis ConversationStorage
+redis       = { version = "0.25", features = ["tokio-comp", "connection-manager"], optional = true }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+reqwest = { version = "0.12", features = ["json", "multipart"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+reqwest = { version = "0.12", features = ["json"] }
+
+[dev-dependencies]
+axum  = "0.7"
+tokio = { version = "1", features = ["full"] }
