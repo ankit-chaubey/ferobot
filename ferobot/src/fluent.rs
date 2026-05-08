@@ -8500,6 +8500,359 @@ impl<'bot> IntoFuture for VerifyUserRequest<'bot> {
     }
 }
 
+/// Fluent builder for [`Bot::answer_guest_query`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#answerguestquery
+pub struct AnswerGuestQueryRequest<'bot> {
+    bot: &'bot Bot,
+    guest_query_id: String,
+    result: InlineQueryResult,
+}
+
+impl<'bot> AnswerGuestQueryRequest<'bot> {
+    pub(crate) fn new(
+        bot: &'bot Bot,
+        guest_query_id: impl Into<String>,
+        result: InlineQueryResult,
+    ) -> Self {
+        Self {
+            bot,
+            guest_query_id: guest_query_id.into(),
+            result,
+        }
+    }
+}
+
+impl<'bot> IntoFuture for AnswerGuestQueryRequest<'bot> {
+    type Output = Result<SentGuestMessage, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .raw_answer_guest_query(self.guest_query_id, self.result)
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::delete_all_message_reactions`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#deleteallmessagereactions
+pub struct DeleteAllMessageReactionsRequest<'bot> {
+    bot: &'bot Bot,
+    chat_id: ChatId,
+    params: DeleteAllMessageReactionsParams,
+}
+
+impl<'bot> DeleteAllMessageReactionsRequest<'bot> {
+    pub(crate) fn new(bot: &'bot Bot, chat_id: impl Into<ChatId>) -> Self {
+        Self {
+            bot,
+            chat_id: chat_id.into(),
+            params: Default::default(),
+        }
+    }
+
+    pub fn user_id(mut self, v: i64) -> Self {
+        self.params.user_id = Some(v);
+        self
+    }
+    pub fn actor_chat_id(mut self, v: i64) -> Self {
+        self.params.actor_chat_id = Some(v);
+        self
+    }
+}
+
+impl<'bot> IntoFuture for DeleteAllMessageReactionsRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .delete_all_message_reactions_with_params(self.chat_id, Some(self.params))
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::delete_message_reaction`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#deletemessagereaction
+pub struct DeleteMessageReactionRequest<'bot> {
+    bot: &'bot Bot,
+    chat_id: ChatId,
+    message_id: i64,
+    params: DeleteMessageReactionParams,
+}
+
+impl<'bot> DeleteMessageReactionRequest<'bot> {
+    pub(crate) fn new(bot: &'bot Bot, chat_id: impl Into<ChatId>, message_id: i64) -> Self {
+        Self {
+            bot,
+            chat_id: chat_id.into(),
+            message_id,
+            params: Default::default(),
+        }
+    }
+
+    pub fn user_id(mut self, v: i64) -> Self {
+        self.params.user_id = Some(v);
+        self
+    }
+    pub fn actor_chat_id(mut self, v: i64) -> Self {
+        self.params.actor_chat_id = Some(v);
+        self
+    }
+}
+
+impl<'bot> IntoFuture for DeleteMessageReactionRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .delete_message_reaction_with_params(
+                    self.chat_id,
+                    self.message_id,
+                    Some(self.params),
+                )
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::get_managed_bot_access_settings`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#getmanagedbotaccesssettings
+pub struct GetManagedBotAccessSettingsRequest<'bot> {
+    bot: &'bot Bot,
+    user_id: i64,
+}
+
+impl<'bot> GetManagedBotAccessSettingsRequest<'bot> {
+    pub(crate) fn new(bot: &'bot Bot, user_id: i64) -> Self {
+        Self { bot, user_id }
+    }
+}
+
+impl<'bot> IntoFuture for GetManagedBotAccessSettingsRequest<'bot> {
+    type Output = Result<BotAccessSettings, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .raw_get_managed_bot_access_settings(self.user_id)
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::get_user_personal_chat_messages`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#getuserpersonalchatmessages
+pub struct GetUserPersonalChatMessagesRequest<'bot> {
+    bot: &'bot Bot,
+    user_id: i64,
+    limit: i64,
+}
+
+impl<'bot> GetUserPersonalChatMessagesRequest<'bot> {
+    pub(crate) fn new(bot: &'bot Bot, user_id: i64, limit: i64) -> Self {
+        Self {
+            bot,
+            user_id,
+            limit,
+        }
+    }
+}
+
+impl<'bot> IntoFuture for GetUserPersonalChatMessagesRequest<'bot> {
+    type Output = Result<Vec<Message>, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .raw_get_user_personal_chat_messages(self.user_id, self.limit)
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::send_live_photo`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#sendlivephoto
+pub struct SendLivePhotoRequest<'bot> {
+    bot: &'bot Bot,
+    chat_id: ChatId,
+    live_photo: InputFileOrString,
+    photo: InputFileOrString,
+    params: SendLivePhotoParams,
+}
+
+impl<'bot> SendLivePhotoRequest<'bot> {
+    pub(crate) fn new(
+        bot: &'bot Bot,
+        chat_id: impl Into<ChatId>,
+        live_photo: impl Into<InputFileOrString>,
+        photo: impl Into<InputFileOrString>,
+    ) -> Self {
+        Self {
+            bot,
+            chat_id: chat_id.into(),
+            live_photo: live_photo.into(),
+            photo: photo.into(),
+            params: Default::default(),
+        }
+    }
+
+    /// Set `parse_mode` to `"HTML"`.
+    pub fn html(self) -> Self {
+        self.parse_mode("HTML")
+    }
+    /// Set `parse_mode` to `"MarkdownV2"`.
+    pub fn markdown(self) -> Self {
+        self.parse_mode("MarkdownV2")
+    }
+
+    /// Send silently (`disable_notification = true`).
+    pub fn silent(self) -> Self {
+        self.disable_notification(true)
+    }
+
+    /// Reply to a message by id.
+    pub fn reply_to(mut self, message_id: i64) -> Self {
+        self.params.reply_parameters = Some(make_reply_params(message_id));
+        self
+    }
+
+    pub fn business_connection_id(mut self, v: impl Into<String>) -> Self {
+        self.params.business_connection_id = Some(v.into());
+        self
+    }
+    pub fn message_thread_id(mut self, v: i64) -> Self {
+        self.params.message_thread_id = Some(v);
+        self
+    }
+    pub fn direct_messages_topic_id(mut self, v: i64) -> Self {
+        self.params.direct_messages_topic_id = Some(v);
+        self
+    }
+    pub fn caption(mut self, v: impl Into<String>) -> Self {
+        self.params.caption = Some(v.into());
+        self
+    }
+    pub fn parse_mode(mut self, v: impl Into<String>) -> Self {
+        self.params.parse_mode = Some(v.into());
+        self
+    }
+    pub fn caption_entities(mut self, v: Vec<MessageEntity>) -> Self {
+        self.params.caption_entities = Some(v);
+        self
+    }
+    pub fn show_caption_above_media(mut self, v: bool) -> Self {
+        self.params.show_caption_above_media = Some(v);
+        self
+    }
+    pub fn has_spoiler(mut self, v: bool) -> Self {
+        self.params.has_spoiler = Some(v);
+        self
+    }
+    pub fn disable_notification(mut self, v: bool) -> Self {
+        self.params.disable_notification = Some(v);
+        self
+    }
+    pub fn protect_content(mut self, v: bool) -> Self {
+        self.params.protect_content = Some(v);
+        self
+    }
+    pub fn allow_paid_broadcast(mut self, v: bool) -> Self {
+        self.params.allow_paid_broadcast = Some(v);
+        self
+    }
+    pub fn message_effect_id(mut self, v: impl Into<String>) -> Self {
+        self.params.message_effect_id = Some(v.into());
+        self
+    }
+    pub fn suggested_post_parameters(mut self, v: SuggestedPostParameters) -> Self {
+        self.params.suggested_post_parameters = Some(Box::new(v));
+        self
+    }
+    pub fn reply_parameters(mut self, v: ReplyParameters) -> Self {
+        self.params.reply_parameters = Some(Box::new(v));
+        self
+    }
+    pub fn reply_markup(mut self, v: impl Into<ReplyMarkup>) -> Self {
+        self.params.reply_markup = Some(v.into());
+        self
+    }
+}
+
+impl<'bot> IntoFuture for SendLivePhotoRequest<'bot> {
+    type Output = Result<Message, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .send_live_photo_with_params(
+                    self.chat_id,
+                    self.live_photo,
+                    self.photo,
+                    Some(self.params),
+                )
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::set_managed_bot_access_settings`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#setmanagedbotaccesssettings
+pub struct SetManagedBotAccessSettingsRequest<'bot> {
+    bot: &'bot Bot,
+    user_id: i64,
+    is_access_restricted: bool,
+    params: SetManagedBotAccessSettingsParams,
+}
+
+impl<'bot> SetManagedBotAccessSettingsRequest<'bot> {
+    pub(crate) fn new(bot: &'bot Bot, user_id: i64, is_access_restricted: bool) -> Self {
+        Self {
+            bot,
+            user_id,
+            is_access_restricted,
+            params: Default::default(),
+        }
+    }
+
+    pub fn added_user_ids(mut self, v: Vec<i64>) -> Self {
+        self.params.added_user_ids = Some(v);
+        self
+    }
+}
+
+impl<'bot> IntoFuture for SetManagedBotAccessSettingsRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .set_managed_bot_access_settings_with_params(
+                    self.user_id,
+                    self.is_access_restricted,
+                    Some(self.params),
+                )
+                .await
+        })
+    }
+}
+
 impl Bot {
     /// Use this method to add a new sticker to a set created by the bot. Emoji sticker sets can have up to 200 stickers. Other sticker sets can have up to 120 stickers. Returns True on success.
     /// See: https://core.telegram.org/bots/api#addstickertoset
@@ -10019,5 +10372,74 @@ impl Bot {
     /// See: https://core.telegram.org/bots/api#verifyuser
     pub fn verify_user(&self, user_id: i64) -> VerifyUserRequest<'_> {
         VerifyUserRequest::new(self, user_id)
+    }
+
+    /// Use this method to reply to a received guest message. On success, a SentGuestMessage object is returned.
+    /// See: https://core.telegram.org/bots/api#answerguestquery
+    pub fn answer_guest_query(
+        &self,
+        guest_query_id: impl Into<String>,
+        result: InlineQueryResult,
+    ) -> AnswerGuestQueryRequest<'_> {
+        AnswerGuestQueryRequest::new(self, guest_query_id, result)
+    }
+
+    /// Use this method to remove up to 10000 recent reactions in a group or a supergroup chat added by a given user or chat. The bot must have the 'can_delete_messages' administrator right in the chat. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#deleteallmessagereactions
+    pub fn delete_all_message_reactions(
+        &self,
+        chat_id: impl Into<ChatId>,
+    ) -> DeleteAllMessageReactionsRequest<'_> {
+        DeleteAllMessageReactionsRequest::new(self, chat_id)
+    }
+
+    /// Use this method to remove a reaction from a message in a group or a supergroup chat. The bot must have the 'can_delete_messages' administrator right in the chat. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#deletemessagereaction
+    pub fn delete_message_reaction(
+        &self,
+        chat_id: impl Into<ChatId>,
+        message_id: i64,
+    ) -> DeleteMessageReactionRequest<'_> {
+        DeleteMessageReactionRequest::new(self, chat_id, message_id)
+    }
+
+    /// Use this method to get the access settings of a managed bot. Returns a BotAccessSettings object on success.
+    /// See: https://core.telegram.org/bots/api#getmanagedbotaccesssettings
+    pub fn get_managed_bot_access_settings(
+        &self,
+        user_id: i64,
+    ) -> GetManagedBotAccessSettingsRequest<'_> {
+        GetManagedBotAccessSettingsRequest::new(self, user_id)
+    }
+
+    /// Use this method to get the last messages from the personal chat of a given user. On success, an array of Message objects is returned.
+    /// See: https://core.telegram.org/bots/api#getuserpersonalchatmessages
+    pub fn get_user_personal_chat_messages(
+        &self,
+        user_id: i64,
+        limit: i64,
+    ) -> GetUserPersonalChatMessagesRequest<'_> {
+        GetUserPersonalChatMessagesRequest::new(self, user_id, limit)
+    }
+
+    /// Use this method to send live photos. On success, the sent Message is returned.
+    /// See: https://core.telegram.org/bots/api#sendlivephoto
+    pub fn send_live_photo(
+        &self,
+        chat_id: impl Into<ChatId>,
+        live_photo: impl Into<InputFileOrString>,
+        photo: impl Into<InputFileOrString>,
+    ) -> SendLivePhotoRequest<'_> {
+        SendLivePhotoRequest::new(self, chat_id, live_photo, photo)
+    }
+
+    /// Use this method to change the access settings of a managed bot. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#setmanagedbotaccesssettings
+    pub fn set_managed_bot_access_settings(
+        &self,
+        user_id: i64,
+        is_access_restricted: bool,
+    ) -> SetManagedBotAccessSettingsRequest<'_> {
+        SetManagedBotAccessSettingsRequest::new(self, user_id, is_access_restricted)
     }
 }
