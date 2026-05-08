@@ -391,11 +391,11 @@ def generate_methods(spec):
             lines.append('')
 
         ret = return_rust_type(returns, types_map)
-        file_field = None
-        for field in required_fields:
-            if field_rust_type(field, types_map) == 'InputFileOrString':
-                file_field = field['name']
-                break
+        file_fields = [
+            field['name']
+            for field in required_fields
+            if field_rust_type(field, types_map) == 'InputFileOrString'
+        ]
 
         sig_parts = []
         for field in required_fields:
@@ -446,10 +446,23 @@ def generate_methods(spec):
             lines.append(f'                for (k, v) in m {{ if !v.is_null() {{ req.insert(k, v); }} }}')
             lines.append(f'            }}')
             lines.append(f'        }}')
-        if file_field:
-            fn_arg = safe_field_name(file_field)
-            lines.append(f'        self.call_api_with_file(\"{method_name}\", req, \"{file_field}\", {fn_arg}.into())')
-            lines.append(f'            .await')
+        if file_fields:
+            if len(file_fields) == 1:
+                fn_arg = safe_field_name(file_fields[0])
+                lines.append(f'        self.call_api_with_file(\"{method_name}\", req, \"{file_fields[0]}\", {fn_arg}.into())')
+                lines.append(f'            .await')
+            else:
+                a, b = file_fields[0], file_fields[1]
+                fa, fb = safe_field_name(a), safe_field_name(b)
+                lines.append(f'        self.call_api_with_two_files(')
+                lines.append(f'            \"{method_name}\",')
+                lines.append(f'            req,')
+                lines.append(f'            \"{a}\",')
+                lines.append(f'            {fa}.into(),')
+                lines.append(f'            \"{b}\",')
+                lines.append(f'            {fb}.into(),')
+                lines.append(f'        )')
+                lines.append(f'        .await')
         else:
             lines.append(f'        self.call_api(\"{method_name}\", serde_json::Value::Object(req)).await')
         lines.append(f'    }}')
