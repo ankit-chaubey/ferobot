@@ -2613,7 +2613,7 @@ impl<'bot> IntoFuture for GetChatAdministratorsRequest<'bot> {
     type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
 
     fn into_future(self) -> Self::IntoFuture {
-        Box::pin(async move { self.bot.raw_get_chat_administrators(self.chat_id).await })
+        Box::pin(async move { self.bot.get_chat_administrators(self.chat_id).await })
     }
 }
 
@@ -5727,12 +5727,7 @@ impl<'bot> IntoFuture for SendMessageDraftRequest<'bot> {
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
             self.bot
-                .send_message_draft_with_params(
-                    self.chat_id,
-                    self.draft_id,
-                    self.text,
-                    Some(self.params),
-                )
+                .send_message_draft_with_params(self.chat_id, self.draft_id, Some(self.params))
                 .await
         })
     }

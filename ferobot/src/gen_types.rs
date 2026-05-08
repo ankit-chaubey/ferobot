@@ -13,7 +13,7 @@
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
-// Generated from Telegram Bot API Bot API 9.6
+// Generated from Telegram Bot API Bot API 10.0
 // Spec:    https://github.com/ankit-chaubey/api-spec
 // Project: https://github.com/ankit-chaubey/ferobot
 // Author:  Ankit Chaubey <ankitchaubey.dev@gmail.com>
@@ -261,6 +261,17 @@ pub struct Birthdate {
     pub year: Option<i64>,
 }
 
+/// This object describes the access settings of a bot.
+/// https://core.telegram.org/bots/api#botaccesssettings
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct BotAccessSettings {
+    /// True, if only selected users can access the bot. The bot's owner can always access it.
+    pub is_access_restricted: bool,
+    /// Optional. The list of other users who have access to the bot if the access is restricted
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub added_users: Option<Vec<User>>,
+}
+
 /// This object represents a bot command.
 /// https://core.telegram.org/bots/api#botcommand
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -326,7 +337,7 @@ pub struct BotCommandScopeChat {
     /// Scope type, must be chat
     #[serde(rename = "type")]
     pub r#type: String,
-    /// Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername). Channel direct messages chats and channel chats aren't supported.
+    /// Unique identifier for the target chat or username of the target supergroup in the format @username. Channel direct messages chats and channel chats aren't supported.
     pub chat_id: ChatId,
 }
 
@@ -337,7 +348,7 @@ pub struct BotCommandScopeChatAdministrators {
     /// Scope type, must be chat_administrators
     #[serde(rename = "type")]
     pub r#type: String,
-    /// Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername). Channel direct messages chats and channel chats aren't supported.
+    /// Unique identifier for the target chat or username of the target supergroup in the format @username. Channel direct messages chats and channel chats aren't supported.
     pub chat_id: ChatId,
 }
 
@@ -348,7 +359,7 @@ pub struct BotCommandScopeChatMember {
     /// Scope type, must be chat_member
     #[serde(rename = "type")]
     pub r#type: String,
-    /// Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername). Channel direct messages chats and channel chats aren't supported.
+    /// Unique identifier for the target chat or username of the target supergroup in the format @username. Channel direct messages chats and channel chats aren't supported.
     pub chat_id: ChatId,
     /// Unique identifier of the target user
     pub user_id: i64,
@@ -1102,6 +1113,8 @@ pub struct ChatMemberRestricted {
     pub can_send_other_messages: bool,
     /// True, if the user is allowed to add web page previews to their messages
     pub can_add_web_page_previews: bool,
+    /// True, if the user is allowed to react to messages
+    pub can_react_to_messages: bool,
     /// True, if the user is allowed to edit their own tag
     pub can_edit_tag: bool,
     /// True, if the user is allowed to change the chat title, photo and other settings
@@ -1153,7 +1166,7 @@ pub struct ChatOwnerChanged {
 /// https://core.telegram.org/bots/api#chatownerleft
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct ChatOwnerLeft {
-    /// Optional. The user which will be the new owner of the chat if the previous owner does not return to the chat
+    /// Optional. The user who will become the new owner of the chat if the previous owner does not return to the chat
     #[serde(skip_serializing_if = "Option::is_none")]
     pub new_owner: Option<Box<User>>,
 }
@@ -1192,7 +1205,10 @@ pub struct ChatPermissions {
     /// Optional. True, if the user is allowed to add web page previews to their messages
     #[serde(skip_serializing_if = "Option::is_none")]
     pub can_add_web_page_previews: Option<bool>,
-    /// Optional. True, if the user is allowed to edit their own tag
+    /// Optional. True, if the user is allowed to react to messages. If omitted, defaults to the value of can_send_messages.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub can_react_to_messages: Option<bool>,
+    /// Optional. True, if the user is allowed to edit their own tag. If omitted, defaults to the value of can_pin_messages.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub can_edit_tag: Option<bool>,
     /// Optional. True, if the user is allowed to change the chat title, photo and other settings. Ignored in public supergroups
@@ -1480,6 +1496,9 @@ pub struct ExternalReplyInfo {
     /// Optional. Message is a general file, information about the file
     #[serde(skip_serializing_if = "Option::is_none")]
     pub document: Option<Box<Document>>,
+    /// Optional. Message is a live photo, information about the live photo
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub live_photo: Option<Box<LivePhoto>>,
     /// Optional. Message contains paid media; information about the paid media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub paid_media: Option<Box<PaidMediaInfo>>,
@@ -1552,7 +1571,7 @@ pub struct File {
     pub file_path: Option<String>,
 }
 
-/// Upon receiving a message with this object, Telegram clients will display a reply interface to the user (act as if the user has selected the bot's message and tapped 'Reply'). This can be extremely useful if you want to create user-friendly step-by-step interfaces without having to sacrifice privacy mode. Not supported in channels and for messages sent on behalf of a Telegram Business account.
+/// Upon receiving a message with this object, Telegram clients will display a reply interface to the user (act as if the user has selected the bot's message and tapped 'Reply'). This can be extremely useful if you want to create user-friendly step-by-step interfaces without having to sacrifice privacy mode. Not supported in channels and for messages sent on behalf of a user account.
 /// https://core.telegram.org/bots/api#forcereply
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct ForceReply {
@@ -1885,19 +1904,19 @@ pub struct InlineKeyboardButton {
     /// Optional. Data to be sent in a callback query to the bot when the button is pressed, 1-64 bytes
     #[serde(skip_serializing_if = "Option::is_none")]
     pub callback_data: Option<String>,
-    /// Optional. Description of the Web App that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method answerWebAppQuery. Available only in private chats between a user and the bot. Not supported for messages sent on behalf of a Telegram Business account.
+    /// Optional. Description of the Web App that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method answerWebAppQuery. Available only in private chats between a user and the bot. Not supported for messages sent on behalf of a business account.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub web_app: Option<Box<WebAppInfo>>,
     /// Optional. An HTTPS URL used to automatically authorize the user. Can be used as a replacement for the Telegram Login Widget.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub login_url: Option<Box<LoginUrl>>,
-    /// Optional. If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot's username and the specified inline query in the input field. May be empty, in which case just the bot's username will be inserted. Not supported for messages sent in channel direct messages chats and on behalf of a Telegram Business account.
+    /// Optional. If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot's username and the specified inline query in the input field. May be empty, in which case just the bot's username will be inserted. Not supported for messages sent in channel direct messages chats and on behalf of a business account.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub switch_inline_query: Option<String>,
-    /// Optional. If set, pressing the button will insert the bot's username and the specified inline query in the current chat's input field. May be empty, in which case only the bot's username will be inserted. This offers a quick way for the user to open your bot in inline mode in the same chat - good for selecting something from multiple options. Not supported in channels and for messages sent in channel direct messages chats and on behalf of a Telegram Business account.
+    /// Optional. If set, pressing the button will insert the bot's username and the specified inline query in the current chat's input field. May be empty, in which case only the bot's username will be inserted. This offers a quick way for the user to open your bot in inline mode in the same chat - good for selecting something from multiple options. Not supported in channels and for messages sent in channel direct messages chats and on behalf of a business account.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub switch_inline_query_current_chat: Option<String>,
-    /// Optional. If set, pressing the button will prompt the user to select one of their chats of the specified type, open that chat and insert the bot's username and the specified inline query in the input field. Not supported for messages sent in channel direct messages chats and on behalf of a Telegram Business account.
+    /// Optional. If set, pressing the button will prompt the user to select one of their chats of the specified type, open that chat and insert the bot's username and the specified inline query in the input field. Not supported for messages sent in channel direct messages chats and on behalf of a business account.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub switch_inline_query_chosen_chat: Option<Box<SwitchInlineQueryChosenChat>>,
     /// Optional. Description of the button that copies the specified text to the clipboard.
@@ -2963,6 +2982,50 @@ pub struct InputMediaDocument {
     pub disable_content_type_detection: Option<bool>,
 }
 
+/// Represents a live photo to be sent.
+/// https://core.telegram.org/bots/api#inputmedialivephoto
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputMediaLivePhoto {
+    /// Type of the result, must be live_photo
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Video of the live photo to send. Pass a file_id to send a file that exists on the Telegram servers (recommended) or pass "attach://<file_attach_name>" to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Sending live photos by a URL is currently unsupported.
+    pub media: String,
+    /// The static photo to send. Pass a file_id to send a file that exists on the Telegram servers (recommended) or pass "attach://<file_attach_name>" to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Sending live photos by a URL is currently unsupported.
+    pub photo: String,
+    /// Optional. Caption of the live photo to be sent, 0-1024 characters after entities parsing
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption: Option<String>,
+    /// Optional. Mode for parsing entities in the live photo caption. See formatting options for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parse_mode: Option<String>,
+    /// Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption_entities: Option<Vec<MessageEntity>>,
+    /// Optional. Pass True, if the caption must be shown above the message media
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub show_caption_above_media: Option<bool>,
+    /// Optional. Pass True if the live photo needs to be covered with a spoiler animation
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub has_spoiler: Option<bool>,
+}
+
+/// Represents a location to be sent.
+/// https://core.telegram.org/bots/api#inputmedialocation
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputMediaLocation {
+    /// Type of the result, must be location
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Latitude of the location
+    pub latitude: f64,
+    /// Longitude of the location
+    pub longitude: f64,
+    /// Optional. The radius of uncertainty for the location, measured in meters; 0-1500
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub horizontal_accuracy: Option<f64>,
+}
+
 /// Represents a photo to be sent.
 /// https://core.telegram.org/bots/api#inputmediaphoto
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
@@ -2987,6 +3050,49 @@ pub struct InputMediaPhoto {
     /// Optional. Pass True if the photo needs to be covered with a spoiler animation
     #[serde(skip_serializing_if = "Option::is_none")]
     pub has_spoiler: Option<bool>,
+}
+
+/// Represents a sticker file to be sent.
+/// https://core.telegram.org/bots/api#inputmediasticker
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputMediaSticker {
+    /// Type of the result, must be sticker
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a .WEBP sticker from the Internet, or pass "attach://<file_attach_name>" to upload a new .WEBP, .TGS, or .WEBM sticker using multipart/form-data under <file_attach_name> name. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
+    pub media: String,
+    /// Optional. Emoji associated with the sticker; only for just uploaded stickers
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub emoji: Option<String>,
+}
+
+/// Represents a venue to be sent.
+/// https://core.telegram.org/bots/api#inputmediavenue
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputMediaVenue {
+    /// Type of the result, must be venue
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Latitude of the location
+    pub latitude: f64,
+    /// Longitude of the location
+    pub longitude: f64,
+    /// Name of the venue
+    pub title: String,
+    /// Address of the venue
+    pub address: String,
+    /// Optional. Foursquare identifier of the venue
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub foursquare_id: Option<String>,
+    /// Optional. Foursquare type of the venue, if known. (For example, "arts_entertainment/default", "arts_entertainment/aquarium" or "food/icecream".)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub foursquare_type: Option<String>,
+    /// Optional. Google Places identifier of the venue
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub google_place_id: Option<String>,
+    /// Optional. Google Places type of the venue. (See supported types.)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub google_place_type: Option<String>,
 }
 
 /// Represents a video to be sent.
@@ -3054,14 +3160,29 @@ pub enum InputMessageContent {
 }
 
 /// This object describes the paid media to be sent. Currently, it can be one of
+/// - InputPaidMediaLivePhoto
 /// - InputPaidMediaPhoto
 /// - InputPaidMediaVideo
 /// https://core.telegram.org/bots/api#inputpaidmedia
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
 pub enum InputPaidMedia {
+    InputPaidMediaLivePhoto(InputPaidMediaLivePhoto),
     InputPaidMediaPhoto(InputPaidMediaPhoto),
     InputPaidMediaVideo(InputPaidMediaVideo),
+}
+
+/// The paid media to send is a live photo.
+/// https://core.telegram.org/bots/api#inputpaidmedialivephoto
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputPaidMediaLivePhoto {
+    /// Type of the media, must be live_photo
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Video of the live photo to send. Pass a file_id to send a file that exists on the Telegram servers (recommended) or pass "attach://<file_attach_name>" to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Sending live photos by a URL is currently unsupported.
+    pub media: String,
+    /// The static photo to send. Pass a file_id to send a file that exists on the Telegram servers (recommended) or pass "attach://<file_attach_name>" to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Sending live photos by a URL is currently unsupported.
+    pub photo: String,
 }
 
 /// The paid media to send is a photo.
@@ -3107,6 +3228,29 @@ pub struct InputPaidMediaVideo {
     pub supports_streaming: Option<bool>,
 }
 
+/// This object represents the content of a poll description or a quiz explanation to be sent. It should be one of
+/// - InputMediaAnimation
+/// - InputMediaAudio
+/// - InputMediaDocument
+/// - InputMediaLivePhoto
+/// - InputMediaLocation
+/// - InputMediaPhoto
+/// - InputMediaVenue
+/// - InputMediaVideo
+/// https://core.telegram.org/bots/api#inputpollmedia
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(untagged)]
+pub enum InputPollMedia {
+    InputMediaAnimation(InputMediaAnimation),
+    InputMediaAudio(InputMediaAudio),
+    InputMediaDocument(InputMediaDocument),
+    InputMediaLivePhoto(InputMediaLivePhoto),
+    InputMediaLocation(InputMediaLocation),
+    InputMediaPhoto(InputMediaPhoto),
+    InputMediaVenue(InputMediaVenue),
+    InputMediaVideo(InputMediaVideo),
+}
+
 /// This object contains information about one answer option in a poll to be sent.
 /// https://core.telegram.org/bots/api#inputpolloption
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
@@ -3119,6 +3263,30 @@ pub struct InputPollOption {
     /// Optional. A JSON-serialized list of special entities that appear in the poll option text. It can be specified instead of text_parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text_entities: Option<Vec<MessageEntity>>,
+    /// Optional. Media added to the poll option
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub media: Option<Box<InputPollOptionMedia>>,
+}
+
+/// This object represents the content of a poll option to be sent. It should be one of
+/// - InputMediaAnimation
+/// - InputMediaLivePhoto
+/// - InputMediaLocation
+/// - InputMediaPhoto
+/// - InputMediaSticker
+/// - InputMediaVenue
+/// - InputMediaVideo
+/// https://core.telegram.org/bots/api#inputpolloptionmedia
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(untagged)]
+pub enum InputPollOptionMedia {
+    InputMediaAnimation(InputMediaAnimation),
+    InputMediaLivePhoto(InputMediaLivePhoto),
+    InputMediaLocation(InputMediaLocation),
+    InputMediaPhoto(InputMediaPhoto),
+    InputMediaSticker(InputMediaSticker),
+    InputMediaVenue(InputMediaVenue),
+    InputMediaVideo(InputMediaVideo),
 }
 
 /// This object describes a profile photo to set. Currently, it can be one of
@@ -3429,6 +3597,31 @@ pub struct LinkPreviewOptions {
     pub show_above_text: Option<bool>,
 }
 
+/// This object represents a live photo.
+/// https://core.telegram.org/bots/api#livephoto
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct LivePhoto {
+    /// Optional. Available sizes of the corresponding static photo
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub photo: Option<Vec<PhotoSize>>,
+    /// Identifier for the video file which can be used to download or reuse the file
+    pub file_id: String,
+    /// Unique identifier for the video file which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
+    pub file_unique_id: String,
+    /// Video width as defined by the sender
+    pub width: i64,
+    /// Video height as defined by the sender
+    pub height: i64,
+    /// Duration of the video in seconds as defined by the sender
+    pub duration: i64,
+    /// Optional. MIME type of the file as defined by the sender
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mime_type: Option<String>,
+    /// Optional. File size in bytes. It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this value.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub file_size: Option<i64>,
+}
+
 /// This object represents a point on the map.
 /// https://core.telegram.org/bots/api#location
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -3603,6 +3796,9 @@ pub struct Message {
     pub sender_tag: Option<String>,
     /// Date the message was sent in Unix time. It is always a positive number, representing a valid date.
     pub date: i64,
+    /// Optional. The unique identifier for the guest query. Use this identifier with the method answerGuestQuery to send a response message. If non-empty, the message belongs to the chat where the guest bot was summoned, which may not coincide with other existing bot chats sharing the same identifier.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub guest_query_id: Option<String>,
     /// Optional. Unique identifier of the business connection from which the message was received. If non-empty, the message belongs to a chat of the corresponding business account that is independent from any potential bot chat which might share the same identifier.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub business_connection_id: Option<String>,
@@ -3638,6 +3834,12 @@ pub struct Message {
     /// Optional. Bot through which the message was sent
     #[serde(skip_serializing_if = "Option::is_none")]
     pub via_bot: Option<Box<User>>,
+    /// Optional. For a message sent by a guest bot, this is the user whose original message triggered the bot's response
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub guest_bot_caller_user: Option<Box<User>>,
+    /// Optional. For a message sent by a guest bot, this is the chat whose original message triggered the bot's response
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub guest_bot_caller_chat: Option<Box<Chat>>,
     /// Optional. Date the message was last edited in Unix time
     #[serde(skip_serializing_if = "Option::is_none")]
     pub edit_date: Option<i64>,
@@ -3683,6 +3885,9 @@ pub struct Message {
     /// Optional. Message is a general file, information about the file
     #[serde(skip_serializing_if = "Option::is_none")]
     pub document: Option<Box<Document>>,
+    /// Optional. Message is a live photo, information about the live photo. For backward compatibility, when this field is set, the photo field will also be set
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub live_photo: Option<Box<LivePhoto>>,
     /// Optional. Message contains paid media; information about the paid media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub paid_media: Option<Box<PaidMediaInfo>>,
@@ -4188,15 +4393,17 @@ pub struct OwnedGifts {
 }
 
 /// This object describes paid media. Currently, it can be one of
-/// - PaidMediaPreview
+/// - PaidMediaLivePhoto
 /// - PaidMediaPhoto
+/// - PaidMediaPreview
 /// - PaidMediaVideo
 /// https://core.telegram.org/bots/api#paidmedia
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
 pub enum PaidMedia {
-    PaidMediaPreview(PaidMediaPreview),
+    PaidMediaLivePhoto(PaidMediaLivePhoto),
     PaidMediaPhoto(PaidMediaPhoto),
+    PaidMediaPreview(PaidMediaPreview),
     PaidMediaVideo(PaidMediaVideo),
 }
 
@@ -4208,6 +4415,17 @@ pub struct PaidMediaInfo {
     pub star_count: i64,
     /// Information about the paid media
     pub paid_media: Vec<PaidMedia>,
+}
+
+/// The paid media is a live photo.
+/// https://core.telegram.org/bots/api#paidmedialivephoto
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct PaidMediaLivePhoto {
+    /// Type of the paid media, always "live_photo"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// The photo
+    pub live_photo: LivePhoto,
 }
 
 /// The paid media is a photo.
@@ -4497,6 +4715,11 @@ pub struct Poll {
     pub allows_multiple_answers: bool,
     /// True, if the poll allows to change the chosen answer options
     pub allows_revoting: bool,
+    /// True if voting is limited to users who have been members of the chat where the poll was originally sent for more than 24 hours
+    pub members_only: bool,
+    /// Optional. A list of two-letter ISO 3166-1 alpha-2 country codes indicating the countries from which users can vote in the poll. If omitted, then users from any country can participate in the poll.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub country_codes: Option<Vec<String>>,
     /// Optional. Array of 0-based identifiers of the correct answer options. Available only for polls in quiz mode which are closed or were sent (not forwarded) by the bot or to the private chat with the bot.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub correct_option_ids: Option<Vec<i64>>,
@@ -4506,6 +4729,9 @@ pub struct Poll {
     /// Optional. Special entities like usernames, URLs, bot commands, etc. that appear in the explanation
     #[serde(skip_serializing_if = "Option::is_none")]
     pub explanation_entities: Option<Vec<MessageEntity>>,
+    /// Optional. Media added to the quiz explanation
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub explanation_media: Option<Box<PollMedia>>,
     /// Optional. Amount of time in seconds the poll will be active after creation
     #[serde(skip_serializing_if = "Option::is_none")]
     pub open_period: Option<i64>,
@@ -4518,6 +4744,9 @@ pub struct Poll {
     /// Optional. Special entities like usernames, URLs, bot commands, etc. that appear in the description
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description_entities: Option<Vec<MessageEntity>>,
+    /// Optional. Media added to the poll description; for polls inside the Message object only
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub media: Option<Box<PollMedia>>,
 }
 
 /// This object represents an answer of a user in a non-anonymous poll.
@@ -4538,6 +4767,39 @@ pub struct PollAnswer {
     pub option_persistent_ids: Vec<String>,
 }
 
+/// At most one of the optional fields can be present in any given object.
+/// https://core.telegram.org/bots/api#pollmedia
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+pub struct PollMedia {
+    /// Optional. Media is an animation, information about the animation
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub animation: Option<Box<Animation>>,
+    /// Optional. Media is an audio file, information about the file; currently, can't be received in a poll option
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub audio: Option<Box<Audio>>,
+    /// Optional. Media is a general file, information about the file; currently, can't be received in a poll option
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub document: Option<Box<Document>>,
+    /// Optional. Media is a live photo, information about the live photo
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub live_photo: Option<Box<LivePhoto>>,
+    /// Optional. Media is a shared location, information about the location
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub location: Option<Box<Location>>,
+    /// Optional. Media is a photo, available sizes of the photo
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub photo: Option<Vec<PhotoSize>>,
+    /// Optional. Media is a sticker, information about the sticker; currently, for poll options only
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sticker: Option<Box<Sticker>>,
+    /// Optional. Media is a venue, information about the venue
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub venue: Option<Box<Venue>>,
+    /// Optional. Media is a video, information about the video
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub video: Option<Box<Video>>,
+}
+
 /// This object contains information about one answer option in a poll.
 /// https://core.telegram.org/bots/api#polloption
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -4549,6 +4811,9 @@ pub struct PollOption {
     /// Optional. Special entities that appear in the option text. Currently, only custom emoji entities are allowed in poll option texts
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text_entities: Option<Vec<MessageEntity>>,
+    /// Optional. Media added to the poll option
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub media: Option<Box<PollMedia>>,
     /// Number of users who voted for this option; may be 0 if unknown
     pub voter_count: i64,
     /// Optional. User who added the option; omitted if the option wasn't added by a user after poll creation
@@ -4718,7 +4983,7 @@ pub struct RefundedPayment {
     pub provider_payment_charge_id: Option<String>,
 }
 
-/// This object represents a custom keyboard with reply options (see Introduction to bots for details and examples). Not supported in channels and for messages sent on behalf of a Telegram Business account.
+/// This object represents a custom keyboard with reply options (see Introduction to bots for details and examples). Not supported in channels and for messages sent on behalf of a business account.
 /// https://core.telegram.org/bots/api#replykeyboardmarkup
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct ReplyKeyboardMarkup {
@@ -4741,7 +5006,7 @@ pub struct ReplyKeyboardMarkup {
     pub selective: Option<bool>,
 }
 
-/// Upon receiving a message with this object, Telegram clients will remove the current custom keyboard and display the default letter-keyboard. By default, custom keyboards are displayed until a new keyboard is sent by a bot. An exception is made for one-time keyboards that are hidden immediately after the user presses a button (see ReplyKeyboardMarkup). Not supported in channels and for messages sent on behalf of a Telegram Business account.
+/// Upon receiving a message with this object, Telegram clients will remove the current custom keyboard and display the default letter-keyboard. By default, custom keyboards are displayed until a new keyboard is sent by a bot. An exception is made for one-time keyboards that are hidden immediately after the user presses a button (see ReplyKeyboardMarkup). Not supported in channels and for messages sent on behalf of a business account.
 /// https://core.telegram.org/bots/api#replykeyboardremove
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ReplyKeyboardRemove {
@@ -4758,7 +5023,7 @@ pub struct ReplyKeyboardRemove {
 pub struct ReplyParameters {
     /// Identifier of the message that will be replied to in the current chat, or in the chat chat_id if it is specified
     pub message_id: i64,
-    /// Optional. If the message to be replied to is from a different chat, unique identifier for the chat or username of the channel (in the format @channelusername). Not supported for messages sent on behalf of a business account and messages from channel direct messages chats.
+    /// Optional. If the message to be replied to is from a different chat, unique identifier for the chat or username of the bot, supergroup or channel in the format @username. Not supported for messages sent on behalf of a business account and messages from channel direct messages chats.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
     /// Optional. Pass True if the message should be sent even if the specified message to be replied to is not found. Always False for replies in another chat or forum topic. Always True for messages sent on behalf of a business account.
@@ -4838,6 +5103,14 @@ pub struct RevenueWithdrawalStateSucceeded {
     pub date: i64,
     /// An HTTPS URL that can be used to see transaction details
     pub url: String,
+}
+
+/// Describes an inline message sent by a guest bot.
+/// https://core.telegram.org/bots/api#sentguestmessage
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct SentGuestMessage {
+    /// Identifier of the sent inline message
+    pub inline_message_id: String,
 }
 
 /// Describes an inline message sent by a Web App on behalf of a user.
@@ -5566,7 +5839,7 @@ pub struct UniqueGiftSymbol {
 }
 
 /// This object represents an incoming update.
-/// At most one of the optional parameters can be present in any given update.
+/// At most one of the optional fields can be present in any given update.
 /// https://core.telegram.org/bots/api#update
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Update {
@@ -5596,6 +5869,9 @@ pub struct Update {
     /// Optional. Messages were deleted from a connected business account
     #[serde(skip_serializing_if = "Option::is_none")]
     pub deleted_business_messages: Option<Box<BusinessMessagesDeleted>>,
+    /// Optional. New guest message. The bot can use the field Message.guest_query_id and the method answerGuestQuery to send a message in response.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub guest_message: Option<Box<Message>>,
     /// Optional. A reaction to a message was changed by a user. The bot must be an administrator in the chat and must explicitly specify "message_reaction" in the list of allowed_updates to receive these updates. The update isn't received for reactions set by bots.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message_reaction: Option<Box<MessageReactionUpdated>>,
@@ -5677,10 +5953,13 @@ pub struct User {
     /// Optional. True, if privacy mode is disabled for the bot. Returned only in getMe.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub can_read_all_group_messages: Option<bool>,
+    /// Optional. True, if the bot supports guest queries from chats it is not a member of. Returned only in getMe.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub supports_guest_queries: Option<bool>,
     /// Optional. True, if the bot supports inline queries. Returned only in getMe.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub supports_inline_queries: Option<bool>,
-    /// Optional. True, if the bot can be connected to a Telegram Business account to receive its messages. Returned only in getMe.
+    /// Optional. True, if the bot can be connected to a user account to manage it. Returned only in getMe.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub can_connect_to_business: Option<bool>,
     /// Optional. True, if the bot has a main Web App. Returned only in getMe.
