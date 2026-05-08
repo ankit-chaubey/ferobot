@@ -5677,22 +5677,15 @@ pub struct SendMessageDraftRequest<'bot> {
     bot: &'bot Bot,
     chat_id: i64,
     draft_id: i64,
-    text: String,
     params: SendMessageDraftParams,
 }
 
 impl<'bot> SendMessageDraftRequest<'bot> {
-    pub(crate) fn new(
-        bot: &'bot Bot,
-        chat_id: i64,
-        draft_id: i64,
-        text: impl Into<String>,
-    ) -> Self {
+    pub(crate) fn new(bot: &'bot Bot, chat_id: i64, draft_id: i64) -> Self {
         Self {
             bot,
             chat_id,
             draft_id,
-            text: text.into(),
             params: Default::default(),
         }
     }
@@ -5706,6 +5699,10 @@ impl<'bot> SendMessageDraftRequest<'bot> {
         self.parse_mode("MarkdownV2")
     }
 
+    pub fn text(mut self, v: impl Into<String>) -> Self {
+        self.params.text = Some(v.into());
+        self
+    }
     pub fn message_thread_id(mut self, v: i64) -> Self {
         self.params.message_thread_id = Some(v);
         self
@@ -9527,13 +9524,8 @@ impl Bot {
 
     /// Use this method to stream a partial message to a user while the message is being generated. Returns True on success.
     /// See: https://core.telegram.org/bots/api#sendmessagedraft
-    pub fn send_message_draft(
-        &self,
-        chat_id: i64,
-        draft_id: i64,
-        text: impl Into<String>,
-    ) -> SendMessageDraftRequest<'_> {
-        SendMessageDraftRequest::new(self, chat_id, draft_id, text)
+    pub fn send_message_draft(&self, chat_id: i64, draft_id: i64) -> SendMessageDraftRequest<'_> {
+        SendMessageDraftRequest::new(self, chat_id, draft_id)
     }
 
     /// Use this method to send paid media. On success, the sent Message is returned.

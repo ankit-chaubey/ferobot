@@ -37,6 +37,7 @@ mod serde_roundtrip {
             added_to_attachment_menu: None,
             can_join_groups: None,
             can_read_all_group_messages: None,
+            supports_guest_queries: None,
             supports_inline_queries: None,
             can_connect_to_business: None,
             has_main_web_app: None,
