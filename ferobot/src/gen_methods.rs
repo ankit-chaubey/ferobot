@@ -13,7 +13,7 @@
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
-// Generated from Telegram Bot API Bot API 9.6
+// Generated from Telegram Bot API Bot API 10.0
 // Spec:    https://github.com/ankit-chaubey/api-spec
 // Project: https://github.com/ankit-chaubey/ferobot
 // Author:  Ankit Chaubey <ankitchaubey.dev@gmail.com>
@@ -117,6 +117,28 @@ impl Bot {
             }
         }
         self.call_api("answerCallbackQuery", serde_json::Value::Object(req))
+            .await
+    }
+}
+
+impl Bot {
+    /// Use this method to reply to a received guest message. On success, a SentGuestMessage object is returned.
+    /// See: https://core.telegram.org/bots/api#answerguestquery
+    pub(crate) async fn raw_answer_guest_query(
+        &self,
+        guest_query_id: impl Into<String>,
+        result: InlineQueryResult,
+    ) -> Result<SentGuestMessage, BotError> {
+        let mut req = serde_json::Map::new();
+        req.insert(
+            "guest_query_id".into(),
+            serde_json::to_value(guest_query_id.into()).unwrap_or_default(),
+        );
+        req.insert(
+            "result".into(),
+            serde_json::to_value(result).unwrap_or_default(),
+        );
+        self.call_api("answerGuestQuery", serde_json::Value::Object(req))
             .await
     }
 }
@@ -572,7 +594,7 @@ pub struct CopyMessageParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; only available when copying to private chats
@@ -1276,6 +1298,59 @@ impl Bot {
     }
 }
 
+/// Optional parameters for [`Bot::delete_all_message_reactions_with_params`]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct DeleteAllMessageReactionsParams {
+    /// Identifier of the user whose reactions will be removed, if the reactions were added by a user
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_id: Option<i64>,
+    /// Identifier of the chat whose reactions will be removed, if the reactions were added by a chat
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub actor_chat_id: Option<i64>,
+}
+
+impl DeleteAllMessageReactionsParams {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn user_id(mut self, v: impl Into<i64>) -> Self {
+        self.user_id = Some(v.into());
+        self
+    }
+    pub fn actor_chat_id(mut self, v: impl Into<i64>) -> Self {
+        self.actor_chat_id = Some(v.into());
+        self
+    }
+}
+
+impl Bot {
+    /// Use this method to remove up to 10000 recent reactions in a group or a supergroup chat added by a given user or chat. The bot must have the 'can_delete_messages' administrator right in the chat. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#deleteallmessagereactions
+    pub async fn delete_all_message_reactions_with_params(
+        &self,
+        chat_id: impl Into<ChatId>,
+        params: Option<DeleteAllMessageReactionsParams>,
+    ) -> Result<bool, BotError> {
+        let mut req = serde_json::Map::new();
+        req.insert(
+            "chat_id".into(),
+            serde_json::to_value(chat_id.into()).unwrap_or_default(),
+        );
+        if let Some(p) = params {
+            let extra = serde_json::to_value(&p).unwrap_or_default();
+            if let serde_json::Value::Object(m) = extra {
+                for (k, v) in m {
+                    if !v.is_null() {
+                        req.insert(k, v);
+                    }
+                }
+            }
+        }
+        self.call_api("deleteAllMessageReactions", serde_json::Value::Object(req))
+            .await
+    }
+}
+
 impl Bot {
     /// Delete messages on behalf of a business account. Requires the can_delete_sent_messages business bot right to delete messages sent by the bot itself, or the can_delete_all_messages business bot right to delete any message. Returns True on success.
     /// See: https://core.telegram.org/bots/api#deletebusinessmessages
@@ -1382,6 +1457,64 @@ impl Bot {
             serde_json::to_value(message_id).unwrap_or_default(),
         );
         self.call_api("deleteMessage", serde_json::Value::Object(req))
+            .await
+    }
+}
+
+/// Optional parameters for [`Bot::delete_message_reaction_with_params`]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct DeleteMessageReactionParams {
+    /// Identifier of the user whose reaction will be removed, if the reaction was added by a user
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_id: Option<i64>,
+    /// Identifier of the chat whose reaction will be removed, if the reaction was added by a chat
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub actor_chat_id: Option<i64>,
+}
+
+impl DeleteMessageReactionParams {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn user_id(mut self, v: impl Into<i64>) -> Self {
+        self.user_id = Some(v.into());
+        self
+    }
+    pub fn actor_chat_id(mut self, v: impl Into<i64>) -> Self {
+        self.actor_chat_id = Some(v.into());
+        self
+    }
+}
+
+impl Bot {
+    /// Use this method to remove a reaction from a message in a group or a supergroup chat. The bot must have the 'can_delete_messages' administrator right in the chat. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#deletemessagereaction
+    pub async fn delete_message_reaction_with_params(
+        &self,
+        chat_id: impl Into<ChatId>,
+        message_id: i64,
+        params: Option<DeleteMessageReactionParams>,
+    ) -> Result<bool, BotError> {
+        let mut req = serde_json::Map::new();
+        req.insert(
+            "chat_id".into(),
+            serde_json::to_value(chat_id.into()).unwrap_or_default(),
+        );
+        req.insert(
+            "message_id".into(),
+            serde_json::to_value(message_id).unwrap_or_default(),
+        );
+        if let Some(p) = params {
+            let extra = serde_json::to_value(&p).unwrap_or_default();
+            if let serde_json::Value::Object(m) = extra {
+                for (k, v) in m {
+                    if !v.is_null() {
+                        req.insert(k, v);
+                    }
+                }
+            }
+        }
+        self.call_api("deleteMessageReaction", serde_json::Value::Object(req))
             .await
     }
 }
@@ -1765,7 +1898,7 @@ pub struct EditMessageCaptionParams {
     /// Unique identifier of the business connection on behalf of which the message to be edited was sent
     #[serde(skip_serializing_if = "Option::is_none")]
     pub business_connection_id: Option<String>,
-    /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target channel (in the format @channelusername)
+    /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
     /// Required if inline_message_id is not specified. Identifier of the message to edit
@@ -1880,7 +2013,7 @@ impl Bot {
     pub async fn edit_message_checklist_with_params(
         &self,
         business_connection_id: impl Into<String>,
-        chat_id: i64,
+        chat_id: impl Into<ChatId>,
         message_id: i64,
         checklist: InputChecklist,
         params: Option<EditMessageChecklistParams>,
@@ -1892,7 +2025,7 @@ impl Bot {
         );
         req.insert(
             "chat_id".into(),
-            serde_json::to_value(chat_id).unwrap_or_default(),
+            serde_json::to_value(chat_id.into()).unwrap_or_default(),
         );
         req.insert(
             "message_id".into(),
@@ -1923,7 +2056,7 @@ pub struct EditMessageLiveLocationParams {
     /// Unique identifier of the business connection on behalf of which the message to be edited was sent
     #[serde(skip_serializing_if = "Option::is_none")]
     pub business_connection_id: Option<String>,
-    /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target channel (in the format @channelusername)
+    /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
     /// Required if inline_message_id is not specified. Identifier of the message to edit
@@ -2030,7 +2163,7 @@ pub struct EditMessageMediaParams {
     /// Unique identifier of the business connection on behalf of which the message to be edited was sent
     #[serde(skip_serializing_if = "Option::is_none")]
     pub business_connection_id: Option<String>,
-    /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target channel (in the format @channelusername)
+    /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
     /// Required if inline_message_id is not specified. Identifier of the message to edit
@@ -2071,7 +2204,7 @@ impl EditMessageMediaParams {
 }
 
 impl Bot {
-    /// Use this method to edit animation, audio, document, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
+    /// Use this method to edit animation, audio, document, live photo, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo, a live photo, or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
     /// See: https://core.telegram.org/bots/api#editmessagemedia
     pub async fn edit_message_media_with_params(
         &self,
@@ -2104,7 +2237,7 @@ pub struct EditMessageReplyMarkupParams {
     /// Unique identifier of the business connection on behalf of which the message to be edited was sent
     #[serde(skip_serializing_if = "Option::is_none")]
     pub business_connection_id: Option<String>,
-    /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target channel (in the format @channelusername)
+    /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
     /// Required if inline_message_id is not specified. Identifier of the message to edit
@@ -2173,7 +2306,7 @@ pub struct EditMessageTextParams {
     /// Unique identifier of the business connection on behalf of which the message to be edited was sent
     #[serde(skip_serializing_if = "Option::is_none")]
     pub business_connection_id: Option<String>,
-    /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target channel (in the format @channelusername)
+    /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
     /// Required if inline_message_id is not specified. Identifier of the message to edit
@@ -2731,18 +2864,47 @@ impl Bot {
     }
 }
 
+/// Optional parameters for [`Bot::get_chat_administrators_with_params`]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct GetChatAdministratorsParams {
+    /// Pass True to additionally receive all bots that are administrators of the chat. By default, bots other than the current bot are omitted.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub return_bots: Option<bool>,
+}
+
+impl GetChatAdministratorsParams {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn return_bots(mut self, v: impl Into<bool>) -> Self {
+        self.return_bots = Some(v.into());
+        self
+    }
+}
+
 impl Bot {
-    /// Use this method to get a list of administrators in a chat, which aren't bots. Returns an Array of ChatMember objects.
+    /// Use this method to get a list of administrators in a chat. Returns an Array of ChatMember objects.
     /// See: https://core.telegram.org/bots/api#getchatadministrators
-    pub(crate) async fn raw_get_chat_administrators(
+    pub async fn get_chat_administrators_with_params(
         &self,
         chat_id: impl Into<ChatId>,
+        params: Option<GetChatAdministratorsParams>,
     ) -> Result<Vec<ChatMember>, BotError> {
         let mut req = serde_json::Map::new();
         req.insert(
             "chat_id".into(),
             serde_json::to_value(chat_id.into()).unwrap_or_default(),
         );
+        if let Some(p) = params {
+            let extra = serde_json::to_value(&p).unwrap_or_default();
+            if let serde_json::Value::Object(m) = extra {
+                for (k, v) in m {
+                    if !v.is_null() {
+                        req.insert(k, v);
+                    }
+                }
+            }
+        }
         self.call_api("getChatAdministrators", serde_json::Value::Object(req))
             .await
     }
@@ -3036,6 +3198,26 @@ impl Bot {
         }
         self.call_api("getGameHighScores", serde_json::Value::Object(req))
             .await
+    }
+}
+
+impl Bot {
+    /// Use this method to get the access settings of a managed bot. Returns a BotAccessSettings object on success.
+    /// See: https://core.telegram.org/bots/api#getmanagedbotaccesssettings
+    pub(crate) async fn raw_get_managed_bot_access_settings(
+        &self,
+        user_id: i64,
+    ) -> Result<BotAccessSettings, BotError> {
+        let mut req = serde_json::Map::new();
+        req.insert(
+            "user_id".into(),
+            serde_json::to_value(user_id).unwrap_or_default(),
+        );
+        self.call_api(
+            "getManagedBotAccessSettings",
+            serde_json::Value::Object(req),
+        )
+        .await
     }
 }
 
@@ -3528,6 +3710,31 @@ impl Bot {
         }
         self.call_api("getUserGifts", serde_json::Value::Object(req))
             .await
+    }
+}
+
+impl Bot {
+    /// Use this method to get the last messages from the personal chat (i.e., the chat currently added to their profile) of a given user. On success, an array of Message objects is returned.
+    /// See: https://core.telegram.org/bots/api#getuserpersonalchatmessages
+    pub(crate) async fn raw_get_user_personal_chat_messages(
+        &self,
+        user_id: i64,
+        limit: i64,
+    ) -> Result<Vec<Message>, BotError> {
+        let mut req = serde_json::Map::new();
+        req.insert(
+            "user_id".into(),
+            serde_json::to_value(user_id).unwrap_or_default(),
+        );
+        req.insert(
+            "limit".into(),
+            serde_json::to_value(limit).unwrap_or_default(),
+        );
+        self.call_api(
+            "getUserPersonalChatMessages",
+            serde_json::Value::Object(req),
+        )
+        .await
     }
 }
 
@@ -4595,7 +4802,7 @@ pub struct SendAnimationParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -4762,7 +4969,7 @@ pub struct SendAudioParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -4994,7 +5201,7 @@ impl Bot {
     pub async fn send_checklist_with_params(
         &self,
         business_connection_id: impl Into<String>,
-        chat_id: i64,
+        chat_id: impl Into<ChatId>,
         checklist: InputChecklist,
         params: Option<SendChecklistParams>,
     ) -> Result<Message, BotError> {
@@ -5005,7 +5212,7 @@ impl Bot {
         );
         req.insert(
             "chat_id".into(),
-            serde_json::to_value(chat_id).unwrap_or_default(),
+            serde_json::to_value(chat_id.into()).unwrap_or_default(),
         );
         req.insert(
             "checklist".into(),
@@ -5050,7 +5257,7 @@ pub struct SendContactParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -5180,7 +5387,7 @@ pub struct SendDiceParams {
     /// Protects the contents of the sent message from forwarding
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -5308,7 +5515,7 @@ pub struct SendDocumentParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -5435,7 +5642,7 @@ pub struct SendGameParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -5492,14 +5699,14 @@ impl Bot {
     /// See: https://core.telegram.org/bots/api#sendgame
     pub async fn send_game_with_params(
         &self,
-        chat_id: i64,
+        chat_id: impl Into<ChatId>,
         game_short_name: impl Into<String>,
         params: Option<SendGameParams>,
     ) -> Result<Message, BotError> {
         let mut req = serde_json::Map::new();
         req.insert(
             "chat_id".into(),
-            serde_json::to_value(chat_id).unwrap_or_default(),
+            serde_json::to_value(chat_id.into()).unwrap_or_default(),
         );
         req.insert(
             "game_short_name".into(),
@@ -5526,7 +5733,7 @@ pub struct SendGiftParams {
     /// Required if chat_id is not specified. Unique identifier of the target user who will receive the gift.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_id: Option<i64>,
-    /// Required if user_id is not specified. Unique identifier for the chat or username of the channel (in the format @channelusername) that will receive the gift.
+    /// Required if user_id is not specified. Unique identifier for the chat or username of the channel (in the format @username) that will receive the gift.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
     /// Pass True to pay for the gift upgrade from the bot's balance, thereby making the upgrade free for the receiver
@@ -5664,7 +5871,7 @@ pub struct SendInvoiceParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -5840,6 +6047,152 @@ impl Bot {
     }
 }
 
+/// Optional parameters for [`Bot::send_live_photo_with_params`]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct SendLivePhotoParams {
+    /// Unique identifier of the business connection on behalf of which the message will be sent
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub business_connection_id: Option<String>,
+    /// Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message_thread_id: Option<i64>,
+    /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub direct_messages_topic_id: Option<i64>,
+    /// Video caption (may also be used when resending videos by file_id), 0-1024 characters after entities parsing
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption: Option<String>,
+    /// Mode for parsing entities in the video caption. See formatting options for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parse_mode: Option<String>,
+    /// A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption_entities: Option<Vec<MessageEntity>>,
+    /// Pass True, if the caption must be shown above the message media
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub show_caption_above_media: Option<bool>,
+    /// Pass True if the video needs to be covered with a spoiler animation
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub has_spoiler: Option<bool>,
+    /// Sends the message silently. Users will receive a notification with no sound.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub disable_notification: Option<bool>,
+    /// Protects the contents of the sent message from forwarding and saving
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub protect_content: Option<bool>,
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub allow_paid_broadcast: Option<bool>,
+    /// Unique identifier of the message effect to be added to the message; for private chats only
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message_effect_id: Option<String>,
+    /// A JSON-serialized object containing the parameters of the suggested post to send; for direct messages chats only. If the message is sent as a reply to another suggested post, then that suggested post is automatically declined.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub suggested_post_parameters: Option<Box<SuggestedPostParameters>>,
+    /// Description of the message to reply to
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reply_parameters: Option<Box<ReplyParameters>>,
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reply_markup: Option<ReplyMarkup>,
+}
+
+impl SendLivePhotoParams {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn business_connection_id(mut self, v: impl Into<String>) -> Self {
+        self.business_connection_id = Some(v.into());
+        self
+    }
+    pub fn message_thread_id(mut self, v: impl Into<i64>) -> Self {
+        self.message_thread_id = Some(v.into());
+        self
+    }
+    pub fn direct_messages_topic_id(mut self, v: impl Into<i64>) -> Self {
+        self.direct_messages_topic_id = Some(v.into());
+        self
+    }
+    pub fn caption(mut self, v: impl Into<String>) -> Self {
+        self.caption = Some(v.into());
+        self
+    }
+    pub fn parse_mode(mut self, v: impl Into<String>) -> Self {
+        self.parse_mode = Some(v.into());
+        self
+    }
+    pub fn caption_entities(mut self, v: impl Into<Vec<MessageEntity>>) -> Self {
+        self.caption_entities = Some(v.into());
+        self
+    }
+    pub fn show_caption_above_media(mut self, v: impl Into<bool>) -> Self {
+        self.show_caption_above_media = Some(v.into());
+        self
+    }
+    pub fn has_spoiler(mut self, v: impl Into<bool>) -> Self {
+        self.has_spoiler = Some(v.into());
+        self
+    }
+    pub fn disable_notification(mut self, v: impl Into<bool>) -> Self {
+        self.disable_notification = Some(v.into());
+        self
+    }
+    pub fn protect_content(mut self, v: impl Into<bool>) -> Self {
+        self.protect_content = Some(v.into());
+        self
+    }
+    pub fn allow_paid_broadcast(mut self, v: impl Into<bool>) -> Self {
+        self.allow_paid_broadcast = Some(v.into());
+        self
+    }
+    pub fn message_effect_id(mut self, v: impl Into<String>) -> Self {
+        self.message_effect_id = Some(v.into());
+        self
+    }
+    pub fn suggested_post_parameters(mut self, v: impl Into<Box<SuggestedPostParameters>>) -> Self {
+        self.suggested_post_parameters = Some(v.into());
+        self
+    }
+    pub fn reply_parameters(mut self, v: impl Into<Box<ReplyParameters>>) -> Self {
+        self.reply_parameters = Some(v.into());
+        self
+    }
+    pub fn reply_markup(mut self, v: impl Into<ReplyMarkup>) -> Self {
+        self.reply_markup = Some(v.into());
+        self
+    }
+}
+
+impl Bot {
+    /// Use this method to send live photos. On success, the sent Message is returned.
+    /// See: https://core.telegram.org/bots/api#sendlivephoto
+    pub async fn send_live_photo_with_params(
+        &self,
+        chat_id: impl Into<ChatId>,
+        live_photo: impl Into<InputFileOrString>,
+        photo: impl Into<InputFileOrString>,
+        params: Option<SendLivePhotoParams>,
+    ) -> Result<Message, BotError> {
+        let mut req = serde_json::Map::new();
+        req.insert(
+            "chat_id".into(),
+            serde_json::to_value(chat_id.into()).unwrap_or_default(),
+        );
+        if let Some(p) = params {
+            let extra = serde_json::to_value(&p).unwrap_or_default();
+            if let serde_json::Value::Object(m) = extra {
+                for (k, v) in m {
+                    if !v.is_null() {
+                        req.insert(k, v);
+                    }
+                }
+            }
+        }
+        self.call_api_with_file("sendLivePhoto", req, "live_photo", live_photo.into())
+            .await
+    }
+}
+
 /// Optional parameters for [`Bot::send_location_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendLocationParams {
@@ -5870,7 +6223,7 @@ pub struct SendLocationParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -6005,7 +6358,7 @@ pub struct SendMediaGroupParams {
     /// Protects the contents of the sent messages from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -6055,7 +6408,7 @@ impl SendMediaGroupParams {
 }
 
 impl Bot {
-    /// Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of Message objects that were sent is returned.
+    /// Use this method to send a group of photos, live photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of Message objects that were sent is returned.
     /// See: https://core.telegram.org/bots/api#sendmediagroup
     pub async fn send_media_group_with_params(
         &self,
@@ -6114,7 +6467,7 @@ pub struct SendMessageParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -6228,6 +6581,9 @@ pub struct SendMessageDraftParams {
     /// Unique identifier for the target message thread
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message_thread_id: Option<i64>,
+    /// Text of the message to be sent, 0-4096 characters after entities parsing. Pass an empty text to show a "Thinking..." placeholder.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
     /// Mode for parsing entities in the message text. See formatting options for more details.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub parse_mode: Option<String>,
@@ -6244,6 +6600,10 @@ impl SendMessageDraftParams {
         self.message_thread_id = Some(v.into());
         self
     }
+    pub fn text(mut self, v: impl Into<String>) -> Self {
+        self.text = Some(v.into());
+        self
+    }
     pub fn parse_mode(mut self, v: impl Into<String>) -> Self {
         self.parse_mode = Some(v.into());
         self
@@ -6255,13 +6615,12 @@ impl SendMessageDraftParams {
 }
 
 impl Bot {
-    /// Use this method to stream a partial message to a user while the message is being generated. Returns True on success.
+    /// Use this method to stream a partial message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendMessage with the complete message to persist it in the user's chat. Returns True on success.
     /// See: https://core.telegram.org/bots/api#sendmessagedraft
     pub async fn send_message_draft_with_params(
         &self,
         chat_id: i64,
         draft_id: i64,
-        text: impl Into<String>,
         params: Option<SendMessageDraftParams>,
     ) -> Result<bool, BotError> {
         let mut req = serde_json::Map::new();
@@ -6272,10 +6631,6 @@ impl Bot {
         req.insert(
             "draft_id".into(),
             serde_json::to_value(draft_id).unwrap_or_default(),
-        );
-        req.insert(
-            "text".into(),
-            serde_json::to_value(text.into()).unwrap_or_default(),
         );
         if let Some(p) = params {
             let extra = serde_json::to_value(&p).unwrap_or_default();
@@ -6325,7 +6680,7 @@ pub struct SendPaidMediaParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// A JSON-serialized object containing the parameters of the suggested post to send; for direct messages chats only. If the message is sent as a reply to another suggested post, then that suggested post is automatically declined.
@@ -6472,7 +6827,7 @@ pub struct SendPhotoParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -6621,6 +6976,12 @@ pub struct SendPollParams {
     /// Pass True, if poll results must be shown only after the poll closes
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hide_results_until_closes: Option<bool>,
+    /// Pass True, if voting is limited to users who have been members of the chat where the poll is being sent for more than 24 hours; for channel chats only
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub members_only: Option<bool>,
+    /// A JSON-serialized list of 0-12 two-letter ISO 3166-1 alpha-2 country codes indicating the countries from which users can vote in the poll; for channel chats only. If omitted or empty, then users from any country can participate in the poll.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub country_codes: Option<Vec<String>>,
     /// A JSON-serialized list of monotonically increasing 0-based identifiers of the correct answer options, required for polls in quiz mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub correct_option_ids: Option<Vec<i64>>,
@@ -6633,6 +6994,9 @@ pub struct SendPollParams {
     /// A JSON-serialized list of special entities that appear in the poll explanation. It can be specified instead of explanation_parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub explanation_entities: Option<Vec<MessageEntity>>,
+    /// Media added to the quiz explanation
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub explanation_media: Option<Box<InputPollMedia>>,
     /// Amount of time in seconds the poll will be active after creation, 5-2628000. Can't be used together with close_date.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub open_period: Option<i64>,
@@ -6651,13 +7015,16 @@ pub struct SendPollParams {
     /// A JSON-serialized list of special entities that appear in the poll description, which can be specified instead of description_parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description_entities: Option<Vec<MessageEntity>>,
+    /// Media added to the poll description
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub media: Option<Box<InputPollMedia>>,
     /// Sends the message silently. Users will receive a notification with no sound.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub disable_notification: Option<bool>,
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -6719,6 +7086,14 @@ impl SendPollParams {
         self.hide_results_until_closes = Some(v.into());
         self
     }
+    pub fn members_only(mut self, v: impl Into<bool>) -> Self {
+        self.members_only = Some(v.into());
+        self
+    }
+    pub fn country_codes(mut self, v: impl Into<Vec<String>>) -> Self {
+        self.country_codes = Some(v.into());
+        self
+    }
     pub fn correct_option_ids(mut self, v: impl Into<Vec<i64>>) -> Self {
         self.correct_option_ids = Some(v.into());
         self
@@ -6733,6 +7108,10 @@ impl SendPollParams {
     }
     pub fn explanation_entities(mut self, v: impl Into<Vec<MessageEntity>>) -> Self {
         self.explanation_entities = Some(v.into());
+        self
+    }
+    pub fn explanation_media(mut self, v: impl Into<Box<InputPollMedia>>) -> Self {
+        self.explanation_media = Some(v.into());
         self
     }
     pub fn open_period(mut self, v: impl Into<i64>) -> Self {
@@ -6757,6 +7136,10 @@ impl SendPollParams {
     }
     pub fn description_entities(mut self, v: impl Into<Vec<MessageEntity>>) -> Self {
         self.description_entities = Some(v.into());
+        self
+    }
+    pub fn media(mut self, v: impl Into<Box<InputPollMedia>>) -> Self {
+        self.media = Some(v.into());
         self
     }
     pub fn disable_notification(mut self, v: impl Into<bool>) -> Self {
@@ -6844,7 +7227,7 @@ pub struct SendStickerParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -6970,7 +7353,7 @@ pub struct SendVenueParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -7151,7 +7534,7 @@ pub struct SendVideoParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -7318,7 +7701,7 @@ pub struct SendVideoNoteParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -7452,7 +7835,7 @@ pub struct SendVoiceParams {
     /// Protects the contents of the sent message from forwarding and saving
     #[serde(skip_serializing_if = "Option::is_none")]
     pub protect_content: Option<bool>,
-    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_paid_broadcast: Option<bool>,
     /// Unique identifier of the message effect to be added to the message; for private chats only
@@ -8207,6 +8590,60 @@ impl Bot {
     }
 }
 
+/// Optional parameters for [`Bot::set_managed_bot_access_settings_with_params`]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct SetManagedBotAccessSettingsParams {
+    /// A JSON-serialized list of up to 10 identifiers of users who will have access to the bot in addition to its owner. Ignored if is_access_restricted is false.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub added_user_ids: Option<Vec<i64>>,
+}
+
+impl SetManagedBotAccessSettingsParams {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn added_user_ids(mut self, v: impl Into<Vec<i64>>) -> Self {
+        self.added_user_ids = Some(v.into());
+        self
+    }
+}
+
+impl Bot {
+    /// Use this method to change the access settings of a managed bot. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#setmanagedbotaccesssettings
+    pub async fn set_managed_bot_access_settings_with_params(
+        &self,
+        user_id: i64,
+        is_access_restricted: bool,
+        params: Option<SetManagedBotAccessSettingsParams>,
+    ) -> Result<bool, BotError> {
+        let mut req = serde_json::Map::new();
+        req.insert(
+            "user_id".into(),
+            serde_json::to_value(user_id).unwrap_or_default(),
+        );
+        req.insert(
+            "is_access_restricted".into(),
+            serde_json::to_value(is_access_restricted).unwrap_or_default(),
+        );
+        if let Some(p) = params {
+            let extra = serde_json::to_value(&p).unwrap_or_default();
+            if let serde_json::Value::Object(m) = extra {
+                for (k, v) in m {
+                    if !v.is_null() {
+                        req.insert(k, v);
+                    }
+                }
+            }
+        }
+        self.call_api(
+            "setManagedBotAccessSettings",
+            serde_json::Value::Object(req),
+        )
+        .await
+    }
+}
+
 /// Optional parameters for [`Bot::set_message_reaction_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetMessageReactionParams {
@@ -8908,7 +9345,7 @@ pub struct StopMessageLiveLocationParams {
     /// Unique identifier of the business connection on behalf of which the message to be edited was sent
     #[serde(skip_serializing_if = "Option::is_none")]
     pub business_connection_id: Option<String>,
-    /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target channel (in the format @channelusername)
+    /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
     /// Required if inline_message_id is not specified. Identifier of the message with live location to stop
