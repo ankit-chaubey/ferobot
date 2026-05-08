@@ -1,0 +1,66 @@
+name: Review gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+permissions:
+  pull-requests: read
+  statuses: write
+
+jobs:
+  check-approval:
+    name: Approved by @ankit-chaubey
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check for approval
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo  = context.repo.repo;
+            const pr    = context.payload.pull_request?.number
+                       ?? context.payload.review?.pull_request?.number;
+
+            if (!pr) {
+              console.log("No PR number found, skipping");
+              return;
+            }
+
+            const reviews = await github.rest.pulls.listReviews({
+              owner, repo, pull_number: pr,
+            });
+
+            // Walk reviews and keep the latest state per reviewer
+            const latest = {};
+            for (const r of reviews.data) {
+              if (r.state !== "COMMENTED") {
+                latest[r.user.login] = r.state;
+              }
+            }
+
+            const approved = latest["ankit-chaubey"] === "APPROVED";
+
+            const sha = context.payload.pull_request?.head?.sha
+                     ?? context.payload.review?.commit_id;
+
+            await github.rest.repos.createCommitStatus({
+              owner,
+              repo,
+              sha,
+              state:       approved ? "success" : "pending",
+              context:     "review-gate / Approved by @ankit-chaubey",
+              description: approved
+                ? "Approved, ready to merge"
+                : "Waiting for @ankit-chaubey to approve",
+              target_url: `https://github.com/${owner}/${repo}/pull/${pr}/files`,
+            });
+
+            if (!approved) {
+              core.notice("Waiting for @ankit-chaubey to approve this PR.");
+            } else {
+              core.notice("Approved. Good to go.");
+            }

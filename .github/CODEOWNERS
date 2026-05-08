@@ -1,0 +1,5 @@
+# Every file in this repo requires review from @ankit-chaubey before merge.
+# GitHub enforces this when "Require review from Code Owners" is enabled
+# in branch protection for main.
+
+* @ankit-chaubey

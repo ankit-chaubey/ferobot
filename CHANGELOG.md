@@ -14,15 +14,10 @@ Auto-generated API updates use the [Telegram Bot API spec](https://github.com/Pa
 Auto-generated from latest Telegram Bot API spec.
 
 ---
-# Changelog
-
-All notable changes to ferobot are documented here.
-Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [0.1.0] - 2026-01-01
 
-Initial release.
+### Initial release
 
 - 285 types generated from Telegram Bot API 9.4 (257 structs, 21 union/enum types, 7 marker types)
 - 165 async methods, 100 optional param structs with builder pattern
@@ -36,6 +31,8 @@ Initial release.
 - `Updater` with long-polling and webhook modes
 - `Context` struct with `effective_chat()`, `effective_user()`, `effective_message()`
 - Filter system with composable `.and()`, `.or()`, `.not()` operators
-- Codegen: `codegen/codegen.py` generates `gen_types.rs` and `gen_methods.rs` from `api.json`
+- Codegen: `codegen/codegen.py` generates `gen_types.rs`, `gen_methods.rs`, `fluent.rs` from `api.json`
 - CI: auto-regenerate on Telegram spec changes, build/test/lint, release, docs workflows
 - Examples: `echo_bot`, `command_bot`, `colourbutton`, `webhook`, `mock_client`
+
+---

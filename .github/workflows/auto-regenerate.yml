@@ -1,7 +1,7 @@
-name: 🔄 Auto-Regenerate from Telegram Bot API Spec
+name: Update from Telegram Bot API
 
 on:
-  # Triggered externally via repository_dispatch (e.g. from tgapis/x pipeline)
+  # Triggered by tgapis/x when botapi.json changes
   repository_dispatch:
     types:
       - x-data-updated
@@ -9,12 +9,12 @@ on:
   workflow_dispatch:
     inputs:
       force_regenerate:
-        description: 'Force regeneration even if spec has not changed'
+        description: 'Regenerate even if spec version has not changed'
         required: false
         default: 'false'
         type: boolean
       repo_commit:
-        description: 'ferobot commit SHA to run codegen from (leave empty for latest HEAD)'
+        description: 'Run codegen from this commit SHA (leave blank for HEAD)'
         required: false
         default: ''
 
@@ -30,7 +30,7 @@ env:
 
 jobs:
   check-for-updates:
-    name: 🔍 Check for API Updates
+    name: Check for updates
     runs-on: ubuntu-latest
     outputs:
       has_update: ${{ steps.compare.outputs.has_update }}
@@ -42,33 +42,32 @@ jobs:
       repo_sha: ${{ steps.resolve-repo-commit.outputs.sha }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Python
+      - name: Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Resolve ferobot commit to use
+      - name: Resolve commit
         id: resolve-repo-commit
         run: |
           if [ -n "${{ github.event.inputs.repo_commit }}" ]; then
             SHA="${{ github.event.inputs.repo_commit }}"
-            echo "📌 Using manually specified repo commit: $SHA"
+            echo "Using commit: $SHA"
             git checkout "$SHA"
           else
             SHA=$(git rev-parse HEAD)
-            echo "✅ Using latest HEAD: $SHA"
+            echo "Using HEAD: $SHA"
           fi
           echo "sha=$SHA" >> $GITHUB_OUTPUT
 
-      - name: Fetch latest spec from tgapis/x
+      - name: Fetch spec
         id: fetch-spec
         run: |
-          echo "Fetching spec from: ${{ env.SPEC_URL }}"
           curl -sSf "${{ env.SPEC_URL }}" -o /tmp/api_latest.json
 
           VERSION=$(python3 -c "import json; d=json.load(open('/tmp/api_latest.json')); print(d['version'])")
@@ -87,22 +86,21 @@ jobs:
           echo "types=$TYPES"         >> $GITHUB_OUTPUT
           echo "methods=$METHODS"     >> $GITHUB_OUTPUT
 
-          echo "📦 Latest spec: $VERSION ($DATE) - $TYPES types, $METHODS methods"
+          echo "$VERSION ($DATE): $TYPES types, $METHODS methods"
 
-      - name: Read current pinned version from repo
+      - name: Read current version
         id: current-version
         run: |
-          # api.json in repo root = last processed spec, always reliable for diffing
           if [ -f "api.json" ]; then
             OLD_VERSION=$(python3 -c "import json; d=json.load(open('api.json')); print(d['version'])")
             OLD_DATE=$(python3 -c "import json; d=json.load(open('api.json')); print(d['release_date'])")
             echo "version=$OLD_VERSION" >> $GITHUB_OUTPUT
             echo "release_date=$OLD_DATE" >> $GITHUB_OUTPUT
-            echo "Current pinned version: $OLD_VERSION ($OLD_DATE)"
+            echo "Current: $OLD_VERSION ($OLD_DATE)"
           else
             echo "version=none" >> $GITHUB_OUTPUT
             echo "release_date=none" >> $GITHUB_OUTPUT
-            echo "No api.json found - first run"
+            echo "No api.json found, treating as first run"
           fi
 
       - name: Compare versions
@@ -117,14 +115,14 @@ jobs:
           if [ "$OLD" != "$NEW" ] || [ "$FORCE" = "true" ]; then
             echo "has_update=true"   >> $GITHUB_OUTPUT
             echo "spec_changed=true" >> $GITHUB_OUTPUT
-            echo "✅ Update detected: $OLD → $NEW"
+            echo "Update: $OLD -> $NEW"
           else
             echo "has_update=false"   >> $GITHUB_OUTPUT
             echo "spec_changed=false" >> $GITHUB_OUTPUT
-            echo "✔️  No update needed (already on $NEW)"
+            echo "Already on $NEW, nothing to do"
           fi
 
-      - name: Upload latest spec as artifact
+      - name: Upload spec
         if: steps.compare.outputs.has_update == 'true'
         uses: actions/upload-artifact@v4
         with:
@@ -133,7 +131,7 @@ jobs:
           retention-days: 1
 
   regenerate:
-    name: 🔧 Regenerate Library
+    name: Regenerate
     runs-on: ubuntu-latest
     needs: check-for-updates
     if: needs.check-for-updates.outputs.has_update == 'true'
@@ -148,29 +146,27 @@ jobs:
       pr_body: ${{ steps.pr-info.outputs.body }}
 
     steps:
-      - name: Checkout repository at resolved commit
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ needs.check-for-updates.outputs.repo_sha }}
 
-      - name: Set up Python
+      - name: Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Download latest spec
+      - name: Download spec
         uses: actions/download-artifact@v4
         with:
           name: api-spec-latest
           path: /tmp
 
-      - name: Copy current repo spec for diffing
-        run: |
-          # api.json in repo root = reliable old spec for diffing
-          cp api.json /tmp/api_old.json || echo '{}' > /tmp/api_old.json
+      - name: Save old spec
+        run: cp api.json /tmp/api_old.json || echo '{}' > /tmp/api_old.json
 
-      - name: Run diff analysis
+      - name: Diff specs
         id: diff
         run: |
           python3 .github/scripts/diff_spec.py \
@@ -192,20 +188,20 @@ jobs:
           echo "changed_types=$CHANGED_TYPES"     >> $GITHUB_OUTPUT
           echo "changed_methods=$CHANGED_METHODS" >> $GITHUB_OUTPUT
 
-          echo "📊 Diff: +$ADDED_TYPES types, -$REMOVED_TYPES types, +$ADDED_METHODS methods, -$REMOVED_METHODS methods"
+          echo "types: +$ADDED_TYPES -$REMOVED_TYPES ($CHANGED_TYPES changed)"
+          echo "methods: +$ADDED_METHODS -$REMOVED_METHODS ($CHANGED_METHODS changed)"
 
-      - name: Generate new code
-        run: |
-          python3 ${{ env.CODEGEN_SCRIPT }} /tmp/api_latest.json ${{ env.OUT_DIR }}
+      - name: Run codegen
+        run: python3 ${{ env.CODEGEN_SCRIPT }} /tmp/api_latest.json ${{ env.OUT_DIR }}
 
-      - name: Validate generated code
+      - name: Validate
         run: |
           python3 .github/scripts/validate_generated.py \
             /tmp/api_latest.json \
             ${{ env.OUT_DIR }}/gen_types.rs \
             ${{ env.OUT_DIR }}/gen_methods.rs
 
-      - name: Build PR title and body
+      - name: Build PR content
         id: pr-info
         run: |
           python3 .github/scripts/build_pr_body.py \
@@ -221,29 +217,28 @@ jobs:
           echo "title=$TITLE" >> $GITHUB_OUTPUT
           echo "body_file=/tmp/pr_body.md" >> $GITHUB_OUTPUT
 
-      - name: Update api.json and spec_commit
+      - name: Update api.json
         run: |
-          # api.json - overwrite with latest so next run diffs correctly
           cp /tmp/api_latest.json api.json
-          # spec_commit - record which ferobot repo SHA codegen was run from
           echo "${{ needs.check-for-updates.outputs.repo_sha }}" > spec_commit
 
-      - name: Commit and push to branch
+      - name: Push branch
         id: push
         run: |
           BRANCH="bot-api-update/${{ needs.check-for-updates.outputs.new_version }}"
           BRANCH=$(echo "$BRANCH" | tr ' ' '-' | tr '/' '-')
 
-          git config user.name "vasu-cli"
-          git config user.email "vasu-cli@users.noreply.github.com"
+          git config user.name "Ankit Chaubey"
+          git config user.email "ankitchaubey.dev@gmail.com"
 
           git checkout -b "$BRANCH" 2>/dev/null || git checkout "$BRANCH"
 
           git add api.json spec_commit \
             ${{ env.OUT_DIR }}/gen_types.rs \
-            ${{ env.OUT_DIR }}/gen_methods.rs
+            ${{ env.OUT_DIR }}/gen_methods.rs \
+            ${{ env.OUT_DIR }}/fluent.rs
 
-          printf 'chore(codegen): update to %s\n\nAuto-generated from tgapis/x data branch (botapi.json)\nSource commit: %s\nRepo SHA: %s\n\nChanges:\n- Added types: %s\n- Removed types: %s\n- Added methods: %s\n- Removed methods: %s\n' \
+          printf 'chore(codegen): update to %s\n\nSource commit: %s\nRepo SHA: %s\n\nChanges:\n- Added types: %s\n- Removed types: %s\n- Added methods: %s\n- Removed methods: %s\n' \
             "${{ needs.check-for-updates.outputs.new_version }}" \
             "${{ needs.check-for-updates.outputs.new_commit }}" \
             "${{ needs.check-for-updates.outputs.repo_sha }}" \
@@ -257,21 +252,20 @@ jobs:
           git push origin "$BRANCH" --force
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
 
-      - name: Ensure labels exist
+      - name: Ensure labels
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh label create "bot-api-update" --color "0088cc" --description "Telegram Bot API update" 2>/dev/null || true
-          gh label create "auto-generated"  --color "e4e669" --description "Auto-generated by workflow" 2>/dev/null || true
+          gh label create "auto-generated"  --color "e4e669" --description "Generated by workflow" 2>/dev/null || true
 
-      - name: Create or update pull request
+      - name: Open PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BRANCH="${{ steps.push.outputs.branch }}"
           TITLE="${{ steps.pr-info.outputs.title }}"
 
-          # Check if a PR already exists for this branch
           EXISTING=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number' 2>/dev/null || echo "")
 
           if [ -z "$EXISTING" ]; then
@@ -284,13 +278,13 @@ jobs:
               --label "auto-generated" \
               --assignee ankit-chaubey
           else
-            echo "PR #$EXISTING already exists - updating"
+            echo "PR #$EXISTING already exists, updating"
             gh pr edit "$EXISTING" \
               --title "$TITLE" \
               --body-file /tmp/pr_body.md
           fi
 
-      - name: Upload diff report artifact
+      - name: Upload diff report
         uses: actions/upload-artifact@v4
         with:
           name: diff-report
@@ -298,7 +292,7 @@ jobs:
           retention-days: 7
 
   post-summary:
-    name: 📢 Post Update Summary
+    name: Post summary
     runs-on: ubuntu-latest
     needs: [check-for-updates, regenerate]
     if: needs.check-for-updates.outputs.has_update == 'true'
@@ -313,44 +307,41 @@ jobs:
           name: diff-report
           path: /tmp
 
-      - name: Post to GitHub summary
+      - name: Summary
         run: |
-          cat >> $GITHUB_STEP_SUMMARY << 'EOF'
-          ## 🤖 Telegram Bot API Update Detected!
-          EOF
-
           python3 - << 'PYEOF'
           import json, os
 
           report = json.load(open('/tmp/diff_report.json'))
           summary = open(os.environ['GITHUB_STEP_SUMMARY'], 'a')
 
-          old_v = "${{ needs.check-for-updates.outputs.old_version }}"
-          new_v = "${{ needs.check-for-updates.outputs.new_version }}"
-          new_d = "${{ needs.check-for-updates.outputs.new_date }}"
+          old_v    = "${{ needs.check-for-updates.outputs.old_version }}"
+          new_v    = "${{ needs.check-for-updates.outputs.new_version }}"
+          new_d    = "${{ needs.check-for-updates.outputs.new_date }}"
           repo_sha = "${{ needs.check-for-updates.outputs.repo_sha }}"
 
-          summary.write(f"\n**{old_v}** → **{new_v}** ({new_d})\n\n")
-          summary.write(f"> Source: [tgapis/x @ data branch](https://github.com/tgapis/x/tree/data) - `botapi.json`\n")
+          summary.write(f"## Telegram Bot API updated\n\n")
+          summary.write(f"**{old_v}** to **{new_v}** ({new_d})\n\n")
+          summary.write(f"> Source: [tgapis/x @ data branch](https://github.com/tgapis/x/tree/data)\n")
           summary.write(f"> Repo SHA: `{repo_sha}`\n\n")
 
-          def section(title, items, emoji):
+          def section(title, items, sign):
               if not items:
                   return
-              summary.write(f"### {emoji} {title} ({len(items)})\n")
+              summary.write(f"### {sign} {title} ({len(items)})\n")
               for item in items[:30]:
                   summary.write(f"- `{item}`\n")
               if len(items) > 30:
                   summary.write(f"- ...and {len(items)-30} more\n")
               summary.write("\n")
 
-          section("New Types",       report['added_types'],    "✅")
-          section("Removed Types",   report['removed_types'],  "❌")
-          section("New Methods",     report['added_methods'],  "✅")
-          section("Removed Methods", report['removed_methods'],"❌")
+          section("New types",       report['added_types'],    "+")
+          section("Removed types",   report['removed_types'],  "-")
+          section("New methods",     report['added_methods'],  "+")
+          section("Removed methods", report['removed_methods'],"-")
 
           if report['changed_types']:
-              summary.write(f"### 🔄 Changed Types ({len(report['changed_types'])})\n")
+              summary.write(f"### Changed types ({len(report['changed_types'])})\n")
               for name, changes in list(report['changed_types'].items())[:20]:
                   summary.write(f"#### `{name}`\n")
                   for field, change in changes.items():
@@ -358,7 +349,7 @@ jobs:
               summary.write("\n")
 
           if report['changed_methods']:
-              summary.write(f"### 🔄 Changed Methods ({len(report['changed_methods'])})\n")
+              summary.write(f"### Changed methods ({len(report['changed_methods'])})\n")
               for name, changes in list(report['changed_methods'].items())[:20]:
                   summary.write(f"#### `{name}`\n")
                   for field, change in changes.items():

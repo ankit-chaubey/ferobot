@@ -2,11 +2,13 @@
 """
 update_changelog.py - Prepends a new entry to CHANGELOG.md.
 
-Usage: python3 update_changelog.py CHANGELOG.md <crate_version> <api_version> <date>
+Usage: python3 update_changelog.py CHANGELOG.md <crate_version> <api_version> <date> [--notes "..."]
 """
 
 import sys
+import re
 import json
+import argparse
 from pathlib import Path
 
 HEADER = """# Changelog
@@ -26,28 +28,38 @@ def load_diff(path="/tmp/diff_report.json"):
         return None
 
 def main():
-    if len(sys.argv) < 5:
-        print("Usage: update_changelog.py CHANGELOG.md <crate_ver> <api_ver> <date>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("changelog")
+    parser.add_argument("crate_ver")
+    parser.add_argument("api_ver")
+    parser.add_argument("date")
+    parser.add_argument("--notes", default="", help="Additional release notes")
+    args = parser.parse_args()
 
-    changelog_path = Path(sys.argv[1])
-    crate_ver = sys.argv[2]
-    api_ver = sys.argv[3]
-    date = sys.argv[4]
-
+    changelog_path = Path(args.changelog)
     diff = load_diff()
 
-    # Build new entry
     entry_lines = []
-    entry_lines.append(f"## [{crate_ver}] - {date}")
-    entry_lines.append(f"")
-    entry_lines.append(f"### Telegram Bot API: `{api_ver}`")
-    entry_lines.append(f"")
+    entry_lines.append(f"## [{args.crate_ver}] - {args.date}")
+    entry_lines.append("")
+    entry_lines.append(f"### Telegram Bot API: `{args.api_ver}`")
+    entry_lines.append("")
+    entry_lines.append(
+        f"**Changelog:** [core.telegram.org/bots/api#recent-changes]"
+        f"(https://core.telegram.org/bots/api#recent-changes)"
+    )
+    entry_lines.append("")
+
+    if args.notes.strip():
+        entry_lines.append("**Notes:**")
+        for line in args.notes.strip().splitlines():
+            entry_lines.append(line)
+        entry_lines.append("")
 
     if diff:
-        added_t = diff.get("added_types", [])
+        added_t   = diff.get("added_types", [])
         removed_t = diff.get("removed_types", [])
-        added_m = diff.get("added_methods", [])
+        added_m   = diff.get("added_methods", [])
         removed_m = diff.get("removed_methods", [])
         changed_t = diff.get("changed_types", {})
         changed_m = diff.get("changed_methods", {})
@@ -91,8 +103,9 @@ def main():
                 for field_name, desc in sorted(fields.items()):
                     entry_lines.append(f"  - `{field_name}`: {desc}")
             entry_lines.append("")
-    else:
-        entry_lines.append("Auto-generated from latest Telegram Bot API spec.")
+
+    elif not args.notes.strip():
+        entry_lines.append("Manual release.")
         entry_lines.append("")
 
     entry_lines.append("---")
@@ -100,27 +113,24 @@ def main():
 
     new_entry = "\n".join(entry_lines)
 
-    # Read or initialize changelog
     if changelog_path.exists():
         existing = changelog_path.read_text()
-        # Insert after the header separator
-        if "---\n" in existing:
-            idx = existing.index("---\n") + 4
-            updated = existing[:idx] + "\n" + new_entry + existing[idx:]
+        first_section = re.search(r'^## \[', existing, re.MULTILINE)
+        if first_section:
+            tail = existing[first_section.start():]
+            updated = HEADER + "\n" + new_entry + tail
         else:
-            updated = HEADER + "\n" + new_entry + existing
+            updated = HEADER + "\n" + new_entry
     else:
         updated = HEADER + "\n" + new_entry
 
     changelog_path.write_text(updated)
 
-    # Also write release notes for GitHub release
     with open("/tmp/release_notes.md", "w") as f:
-        f.write(f"## ferobot v{crate_ver}\n\n")
-        f.write(f"Auto-generated from **Telegram Bot API {api_ver}**.\n\n")
+        f.write(f"## ferobot v{args.crate_ver}\n\n")
         f.write(new_entry)
 
-    print(f"✅ CHANGELOG.md updated for v{crate_ver}")
+    print(f"✅ CHANGELOG.md updated for v{args.crate_ver}")
 
 if __name__ == "__main__":
     main()

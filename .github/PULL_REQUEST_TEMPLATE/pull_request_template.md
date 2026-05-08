@@ -22,6 +22,7 @@ Closes #<!-- issue number -->
 - [ ] `cargo clippy --workspace --all-targets` passes (no new warnings)
 - [ ] `cargo fmt --all -- --check` passes
 - [ ] If codegen was changed: `python3 codegen/codegen.py api.json ferobot/src/` was re-run
+- [ ] If codegen was changed: `gen_types.rs`, `gen_methods.rs`, and `fluent.rs` are all committed
 - [ ] If codegen was changed: `python3 .github/scripts/validate_generated.py api.json ferobot/src/gen_types.rs ferobot/src/gen_methods.rs` passes
 - [ ] Documentation updated if needed
 

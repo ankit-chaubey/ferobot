@@ -1,4 +1,4 @@
-name: 🦀 CI - Build & Test
+name: CI
 
 on:
   push:
@@ -47,13 +47,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Rust toolchain (${{ matrix.rust }})
+      - name: Install Rust (${{ matrix.rust }})
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
           components: rustfmt, clippy
 
-      - name: Cache cargo registry
+      - name: Cache
         uses: actions/cache@v4
         with:
           path: |
@@ -65,80 +65,72 @@ jobs:
             ${{ runner.os }}-cargo-${{ matrix.rust }}-
             ${{ runner.os }}-cargo-
 
-      - name: Build library
+      - name: Build
         run: cargo build --workspace --verbose
 
-      - name: Run tests
+      - name: Test
         run: cargo test --workspace --verbose
 
-      - name: Run clippy
+      - name: Clippy
         if: matrix.rust == 'stable'
         run: cargo clippy --workspace --all-targets -- -D warnings
 
-      - name: Check formatting
+      - name: Format check
         if: matrix.rust == 'stable' && matrix.os == 'ubuntu-latest'
         run: cargo fmt --all -- --check
 
-  # runs against committed api.json, not the live feed
-  # so CI stays green while an auto-regen PR is still open
+  # Runs against the committed api.json, not the live feed.
+  # This keeps CI green while an auto-regen PR is still open.
   validate-and-coverage:
-    name: 🔍 Validate & Coverage
+    name: Validate and coverage
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Read spec version
+      - name: Spec version
         run: |
           VERSION=$(python3 -c "import json; print(json.load(open('api.json'))['version'])")
-          echo "📦 Validating against committed spec: $VERSION"
+          echo "Checking against $VERSION"
 
-      - name: Re-run codegen from committed api.json
+      - name: Re-run codegen
         run: |
           mkdir -p /tmp/codegen_out
           python3 codegen/codegen.py api.json /tmp/codegen_out
 
-      - name: Compare generated files with committed files
+      - name: Check generated files
         run: |
-          echo "Checking gen_types.rs..."
-          if ! diff -q ferobot/src/gen_types.rs /tmp/codegen_out/gen_types.rs > /dev/null 2>&1; then
-            echo "❌ gen_types.rs is OUT OF SYNC with api.json!"
-            echo "Run: python3 codegen/codegen.py api.json ferobot/src/ to regenerate"
-            diff ferobot/src/gen_types.rs /tmp/codegen_out/gen_types.rs | head -50
-            exit 1
-          fi
-          echo "✅ gen_types.rs is in sync"
+          for file in gen_types.rs gen_methods.rs fluent.rs; do
+            if ! diff -q ferobot/src/$file /tmp/codegen_out/$file > /dev/null 2>&1; then
+              echo "$file is out of sync with api.json"
+              echo "Run: python3 codegen/codegen.py api.json ferobot/src/"
+              diff ferobot/src/$file /tmp/codegen_out/$file | head -50
+              exit 1
+            fi
+            echo "$file is in sync"
+          done
 
-          echo "Checking gen_methods.rs..."
-          if ! diff -q ferobot/src/gen_methods.rs /tmp/codegen_out/gen_methods.rs > /dev/null 2>&1; then
-            echo "❌ gen_methods.rs is OUT OF SYNC with api.json!"
-            echo "Run: python3 codegen/codegen.py api.json ferobot/src/ to regenerate"
-            diff ferobot/src/gen_methods.rs /tmp/codegen_out/gen_methods.rs | head -50
-            exit 1
-          fi
-          echo "✅ gen_methods.rs is in sync"
-
-      - name: Validate all types and methods are covered
+      - name: Validate coverage
         run: |
           python3 .github/scripts/validate_generated.py \
             api.json \
             ferobot/src/gen_types.rs \
             ferobot/src/gen_methods.rs
 
-      - name: Generate coverage report
+      - name: Coverage report
         run: |
           python3 .github/scripts/coverage_report.py \
             api.json \
             ferobot/src/gen_types.rs \
             ferobot/src/gen_methods.rs
 
-      - name: Post coverage to step summary
+      - name: Post coverage
         run: |
           python3 .github/scripts/coverage_report.py \
             api.json \

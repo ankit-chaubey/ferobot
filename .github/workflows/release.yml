@@ -1,7 +1,7 @@
-name: 🚀 Release - Publish to crates.io
+name: Release
 
 on:
-  # Trigger when a bot-api-update PR is merged into main
+  # Runs when a bot-api-update PR is merged into main
   pull_request:
     types: [closed]
     branches: [main]
@@ -15,10 +15,14 @@ on:
         type: choice
         options: [patch, minor, major]
       dry_run:
-        description: 'Dry run (do not actually publish)'
+        description: 'Dry run (skip actual publish)'
         required: false
         default: 'true'
         type: boolean
+      notes:
+        description: 'Release notes for changelog and GitHub release'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -27,9 +31,8 @@ permissions:
 
 jobs:
   release:
-    name: 📦 Version Bump & Publish
+    name: Version bump and publish
     runs-on: ubuntu-latest
-    # Only proceed if it's an auto-generated PR being merged, or manual dispatch
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.pull_request.merged == true &&
@@ -42,18 +45,18 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install Rust
+      - name: Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Set up Python
+      - name: Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install cargo-edit (for version bumping)
+      - name: Install cargo-edit
         run: cargo install cargo-edit --locked
 
-      - name: Download diff report from auto-regenerate run
+      - name: Download diff report
         if: github.event_name != 'workflow_dispatch'
         uses: dawidd6/action-download-artifact@v6
         with:
@@ -63,40 +66,36 @@ jobs:
           path: /tmp
         continue-on-error: true
 
-      - name: Determine version bump type
+      - name: Determine bump type
         id: bump-type
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             BUMP="${{ github.event.inputs.bump }}"
           else
-            # For auto-updates: removed/breaking changes → minor, else → patch
-            REMOVED_TYPES=$(python3 -c "
+            # If types or methods were removed, bump minor. Otherwise patch.
+            REMOVED=$(python3 -c "
           import json, sys
           try:
               r = json.load(open('/tmp/diff_report.json'))
               print(len(r.get('removed_types', [])) + len(r.get('removed_methods', [])))
-          except Exception as e:
-              print(0, file=sys.stderr)
+          except:
               print(0)
-          " 2>/tmp/bump_err.txt)
-            if [ -s /tmp/bump_err.txt ]; then
-              echo "⚠️  Could not read diff report, defaulting to patch: $(cat /tmp/bump_err.txt)"
-            fi
-            if [ "$REMOVED_TYPES" -gt "0" ]; then
+          " 2>/dev/null || echo "0")
+            if [ "$REMOVED" -gt "0" ]; then
               BUMP="minor"
             else
               BUMP="patch"
             fi
           fi
           echo "bump=$BUMP" >> $GITHUB_OUTPUT
-          echo "Bumping version: $BUMP"
+          echo "Bump: $BUMP"
 
       - name: Read current version
         id: current-ver
         run: |
           VER=$(grep '^version' ferobot/Cargo.toml | head -1 | sed 's/version = \"//;s/\"//')
           echo "version=$VER" >> $GITHUB_OUTPUT
-          echo "Current version: $VER"
+          echo "Current: $VER"
 
       - name: Bump version
         id: new-ver
@@ -105,49 +104,45 @@ jobs:
           cargo set-version --bump ${{ steps.bump-type.outputs.bump }}
           VER=$(grep '^version' Cargo.toml | head -1 | sed 's/version = \"//;s/\"//')
           echo "version=$VER" >> $GITHUB_OUTPUT
-          echo "New version: $VER"
+          echo "New: $VER"
 
-      - name: Get API version from spec
+      - name: API version
         id: api-ver
         run: |
           VER=$(python3 -c "import json; print(json.load(open('api.json'))['version'])")
           echo "version=$VER" >> $GITHUB_OUTPUT
 
-      - name: Update CHANGELOG
+      - name: Update changelog
         run: |
-          API_VER="${{ steps.api-ver.outputs.version }}"
-          CRATE_VER="${{ steps.new-ver.outputs.version }}"
-          DATE=$(date +%Y-%m-%d)
-
           python3 .github/scripts/update_changelog.py \
             CHANGELOG.md \
-            "$CRATE_VER" \
-            "$API_VER" \
-            "$DATE"
+            "${{ steps.new-ver.outputs.version }}" \
+            "${{ steps.api-ver.outputs.version }}" \
+            "$(date +%Y-%m-%d)" \
+            --notes "${{ github.event.inputs.notes }}"
 
-      - name: Build and test before release
+      - name: Test
         run: cargo test --workspace
 
-      - name: Commit version bump
+      - name: Commit and push
         run: |
           git config user.name "Ankit Chaubey"
           git config user.email "ankitchaubey.dev@gmail.com"
           git add ferobot/Cargo.toml CHANGELOG.md
-          printf 'chore(release): bump version to %s\n\nTelegram Bot API: %s\nCrate version: %s\n' \
+          printf 'chore(release): bump to %s\n\nTelegram Bot API: %s\n' \
             "${{ steps.new-ver.outputs.version }}" \
             "${{ steps.api-ver.outputs.version }}" \
-            "${{ steps.new-ver.outputs.version }}" \
             > /tmp/commit_msg.txt
           git commit -F /tmp/commit_msg.txt
           git push origin main
 
-      - name: Create git tag
+      - name: Tag
         run: |
           TAG="v${{ steps.new-ver.outputs.version }}"
           git tag -a "$TAG" -m "Release $TAG - Telegram Bot API ${{ steps.api-ver.outputs.version }}"
           git push origin "$TAG"
 
-      - name: Create GitHub Release
+      - name: GitHub release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.new-ver.outputs.version }}
@@ -156,20 +151,15 @@ jobs:
           generate_release_notes: true
           draft: false
 
-      - name: Copy root README into package for publish
+      - name: Copy README
         run: cp README.md ferobot/README.md
 
-      - name: Publish to crates.io
+      - name: Publish
         if: github.event.inputs.dry_run != 'true'
-        run: |
-          cd ferobot
-          cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: cargo publish --manifest-path ferobot/Cargo.toml --token ${{ secrets.CRATES_IO_TOKEN }}
 
-      - name: Dry run publish check
+      - name: Dry run
         if: github.event.inputs.dry_run == 'true'
         run: |
-          cd ferobot
-          cargo publish --dry-run
-          echo "✅ Dry run successful - would have published v${{ steps.new-ver.outputs.version }}"
+          cargo publish --manifest-path ferobot/Cargo.toml --dry-run --allow-dirty
+          echo "Dry run passed. Would have published v${{ steps.new-ver.outputs.version }}"
