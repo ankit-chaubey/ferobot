@@ -324,6 +324,75 @@ impl Bot {
         }
     }
 
+    pub async fn call_api_with_two_files<T>(
+        &self,
+        method: &str,
+        body: serde_json::Map<String, serde_json::Value>,
+        field_a: &str,
+        file_a: InputFileOrString,
+        field_b: &str,
+        file_b: InputFileOrString,
+    ) -> Result<T, BotError>
+    where
+        T: for<'de> Deserialize<'de>,
+    {
+        let a_is_upload = matches!(file_a, InputFileOrString::File(InputFile::Memory { .. }));
+        let b_is_upload = matches!(file_b, InputFileOrString::File(InputFile::Memory { .. }));
+
+        if a_is_upload || b_is_upload {
+            let mut parts: Vec<FormPart> = body
+                .into_iter()
+                .filter(|(_, v)| !v.is_null())
+                .map(|(k, v)| {
+                    let text = match &v {
+                        serde_json::Value::String(s) => s.clone(),
+                        other => other.to_string(),
+                    };
+                    FormPart::text(k, text)
+                })
+                .collect();
+
+            match file_a {
+                InputFileOrString::File(InputFile::Memory { filename, data }) => {
+                    let mime = infer_mime(&filename);
+                    parts.push(FormPart::bytes(field_a, filename, mime, data));
+                }
+                other => {
+                    parts.push(FormPart::text(
+                        field_a,
+                        serde_json::to_value(other).unwrap_or_default().to_string(),
+                    ));
+                }
+            }
+
+            match file_b {
+                InputFileOrString::File(InputFile::Memory { filename, data }) => {
+                    let mime = infer_mime(&filename);
+                    parts.push(FormPart::bytes(field_b, filename, mime, data));
+                }
+                other => {
+                    parts.push(FormPart::text(
+                        field_b,
+                        serde_json::to_value(other).unwrap_or_default().to_string(),
+                    ));
+                }
+            }
+
+            self.call_api_multipart(method, parts).await
+        } else {
+            let mut req = body;
+            req.insert(
+                field_a.into(),
+                serde_json::to_value(file_a).unwrap_or_default(),
+            );
+            req.insert(
+                field_b.into(),
+                serde_json::to_value(file_b).unwrap_or_default(),
+            );
+            self.call_api(method, serde_json::Value::Object(req)).await
+        }
+    }
+
     /// Make a `multipart/form-data` API call directly from [`FormPart`]s.
     pub async fn call_api_multipart<T>(
         &self,

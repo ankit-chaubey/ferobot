@@ -6188,8 +6188,15 @@ impl Bot {
                 }
             }
         }
-        self.call_api_with_file("sendLivePhoto", req, "live_photo", live_photo.into())
-            .await
+        self.call_api_with_two_files(
+            "sendLivePhoto",
+            req,
+            "live_photo",
+            live_photo.into(),
+            "photo",
+            photo.into(),
+        )
+        .await
     }
 }
 
