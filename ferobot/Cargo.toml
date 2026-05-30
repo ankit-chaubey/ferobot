@@ -54,7 +54,7 @@ dashmap     = { version = "6",   optional = true }
 redis       = { version = "0.25", features = ["tokio-comp", "connection-manager"], optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-reqwest = { version = "0.12", features = ["json", "multipart"] }
+reqwest = { version = "0.12", features = ["json", "multipart", "http2", "rustls-tls", "gzip"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 reqwest = { version = "0.12", features = ["json"] }

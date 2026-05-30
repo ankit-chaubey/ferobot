@@ -117,6 +117,16 @@ pub trait BotClient: Send + Sync + fmt::Debug {
     async fn post_json(&self, url: &str, body: serde_json::Value)
         -> Result<bytes::Bytes, BotError>;
 
+    /// POST pre-serialized JSON bytes to `url`. Avoids re-serializing a
+    /// `serde_json::Value` that was already rendered to bytes by the caller.
+    /// The default delegates to `post_json` via deserialization; override for
+    /// zero-copy performance.
+    async fn post_json_raw(&self, url: &str, body: Vec<u8>) -> Result<bytes::Bytes, BotError> {
+        let v: serde_json::Value =
+            serde_json::from_slice(&body).unwrap_or(serde_json::Value::Object(Default::default()));
+        self.post_json(url, v).await
+    }
+
     /// POST a `multipart/form-data` request to `url` and return the raw
     /// response bytes.
     async fn post_form(&self, url: &str, parts: Vec<FormPart>) -> Result<bytes::Bytes, BotError>;
@@ -133,35 +143,54 @@ pub struct ReqwestClient {
 
 impl ReqwestClient {
     /// Create a `ReqwestClient` with the given HTTP timeout.
+    /// Uses the same optimized settings as `for_api` so every Bot,
+    /// regardless of how it was constructed, gets keepalive + TCP_NODELAY.
     pub fn with_timeout(timeout: std::time::Duration) -> Result<Self, BotError> {
-        let inner = reqwest::Client::builder()
-            .timeout(timeout)
-            .build()
-            .map_err(BotError::Http)?;
-        Ok(Self { inner })
+        Self::for_api_with_timeout(timeout)
     }
 
     /// HTTP client for outbound API calls (sendMessage, etc.).
-    /// 10 s timeout, large connection pool, TCP_NODELAY, keepalive.
+    /// 10 s timeout, HTTP/2, large connection pool, TCP_NODELAY, keepalive.
     pub fn for_api() -> Result<Self, BotError> {
+        Self::for_api_with_timeout(std::time::Duration::from_secs(10))
+    }
+
+    /// Like `for_api` but with a custom read timeout.
+    pub fn for_api_with_timeout(timeout: std::time::Duration) -> Result<Self, BotError> {
         let inner = reqwest::Client::builder()
-            .timeout(std::time::Duration::from_secs(10))
-            .pool_max_idle_per_host(200)
-            .tcp_keepalive(std::time::Duration::from_secs(60))
+            .timeout(timeout)
+            .connect_timeout(std::time::Duration::from_secs(5))
+            .pool_max_idle_per_host(512)
+            .pool_idle_timeout(std::time::Duration::from_secs(55))
+            .tcp_keepalive(std::time::Duration::from_secs(30))
             .tcp_nodelay(true)
+            // HTTP/2 is negotiated via ALPN over TLS (rustls-tls feature).
+            // No prior_knowledge here: that is for plaintext h2 only.
+            .http2_adaptive_window(true)
+            .http2_keep_alive_interval(std::time::Duration::from_secs(20))
+            .http2_keep_alive_timeout(std::time::Duration::from_secs(5))
+            .http2_keep_alive_while_idle(true)
+            .gzip(true)
             .build()
             .map_err(BotError::Http)?;
         Ok(Self { inner })
     }
 
     /// HTTP client for long-polling (`getUpdates`).
-    /// 65 s timeout (slightly over the max 60 s poll), pool of 1, keepalive.
-    /// Pass a separate `for_api()` bot to handlers.
+    /// 65 s read timeout (slightly over the max 60 s poll), single-connection
+    /// pool so it never contends with outbound API calls.
     pub fn for_polling() -> Result<Self, BotError> {
         let inner = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(65))
+            .connect_timeout(std::time::Duration::from_secs(5))
             .pool_max_idle_per_host(1)
-            .tcp_keepalive(std::time::Duration::from_secs(60))
+            .pool_idle_timeout(std::time::Duration::from_secs(55))
+            .tcp_keepalive(std::time::Duration::from_secs(30))
+            .tcp_nodelay(true)
+            .http2_adaptive_window(true)
+            .http2_keep_alive_interval(std::time::Duration::from_secs(20))
+            .http2_keep_alive_timeout(std::time::Duration::from_secs(5))
+            .http2_keep_alive_while_idle(true)
             .build()
             .map_err(BotError::Http)?;
         Ok(Self { inner })
@@ -178,6 +207,21 @@ impl BotClient for ReqwestClient {
         self.inner
             .post(url)
             .json(&body)
+            .send()
+            .await
+            .map_err(BotError::Http)?
+            .bytes()
+            .await
+            .map_err(BotError::Http)
+    }
+
+    /// Zero-copy fast path: body is already serialized, send raw bytes directly
+    /// without re-parsing into a `serde_json::Value` tree.
+    async fn post_json_raw(&self, url: &str, body: Vec<u8>) -> Result<bytes::Bytes, BotError> {
+        self.inner
+            .post(url)
+            .header("Content-Type", "application/json")
+            .body(body)
             .send()
             .await
             .map_err(BotError::Http)?

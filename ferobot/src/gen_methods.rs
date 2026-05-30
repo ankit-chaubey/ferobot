@@ -6558,27 +6558,23 @@ impl Bot {
         text: impl Into<String>,
         params: Option<SendMessageParams>,
     ) -> Result<Message, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "text".into(),
-            serde_json::to_value(text.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        // Flatten required + optional fields into a single serializable struct
+        // so we do ONE serde_json pass instead of building a BTreeMap first.
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            text: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendMessageParams>,
         }
-        self.call_api("sendMessage", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let text = text.into();
+        let req = Req {
+            chat_id: &chat_id,
+            text: &text,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendMessage", &req).await
     }
 }
 

@@ -273,16 +273,19 @@ impl Dispatcher {
         }
 
         tokio::spawn(async move {
-            // Run before-hooks; any hook returning false drops the update.
-            if !crate::middleware::run_before(&middleware, &bot, &update).await {
-                return;
-            }
-
-            let _permit = if let Some(sem) = &semaphore {
+            // Acquire the concurrency permit at the very top of the task,
+            // before middleware or handlers run, so the semaphore count
+            // accurately reflects in-flight work.
+            let _permit = if let Some(ref sem) = semaphore {
                 Some(sem.clone().acquire_owned().await.ok())
             } else {
                 None
             };
+
+            // Run before-hooks; any hook returning false drops the update.
+            if !crate::middleware::run_before(&middleware, &bot, &update).await {
+                return;
+            }
 
             let ctx = Context::new(update.clone());
             let snapshot = handlers_arc.load_full();

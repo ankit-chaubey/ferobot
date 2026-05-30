@@ -214,7 +214,7 @@ impl Bot {
     pub fn new_unverified(token: impl Into<String>) -> Result<Self, BotError> {
         let token = token.into();
         let bot_id = parse_bot_id(&token)?;
-        let client = ReqwestClient::with_timeout(std::time::Duration::from_secs(30))
+        let client = ReqwestClient::for_api_with_timeout(std::time::Duration::from_secs(30))
             .expect("default client should build");
         let api_url = DEFAULT_API_URL.to_string();
         let base = format!("{}/bot{}/", api_url, token);
@@ -267,6 +267,8 @@ impl Bot {
     }
 
     /// Build the full endpoint URL for a Telegram method name.
+    /// Allocates a new String per call; for hot paths use `call_api_raw`
+    /// which avoids the intermediate `serde_json::Value` tree entirely.
     pub fn endpoint(&self, method: &str) -> String {
         format!("{}{}", self.base, method)
     }
@@ -279,6 +281,21 @@ impl Bot {
         let url = self.endpoint(method);
         let bytes = self.client.post_json(&url, body).await?;
         let tg: TelegramResponse<T> = serde_json::from_slice(&bytes)?;
+        self.unwrap_response(tg)
+    }
+
+    /// Fast path: serialize `body` once directly to bytes and POST without
+    /// building an intermediate `serde_json::Value` tree. Use this from
+    /// generated methods where the body is a plain `Serialize` struct.
+    pub(crate) async fn call_api_raw<S, T>(&self, method: &str, body: &S) -> Result<T, BotError>
+    where
+        S: serde::Serialize,
+        T: for<'de> Deserialize<'de>,
+    {
+        let url = self.endpoint(method);
+        let bytes_body = serde_json::to_vec(body).map_err(|e| BotError::Other(e.to_string()))?;
+        let resp = self.client.post_json_raw(&url, bytes_body).await?;
+        let tg: TelegramResponse<T> = serde_json::from_slice(&resp)?;
         self.unwrap_response(tg)
     }
 
