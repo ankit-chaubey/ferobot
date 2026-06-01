@@ -198,7 +198,8 @@ impl Poller {
             for update in updates {
                 offset = update.update_id + 1;
 
-                // block here until a slot is free, then move the permit into the task
+                // Acquire the permit *before* spawning so we never waste a
+                // thread-pool slot on a task that immediately blocks waiting.
                 let permit = semaphore
                     .clone()
                     .acquire_owned()

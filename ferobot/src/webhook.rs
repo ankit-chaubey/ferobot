@@ -56,11 +56,14 @@ use crate::types::Update;
 use crate::{Bot, BotError};
 
 use axum::{
+    body::Bytes,
     extract::State,
     http::{HeaderMap, StatusCode},
+    response::IntoResponse,
     routing::post,
-    Json, Router,
+    Router,
 };
+use futures::FutureExt as _;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::sync::Semaphore;
@@ -211,26 +214,40 @@ impl WebhookServer {
     }
 }
 
+/// Webhook handler - optimised for minimum response latency.
+///
+/// Parses the body manually from raw bytes (avoids axum's `Json` extractor
+/// allocating a second deserialization path), returns `200 OK` with an empty
+/// body before the handler task even starts, and uses a single `tokio::spawn`
+/// with `catch_unwind` instead of the previous double-spawn.
 async fn handle_update(
     State(state): State<Arc<AppState>>,
     headers: HeaderMap,
-    Json(update): Json<Update>,
-) -> StatusCode {
+    body: Bytes,
+) -> impl IntoResponse {
+    // --- 1. Authenticate ---
     if let Some(ref expected) = state.secret_token {
         let provided = headers
             .get("x-telegram-bot-api-secret-token")
             .and_then(|v| v.to_str().ok())
             .unwrap_or("");
-
         if provided != expected {
             warn!("invalid secret token - webhook request rejected");
             return StatusCode::FORBIDDEN;
         }
     }
 
-    // Try to acquire a concurrency permit without blocking the axum task.
-    // If all slots are taken, return 429 so Telegram retries after a back-off.
-    // This is preferable to queuing inside the server and risking OOM.
+    // --- 2. Deserialize from raw bytes (single pass, no Value intermediate) ---
+    let update: Update = match serde_json::from_slice(&body) {
+        Ok(u) => u,
+        Err(e) => {
+            warn!("failed to deserialize update: {}", e);
+            // Return 200 so Telegram doesn't keep retrying a malformed body.
+            return StatusCode::OK;
+        }
+    };
+
+    // --- 3. Concurrency gate (non-blocking) ---
     let permit = match state.semaphore.clone().try_acquire_owned() {
         Ok(p) => p,
         Err(_) => {
@@ -242,21 +259,15 @@ async fn handle_update(
     let bot = state.bot.clone();
     let handler = Arc::clone(&state.handler);
 
-    // Double-spawn for panic isolation + immediate 200 response.
-    // Outer task: owns the semaphore permit, monitors the inner task.
-    // Inner task: runs the user handler may panic freely.
+    // --- 4. Spawn and return 200 immediately ---
+    // Single spawn with catch_unwind: half the task overhead of double-spawn.
     tokio::spawn(async move {
-        let _permit = permit; // released when this task ends
-
-        let result = tokio::spawn(async move {
-            (handler)(bot, update).await;
-        })
-        .await;
-
-        if let Err(join_err) = result {
-            if join_err.is_panic() {
-                error!("handler panicked on webhook update - task isolated, server continues");
-            }
+        let _permit = permit;
+        let result = std::panic::AssertUnwindSafe((handler)(bot, update))
+            .catch_unwind()
+            .await;
+        if result.is_err() {
+            error!("handler panicked on webhook update - caught, server continues");
         }
     });
 

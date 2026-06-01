@@ -36,21 +36,19 @@ impl Bot {
         name: impl Into<String>,
         sticker: InputSticker,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "name".into(),
-            serde_json::to_value(name.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "sticker".into(),
-            serde_json::to_value(sticker).unwrap_or_default(),
-        );
-        self.call_api("addStickerToSet", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            name: &'a str,
+            sticker: &'a InputSticker,
+        }
+        let name = name.into();
+        let req = Req {
+            user_id,
+            name: &name,
+            sticker: &sticker,
+        };
+        self.call_api_raw("addStickerToSet", &req).await
     }
 }
 
@@ -101,23 +99,18 @@ impl Bot {
         callback_query_id: impl Into<String>,
         params: Option<AnswerCallbackQueryParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "callback_query_id".into(),
-            serde_json::to_value(callback_query_id.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            callback_query_id: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a AnswerCallbackQueryParams>,
         }
-        self.call_api("answerCallbackQuery", serde_json::Value::Object(req))
-            .await
+        let callback_query_id = callback_query_id.into();
+        let req = Req {
+            callback_query_id: &callback_query_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("answerCallbackQuery", &req).await
     }
 }
 
@@ -129,17 +122,17 @@ impl Bot {
         guest_query_id: impl Into<String>,
         result: InlineQueryResult,
     ) -> Result<SentGuestMessage, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "guest_query_id".into(),
-            serde_json::to_value(guest_query_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "result".into(),
-            serde_json::to_value(result).unwrap_or_default(),
-        );
-        self.call_api("answerGuestQuery", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            guest_query_id: &'a str,
+            result: &'a InlineQueryResult,
+        }
+        let guest_query_id = guest_query_id.into();
+        let req = Req {
+            guest_query_id: &guest_query_id,
+            result: &result,
+        };
+        self.call_api_raw("answerGuestQuery", &req).await
     }
 }
 
@@ -192,27 +185,20 @@ impl Bot {
         results: Vec<InlineQueryResult>,
         params: Option<AnswerInlineQueryParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "inline_query_id".into(),
-            serde_json::to_value(inline_query_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "results".into(),
-            serde_json::to_value(results).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            inline_query_id: &'a str,
+            results: &'a Vec<InlineQueryResult>,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a AnswerInlineQueryParams>,
         }
-        self.call_api("answerInlineQuery", serde_json::Value::Object(req))
-            .await
+        let inline_query_id = inline_query_id.into();
+        let req = Req {
+            inline_query_id: &inline_query_id,
+            results: &results,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("answerInlineQuery", &req).await
     }
 }
 
@@ -243,24 +229,20 @@ impl Bot {
         ok: bool,
         params: Option<AnswerPreCheckoutQueryParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "pre_checkout_query_id".into(),
-            serde_json::to_value(pre_checkout_query_id.into()).unwrap_or_default(),
-        );
-        req.insert("ok".into(), serde_json::to_value(ok).unwrap_or_default());
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            pre_checkout_query_id: &'a str,
+            ok: bool,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a AnswerPreCheckoutQueryParams>,
         }
-        self.call_api("answerPreCheckoutQuery", serde_json::Value::Object(req))
-            .await
+        let pre_checkout_query_id = pre_checkout_query_id.into();
+        let req = Req {
+            pre_checkout_query_id: &pre_checkout_query_id,
+            ok,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("answerPreCheckoutQuery", &req).await
     }
 }
 
@@ -298,24 +280,20 @@ impl Bot {
         ok: bool,
         params: Option<AnswerShippingQueryParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "shipping_query_id".into(),
-            serde_json::to_value(shipping_query_id.into()).unwrap_or_default(),
-        );
-        req.insert("ok".into(), serde_json::to_value(ok).unwrap_or_default());
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            shipping_query_id: &'a str,
+            ok: bool,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a AnswerShippingQueryParams>,
         }
-        self.call_api("answerShippingQuery", serde_json::Value::Object(req))
-            .await
+        let shipping_query_id = shipping_query_id.into();
+        let req = Req {
+            shipping_query_id: &shipping_query_id,
+            ok,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("answerShippingQuery", &req).await
     }
 }
 
@@ -327,17 +305,17 @@ impl Bot {
         web_app_query_id: impl Into<String>,
         result: InlineQueryResult,
     ) -> Result<SentWebAppMessage, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "web_app_query_id".into(),
-            serde_json::to_value(web_app_query_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "result".into(),
-            serde_json::to_value(result).unwrap_or_default(),
-        );
-        self.call_api("answerWebAppQuery", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            web_app_query_id: &'a str,
+            result: &'a InlineQueryResult,
+        }
+        let web_app_query_id = web_app_query_id.into();
+        let req = Req {
+            web_app_query_id: &web_app_query_id,
+            result: &result,
+        };
+        self.call_api_raw("answerWebAppQuery", &req).await
     }
 }
 
@@ -349,17 +327,17 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         user_id: i64,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        self.call_api("approveChatJoinRequest", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            user_id: i64,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            user_id,
+        };
+        self.call_api_raw("approveChatJoinRequest", &req).await
     }
 }
 
@@ -390,27 +368,19 @@ impl Bot {
         message_id: i64,
         params: Option<ApproveSuggestedPostParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id).unwrap_or_default(),
-        );
-        req.insert(
-            "message_id".into(),
-            serde_json::to_value(message_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: i64,
+            message_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a ApproveSuggestedPostParams>,
         }
-        self.call_api("approveSuggestedPost", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            chat_id,
+            message_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("approveSuggestedPost", &req).await
     }
 }
 
@@ -448,27 +418,20 @@ impl Bot {
         user_id: i64,
         params: Option<BanChatMemberParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            user_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a BanChatMemberParams>,
         }
-        self.call_api("banChatMember", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            user_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("banChatMember", &req).await
     }
 }
 
@@ -480,17 +443,17 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         sender_chat_id: i64,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "sender_chat_id".into(),
-            serde_json::to_value(sender_chat_id).unwrap_or_default(),
-        );
-        self.call_api("banChatSenderChat", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            sender_chat_id: i64,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            sender_chat_id,
+        };
+        self.call_api_raw("banChatSenderChat", &req).await
     }
 }
 
@@ -498,8 +461,10 @@ impl Bot {
     /// Use this method to close the bot instance before moving it from one local server to another. You need to delete the webhook before calling this method to ensure that the bot isn't launched again after server restart. The method will return error 429 in the first 10 minutes after the bot is launched. Returns True on success. Requires no parameters.
     /// See: https://core.telegram.org/bots/api#close
     pub(crate) async fn raw_close(&self) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        self.call_api("close", serde_json::Value::Object(req)).await
+        #[derive(serde::Serialize)]
+        struct Req {}
+        let req = Req {};
+        self.call_api_raw("close", &req).await
     }
 }
 
@@ -511,17 +476,17 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         message_thread_id: i64,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_thread_id".into(),
-            serde_json::to_value(message_thread_id).unwrap_or_default(),
-        );
-        self.call_api("closeForumTopic", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            message_thread_id: i64,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            message_thread_id,
+        };
+        self.call_api_raw("closeForumTopic", &req).await
     }
 }
 
@@ -532,13 +497,13 @@ impl Bot {
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        self.call_api("closeGeneralForumTopic", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+        }
+        let chat_id = chat_id.into();
+        let req = Req { chat_id: &chat_id };
+        self.call_api_raw("closeGeneralForumTopic", &req).await
     }
 }
 
@@ -550,17 +515,18 @@ impl Bot {
         business_connection_id: impl Into<String>,
         owned_gift_id: impl Into<String>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "owned_gift_id".into(),
-            serde_json::to_value(owned_gift_id.into()).unwrap_or_default(),
-        );
-        self.call_api("convertGiftToStars", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            owned_gift_id: &'a str,
+        }
+        let business_connection_id = business_connection_id.into();
+        let owned_gift_id = owned_gift_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            owned_gift_id: &owned_gift_id,
+        };
+        self.call_api_raw("convertGiftToStars", &req).await
     }
 }
 
@@ -683,31 +649,23 @@ impl Bot {
         message_id: i64,
         params: Option<CopyMessageParams>,
     ) -> Result<MessageId, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "from_chat_id".into(),
-            serde_json::to_value(from_chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_id".into(),
-            serde_json::to_value(message_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            from_chat_id: &'a ChatId,
+            message_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a CopyMessageParams>,
         }
-        self.call_api("copyMessage", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let from_chat_id = from_chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            from_chat_id: &from_chat_id,
+            message_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("copyMessage", &req).await
     }
 }
 
@@ -767,31 +725,23 @@ impl Bot {
         message_ids: Vec<i64>,
         params: Option<CopyMessagesParams>,
     ) -> Result<Vec<MessageId>, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "from_chat_id".into(),
-            serde_json::to_value(from_chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_ids".into(),
-            serde_json::to_value(message_ids).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            from_chat_id: &'a ChatId,
+            message_ids: &'a Vec<i64>,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a CopyMessagesParams>,
         }
-        self.call_api("copyMessages", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let from_chat_id = from_chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            from_chat_id: &from_chat_id,
+            message_ids: &message_ids,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("copyMessages", &req).await
     }
 }
 
@@ -842,23 +792,18 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         params: Option<CreateChatInviteLinkParams>,
     ) -> Result<ChatInviteLink, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a CreateChatInviteLinkParams>,
         }
-        self.call_api("createChatInviteLink", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("createChatInviteLink", &req).await
     }
 }
 
@@ -890,34 +835,23 @@ impl Bot {
         subscription_price: i64,
         params: Option<CreateChatSubscriptionInviteLinkParams>,
     ) -> Result<ChatInviteLink, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "subscription_period".into(),
-            serde_json::to_value(subscription_period).unwrap_or_default(),
-        );
-        req.insert(
-            "subscription_price".into(),
-            serde_json::to_value(subscription_price).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            subscription_period: i64,
+            subscription_price: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a CreateChatSubscriptionInviteLinkParams>,
         }
-        self.call_api(
-            "createChatSubscriptionInviteLink",
-            serde_json::Value::Object(req),
-        )
-        .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            subscription_period,
+            subscription_price,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("createChatSubscriptionInviteLink", &req)
+            .await
     }
 }
 
@@ -955,27 +889,21 @@ impl Bot {
         name: impl Into<String>,
         params: Option<CreateForumTopicParams>,
     ) -> Result<ForumTopic, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "name".into(),
-            serde_json::to_value(name.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            name: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a CreateForumTopicParams>,
         }
-        self.call_api("createForumTopic", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let name = name.into();
+        let req = Req {
+            chat_id: &chat_id,
+            name: &name,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("createForumTopic", &req).await
     }
 }
 
@@ -1121,39 +1049,29 @@ impl Bot {
         prices: Vec<LabeledPrice>,
         params: Option<CreateInvoiceLinkParams>,
     ) -> Result<String, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "title".into(),
-            serde_json::to_value(title.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "description".into(),
-            serde_json::to_value(description.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "payload".into(),
-            serde_json::to_value(payload.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "currency".into(),
-            serde_json::to_value(currency.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "prices".into(),
-            serde_json::to_value(prices).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            title: &'a str,
+            description: &'a str,
+            payload: &'a str,
+            currency: &'a str,
+            prices: &'a Vec<LabeledPrice>,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a CreateInvoiceLinkParams>,
         }
-        self.call_api("createInvoiceLink", serde_json::Value::Object(req))
-            .await
+        let title = title.into();
+        let description = description.into();
+        let payload = payload.into();
+        let currency = currency.into();
+        let req = Req {
+            title: &title,
+            description: &description,
+            payload: &payload,
+            currency: &currency,
+            prices: &prices,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("createInvoiceLink", &req).await
     }
 }
 
@@ -1193,35 +1111,25 @@ impl Bot {
         stickers: Vec<InputSticker>,
         params: Option<CreateNewStickerSetParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "name".into(),
-            serde_json::to_value(name.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "title".into(),
-            serde_json::to_value(title.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "stickers".into(),
-            serde_json::to_value(stickers).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            name: &'a str,
+            title: &'a str,
+            stickers: &'a Vec<InputSticker>,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a CreateNewStickerSetParams>,
         }
-        self.call_api("createNewStickerSet", serde_json::Value::Object(req))
-            .await
+        let name = name.into();
+        let title = title.into();
+        let req = Req {
+            user_id,
+            name: &name,
+            title: &title,
+            stickers: &stickers,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("createNewStickerSet", &req).await
     }
 }
 
@@ -1233,17 +1141,17 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         user_id: i64,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        self.call_api("declineChatJoinRequest", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            user_id: i64,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            user_id,
+        };
+        self.call_api_raw("declineChatJoinRequest", &req).await
     }
 }
 
@@ -1274,27 +1182,19 @@ impl Bot {
         message_id: i64,
         params: Option<DeclineSuggestedPostParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id).unwrap_or_default(),
-        );
-        req.insert(
-            "message_id".into(),
-            serde_json::to_value(message_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: i64,
+            message_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a DeclineSuggestedPostParams>,
         }
-        self.call_api("declineSuggestedPost", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            chat_id,
+            message_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("declineSuggestedPost", &req).await
     }
 }
 
@@ -1331,23 +1231,18 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         params: Option<DeleteAllMessageReactionsParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a DeleteAllMessageReactionsParams>,
         }
-        self.call_api("deleteAllMessageReactions", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("deleteAllMessageReactions", &req).await
     }
 }
 
@@ -1359,17 +1254,17 @@ impl Bot {
         business_connection_id: impl Into<String>,
         message_ids: Vec<i64>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_ids".into(),
-            serde_json::to_value(message_ids).unwrap_or_default(),
-        );
-        self.call_api("deleteBusinessMessages", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            message_ids: &'a Vec<i64>,
+        }
+        let business_connection_id = business_connection_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            message_ids: &message_ids,
+        };
+        self.call_api_raw("deleteBusinessMessages", &req).await
     }
 }
 
@@ -1380,13 +1275,13 @@ impl Bot {
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        self.call_api("deleteChatPhoto", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+        }
+        let chat_id = chat_id.into();
+        let req = Req { chat_id: &chat_id };
+        self.call_api_raw("deleteChatPhoto", &req).await
     }
 }
 
@@ -1397,13 +1292,13 @@ impl Bot {
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        self.call_api("deleteChatStickerSet", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+        }
+        let chat_id = chat_id.into();
+        let req = Req { chat_id: &chat_id };
+        self.call_api_raw("deleteChatStickerSet", &req).await
     }
 }
 
@@ -1415,17 +1310,17 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         message_thread_id: i64,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_thread_id".into(),
-            serde_json::to_value(message_thread_id).unwrap_or_default(),
-        );
-        self.call_api("deleteForumTopic", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            message_thread_id: i64,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            message_thread_id,
+        };
+        self.call_api_raw("deleteForumTopic", &req).await
     }
 }
 
@@ -1447,17 +1342,17 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         message_id: i64,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_id".into(),
-            serde_json::to_value(message_id).unwrap_or_default(),
-        );
-        self.call_api("deleteMessage", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            message_id: i64,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            message_id,
+        };
+        self.call_api_raw("deleteMessage", &req).await
     }
 }
 
@@ -1495,27 +1390,20 @@ impl Bot {
         message_id: i64,
         params: Option<DeleteMessageReactionParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_id".into(),
-            serde_json::to_value(message_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            message_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a DeleteMessageReactionParams>,
         }
-        self.call_api("deleteMessageReaction", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            message_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("deleteMessageReaction", &req).await
     }
 }
 
@@ -1527,17 +1415,17 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         message_ids: Vec<i64>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_ids".into(),
-            serde_json::to_value(message_ids).unwrap_or_default(),
-        );
-        self.call_api("deleteMessages", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            message_ids: &'a Vec<i64>,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            message_ids: &message_ids,
+        };
+        self.call_api_raw("deleteMessages", &req).await
     }
 }
 
@@ -1573,19 +1461,15 @@ impl Bot {
         &self,
         params: Option<DeleteMyCommandsParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a DeleteMyCommandsParams>,
         }
-        self.call_api("deleteMyCommands", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("deleteMyCommands", &req).await
     }
 }
 
@@ -1596,13 +1480,13 @@ impl Bot {
         &self,
         sticker: impl Into<String>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "sticker".into(),
-            serde_json::to_value(sticker.into()).unwrap_or_default(),
-        );
-        self.call_api("deleteStickerFromSet", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            sticker: &'a str,
+        }
+        let sticker = sticker.into();
+        let req = Req { sticker: &sticker };
+        self.call_api_raw("deleteStickerFromSet", &req).await
     }
 }
 
@@ -1613,13 +1497,13 @@ impl Bot {
         &self,
         name: impl Into<String>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "name".into(),
-            serde_json::to_value(name.into()).unwrap_or_default(),
-        );
-        self.call_api("deleteStickerSet", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            name: &'a str,
+        }
+        let name = name.into();
+        let req = Req { name: &name };
+        self.call_api_raw("deleteStickerSet", &req).await
     }
 }
 
@@ -1631,17 +1515,17 @@ impl Bot {
         business_connection_id: impl Into<String>,
         story_id: i64,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "story_id".into(),
-            serde_json::to_value(story_id).unwrap_or_default(),
-        );
-        self.call_api("deleteStory", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            story_id: i64,
+        }
+        let business_connection_id = business_connection_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            story_id,
+        };
+        self.call_api_raw("deleteStory", &req).await
     }
 }
 
@@ -1670,19 +1554,15 @@ impl Bot {
         &self,
         params: Option<DeleteWebhookParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a DeleteWebhookParams>,
         }
-        self.call_api("deleteWebhook", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("deleteWebhook", &req).await
     }
 }
 
@@ -1734,27 +1614,21 @@ impl Bot {
         invite_link: impl Into<String>,
         params: Option<EditChatInviteLinkParams>,
     ) -> Result<ChatInviteLink, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "invite_link".into(),
-            serde_json::to_value(invite_link.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            invite_link: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a EditChatInviteLinkParams>,
         }
-        self.call_api("editChatInviteLink", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let invite_link = invite_link.into();
+        let req = Req {
+            chat_id: &chat_id,
+            invite_link: &invite_link,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("editChatInviteLink", &req).await
     }
 }
 
@@ -1785,30 +1659,22 @@ impl Bot {
         invite_link: impl Into<String>,
         params: Option<EditChatSubscriptionInviteLinkParams>,
     ) -> Result<ChatInviteLink, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "invite_link".into(),
-            serde_json::to_value(invite_link.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            invite_link: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a EditChatSubscriptionInviteLinkParams>,
         }
-        self.call_api(
-            "editChatSubscriptionInviteLink",
-            serde_json::Value::Object(req),
-        )
-        .await
+        let chat_id = chat_id.into();
+        let invite_link = invite_link.into();
+        let req = Req {
+            chat_id: &chat_id,
+            invite_link: &invite_link,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("editChatSubscriptionInviteLink", &req)
+            .await
     }
 }
 
@@ -1846,27 +1712,20 @@ impl Bot {
         message_thread_id: i64,
         params: Option<EditForumTopicParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_thread_id".into(),
-            serde_json::to_value(message_thread_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            message_thread_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a EditForumTopicParams>,
         }
-        self.call_api("editForumTopic", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            message_thread_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("editForumTopic", &req).await
     }
 }
 
@@ -1878,17 +1737,18 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         name: impl Into<String>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "name".into(),
-            serde_json::to_value(name.into()).unwrap_or_default(),
-        );
-        self.call_api("editGeneralForumTopic", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            name: &'a str,
+        }
+        let chat_id = chat_id.into();
+        let name = name.into();
+        let req = Req {
+            chat_id: &chat_id,
+            name: &name,
+        };
+        self.call_api_raw("editGeneralForumTopic", &req).await
     }
 }
 
@@ -1973,19 +1833,15 @@ impl Bot {
         &self,
         params: Option<EditMessageCaptionParams>,
     ) -> Result<serde_json::Value, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a EditMessageCaptionParams>,
         }
-        self.call_api("editMessageCaption", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("editMessageCaption", &req).await
     }
 }
 
@@ -2018,35 +1874,25 @@ impl Bot {
         checklist: InputChecklist,
         params: Option<EditMessageChecklistParams>,
     ) -> Result<Message, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_id".into(),
-            serde_json::to_value(message_id).unwrap_or_default(),
-        );
-        req.insert(
-            "checklist".into(),
-            serde_json::to_value(checklist).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            chat_id: &'a ChatId,
+            message_id: i64,
+            checklist: &'a InputChecklist,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a EditMessageChecklistParams>,
         }
-        self.call_api("editMessageChecklist", serde_json::Value::Object(req))
-            .await
+        let business_connection_id = business_connection_id.into();
+        let chat_id = chat_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            chat_id: &chat_id,
+            message_id,
+            checklist: &checklist,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("editMessageChecklist", &req).await
     }
 }
 
@@ -2133,27 +1979,19 @@ impl Bot {
         longitude: f64,
         params: Option<EditMessageLiveLocationParams>,
     ) -> Result<serde_json::Value, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "latitude".into(),
-            serde_json::to_value(latitude).unwrap_or_default(),
-        );
-        req.insert(
-            "longitude".into(),
-            serde_json::to_value(longitude).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            latitude: f64,
+            longitude: f64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a EditMessageLiveLocationParams>,
         }
-        self.call_api("editMessageLiveLocation", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            latitude,
+            longitude,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("editMessageLiveLocation", &req).await
     }
 }
 
@@ -2211,23 +2049,17 @@ impl Bot {
         media: Vec<InputMedia>,
         params: Option<EditMessageMediaParams>,
     ) -> Result<serde_json::Value, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "media".into(),
-            serde_json::to_value(&media).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            media: &'a Vec<InputMedia>,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a EditMessageMediaParams>,
         }
-        self.call_api("editMessageMedia", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            media: &media,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("editMessageMedia", &req).await
     }
 }
 
@@ -2284,19 +2116,15 @@ impl Bot {
         &self,
         params: Option<EditMessageReplyMarkupParams>,
     ) -> Result<serde_json::Value, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a EditMessageReplyMarkupParams>,
         }
-        self.call_api("editMessageReplyMarkup", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("editMessageReplyMarkup", &req).await
     }
 }
 
@@ -2375,23 +2203,18 @@ impl Bot {
         text: impl Into<String>,
         params: Option<EditMessageTextParams>,
     ) -> Result<serde_json::Value, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "text".into(),
-            serde_json::to_value(text.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            text: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a EditMessageTextParams>,
         }
-        self.call_api("editMessageText", serde_json::Value::Object(req))
-            .await
+        let text = text.into();
+        let req = Req {
+            text: &text,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("editMessageText", &req).await
     }
 }
 
@@ -2444,31 +2267,22 @@ impl Bot {
         content: InputStoryContent,
         params: Option<EditStoryParams>,
     ) -> Result<Story, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "story_id".into(),
-            serde_json::to_value(story_id).unwrap_or_default(),
-        );
-        req.insert(
-            "content".into(),
-            serde_json::to_value(content).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            story_id: i64,
+            content: &'a InputStoryContent,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a EditStoryParams>,
         }
-        self.call_api("editStory", serde_json::Value::Object(req))
-            .await
+        let business_connection_id = business_connection_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            story_id,
+            content: &content,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("editStory", &req).await
     }
 }
 
@@ -2481,21 +2295,19 @@ impl Bot {
         telegram_payment_charge_id: impl Into<String>,
         is_canceled: bool,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "telegram_payment_charge_id".into(),
-            serde_json::to_value(telegram_payment_charge_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "is_canceled".into(),
-            serde_json::to_value(is_canceled).unwrap_or_default(),
-        );
-        self.call_api("editUserStarSubscription", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            telegram_payment_charge_id: &'a str,
+            is_canceled: bool,
+        }
+        let telegram_payment_charge_id = telegram_payment_charge_id.into();
+        let req = Req {
+            user_id,
+            telegram_payment_charge_id: &telegram_payment_charge_id,
+            is_canceled,
+        };
+        self.call_api_raw("editUserStarSubscription", &req).await
     }
 }
 
@@ -2506,13 +2318,13 @@ impl Bot {
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<String, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        self.call_api("exportChatInviteLink", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+        }
+        let chat_id = chat_id.into();
+        let req = Req { chat_id: &chat_id };
+        self.call_api_raw("exportChatInviteLink", &req).await
     }
 }
 
@@ -2586,31 +2398,23 @@ impl Bot {
         message_id: i64,
         params: Option<ForwardMessageParams>,
     ) -> Result<Message, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "from_chat_id".into(),
-            serde_json::to_value(from_chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_id".into(),
-            serde_json::to_value(message_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            from_chat_id: &'a ChatId,
+            message_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a ForwardMessageParams>,
         }
-        self.call_api("forwardMessage", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let from_chat_id = from_chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            from_chat_id: &from_chat_id,
+            message_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("forwardMessage", &req).await
     }
 }
 
@@ -2663,31 +2467,23 @@ impl Bot {
         message_ids: Vec<i64>,
         params: Option<ForwardMessagesParams>,
     ) -> Result<Vec<MessageId>, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "from_chat_id".into(),
-            serde_json::to_value(from_chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_ids".into(),
-            serde_json::to_value(message_ids).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            from_chat_id: &'a ChatId,
+            message_ids: &'a Vec<i64>,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a ForwardMessagesParams>,
         }
-        self.call_api("forwardMessages", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let from_chat_id = from_chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            from_chat_id: &from_chat_id,
+            message_ids: &message_ids,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("forwardMessages", &req).await
     }
 }
 
@@ -2695,9 +2491,10 @@ impl Bot {
     /// Returns the list of gifts that can be sent by the bot to users and channel chats. Requires no parameters. Returns a Gifts object.
     /// See: https://core.telegram.org/bots/api#getavailablegifts
     pub(crate) async fn raw_get_available_gifts(&self) -> Result<Gifts, BotError> {
-        let mut req = serde_json::Map::new();
-        self.call_api("getAvailableGifts", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req {}
+        let req = Req {};
+        self.call_api_raw("getAvailableGifts", &req).await
     }
 }
 
@@ -2790,23 +2587,18 @@ impl Bot {
         business_connection_id: impl Into<String>,
         params: Option<GetBusinessAccountGiftsParams>,
     ) -> Result<OwnedGifts, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GetBusinessAccountGiftsParams>,
         }
-        self.call_api("getBusinessAccountGifts", serde_json::Value::Object(req))
-            .await
+        let business_connection_id = business_connection_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("getBusinessAccountGifts", &req).await
     }
 }
 
@@ -2817,16 +2609,16 @@ impl Bot {
         &self,
         business_connection_id: impl Into<String>,
     ) -> Result<StarAmount, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        self.call_api(
-            "getBusinessAccountStarBalance",
-            serde_json::Value::Object(req),
-        )
-        .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+        }
+        let business_connection_id = business_connection_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+        };
+        self.call_api_raw("getBusinessAccountStarBalance", &req)
+            .await
     }
 }
 
@@ -2837,13 +2629,15 @@ impl Bot {
         &self,
         business_connection_id: impl Into<String>,
     ) -> Result<BusinessConnection, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        self.call_api("getBusinessConnection", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+        }
+        let business_connection_id = business_connection_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+        };
+        self.call_api_raw("getBusinessConnection", &req).await
     }
 }
 
@@ -2854,13 +2648,13 @@ impl Bot {
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<ChatFullInfo, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        self.call_api("getChat", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+        }
+        let chat_id = chat_id.into();
+        let req = Req { chat_id: &chat_id };
+        self.call_api_raw("getChat", &req).await
     }
 }
 
@@ -2890,23 +2684,18 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         params: Option<GetChatAdministratorsParams>,
     ) -> Result<Vec<ChatMember>, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GetChatAdministratorsParams>,
         }
-        self.call_api("getChatAdministrators", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("getChatAdministrators", &req).await
     }
 }
 
@@ -2999,23 +2788,18 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         params: Option<GetChatGiftsParams>,
     ) -> Result<OwnedGifts, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GetChatGiftsParams>,
         }
-        self.call_api("getChatGifts", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("getChatGifts", &req).await
     }
 }
 
@@ -3027,17 +2811,17 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         user_id: i64,
     ) -> Result<ChatMember, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        self.call_api("getChatMember", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            user_id: i64,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            user_id,
+        };
+        self.call_api_raw("getChatMember", &req).await
     }
 }
 
@@ -3048,13 +2832,13 @@ impl Bot {
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<i64, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        self.call_api("getChatMemberCount", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+        }
+        let chat_id = chat_id.into();
+        let req = Req { chat_id: &chat_id };
+        self.call_api_raw("getChatMemberCount", &req).await
     }
 }
 
@@ -3083,19 +2867,15 @@ impl Bot {
         &self,
         params: Option<GetChatMenuButtonParams>,
     ) -> Result<MenuButton, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GetChatMenuButtonParams>,
         }
-        self.call_api("getChatMenuButton", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("getChatMenuButton", &req).await
     }
 }
 
@@ -3106,13 +2886,14 @@ impl Bot {
         &self,
         custom_emoji_ids: Vec<String>,
     ) -> Result<Vec<Sticker>, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "custom_emoji_ids".into(),
-            serde_json::to_value(custom_emoji_ids).unwrap_or_default(),
-        );
-        self.call_api("getCustomEmojiStickers", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            custom_emoji_ids: &'a Vec<String>,
+        }
+        let req = Req {
+            custom_emoji_ids: &custom_emoji_ids,
+        };
+        self.call_api_raw("getCustomEmojiStickers", &req).await
     }
 }
 
@@ -3121,13 +2902,13 @@ impl Bot {
     /// Note: This function may not preserve the original file name and MIME type. You should save the file's MIME type and name (if available) when the File object is received.
     /// See: https://core.telegram.org/bots/api#getfile
     pub(crate) async fn raw_get_file(&self, file_id: impl Into<String>) -> Result<File, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "file_id".into(),
-            serde_json::to_value(file_id.into()).unwrap_or_default(),
-        );
-        self.call_api("getFile", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            file_id: &'a str,
+        }
+        let file_id = file_id.into();
+        let req = Req { file_id: &file_id };
+        self.call_api_raw("getFile", &req).await
     }
 }
 
@@ -3135,9 +2916,10 @@ impl Bot {
     /// Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user. Requires no parameters. Returns an Array of Sticker objects.
     /// See: https://core.telegram.org/bots/api#getforumtopiciconstickers
     pub(crate) async fn raw_get_forum_topic_icon_stickers(&self) -> Result<Vec<Sticker>, BotError> {
-        let mut req = serde_json::Map::new();
-        self.call_api("getForumTopicIconStickers", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req {}
+        let req = Req {};
+        self.call_api_raw("getForumTopicIconStickers", &req).await
     }
 }
 
@@ -3181,23 +2963,17 @@ impl Bot {
         user_id: i64,
         params: Option<GetGameHighScoresParams>,
     ) -> Result<Vec<GameHighScore>, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GetGameHighScoresParams>,
         }
-        self.call_api("getGameHighScores", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            user_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("getGameHighScores", &req).await
     }
 }
 
@@ -3208,16 +2984,12 @@ impl Bot {
         &self,
         user_id: i64,
     ) -> Result<BotAccessSettings, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        self.call_api(
-            "getManagedBotAccessSettings",
-            serde_json::Value::Object(req),
-        )
-        .await
+        #[derive(serde::Serialize)]
+        struct Req {
+            user_id: i64,
+        }
+        let req = Req { user_id };
+        self.call_api_raw("getManagedBotAccessSettings", &req).await
     }
 }
 
@@ -3225,13 +2997,12 @@ impl Bot {
     /// Use this method to get the token of a managed bot. Returns the token as String on success.
     /// See: https://core.telegram.org/bots/api#getmanagedbottoken
     pub(crate) async fn raw_get_managed_bot_token(&self, user_id: i64) -> Result<String, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        self.call_api("getManagedBotToken", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req {
+            user_id: i64,
+        }
+        let req = Req { user_id };
+        self.call_api_raw("getManagedBotToken", &req).await
     }
 }
 
@@ -3239,8 +3010,10 @@ impl Bot {
     /// A simple method for testing your bot's authentication token. Requires no parameters. Returns basic information about the bot in form of a User object.
     /// See: https://core.telegram.org/bots/api#getme
     pub(crate) async fn raw_get_me(&self) -> Result<User, BotError> {
-        let mut req = serde_json::Map::new();
-        self.call_api("getMe", serde_json::Value::Object(req)).await
+        #[derive(serde::Serialize)]
+        struct Req {}
+        let req = Req {};
+        self.call_api_raw("getMe", &req).await
     }
 }
 
@@ -3276,19 +3049,15 @@ impl Bot {
         &self,
         params: Option<GetMyCommandsParams>,
     ) -> Result<Vec<BotCommand>, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GetMyCommandsParams>,
         }
-        self.call_api("getMyCommands", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("getMyCommands", &req).await
     }
 }
 
@@ -3317,22 +3086,16 @@ impl Bot {
         &self,
         params: Option<GetMyDefaultAdministratorRightsParams>,
     ) -> Result<ChatAdministratorRights, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GetMyDefaultAdministratorRightsParams>,
         }
-        self.call_api(
-            "getMyDefaultAdministratorRights",
-            serde_json::Value::Object(req),
-        )
-        .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("getMyDefaultAdministratorRights", &req)
+            .await
     }
 }
 
@@ -3361,19 +3124,15 @@ impl Bot {
         &self,
         params: Option<GetMyDescriptionParams>,
     ) -> Result<BotDescription, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GetMyDescriptionParams>,
         }
-        self.call_api("getMyDescription", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("getMyDescription", &req).await
     }
 }
 
@@ -3402,19 +3161,15 @@ impl Bot {
         &self,
         params: Option<GetMyNameParams>,
     ) -> Result<BotName, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GetMyNameParams>,
         }
-        self.call_api("getMyName", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("getMyName", &req).await
     }
 }
 
@@ -3443,19 +3198,15 @@ impl Bot {
         &self,
         params: Option<GetMyShortDescriptionParams>,
     ) -> Result<BotShortDescription, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GetMyShortDescriptionParams>,
         }
-        self.call_api("getMyShortDescription", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("getMyShortDescription", &req).await
     }
 }
 
@@ -3463,9 +3214,10 @@ impl Bot {
     /// A method to get the current Telegram Stars balance of the bot. Requires no parameters. On success, returns a StarAmount object.
     /// See: https://core.telegram.org/bots/api#getmystarbalance
     pub(crate) async fn raw_get_my_star_balance(&self) -> Result<StarAmount, BotError> {
-        let mut req = serde_json::Map::new();
-        self.call_api("getMyStarBalance", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req {}
+        let req = Req {};
+        self.call_api_raw("getMyStarBalance", &req).await
     }
 }
 
@@ -3501,19 +3253,15 @@ impl Bot {
         &self,
         params: Option<GetStarTransactionsParams>,
     ) -> Result<StarTransactions, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GetStarTransactionsParams>,
         }
-        self.call_api("getStarTransactions", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("getStarTransactions", &req).await
     }
 }
 
@@ -3524,13 +3272,13 @@ impl Bot {
         &self,
         name: impl Into<String>,
     ) -> Result<StickerSet, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "name".into(),
-            serde_json::to_value(name.into()).unwrap_or_default(),
-        );
-        self.call_api("getStickerSet", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            name: &'a str,
+        }
+        let name = name.into();
+        let req = Req { name: &name };
+        self.call_api_raw("getStickerSet", &req).await
     }
 }
 
@@ -3580,19 +3328,15 @@ impl Bot {
         &self,
         params: Option<GetUpdatesParams>,
     ) -> Result<Vec<Update>, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GetUpdatesParams>,
         }
-        self.call_api("getUpdates", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("getUpdates", &req).await
     }
 }
 
@@ -3604,17 +3348,17 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         user_id: i64,
     ) -> Result<UserChatBoosts, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        self.call_api("getUserChatBoosts", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            user_id: i64,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            user_id,
+        };
+        self.call_api_raw("getUserChatBoosts", &req).await
     }
 }
 
@@ -3693,23 +3437,17 @@ impl Bot {
         user_id: i64,
         params: Option<GetUserGiftsParams>,
     ) -> Result<OwnedGifts, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GetUserGiftsParams>,
         }
-        self.call_api("getUserGifts", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            user_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("getUserGifts", &req).await
     }
 }
 
@@ -3721,20 +3459,13 @@ impl Bot {
         user_id: i64,
         limit: i64,
     ) -> Result<Vec<Message>, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "limit".into(),
-            serde_json::to_value(limit).unwrap_or_default(),
-        );
-        self.call_api(
-            "getUserPersonalChatMessages",
-            serde_json::Value::Object(req),
-        )
-        .await
+        #[derive(serde::Serialize)]
+        struct Req {
+            user_id: i64,
+            limit: i64,
+        }
+        let req = Req { user_id, limit };
+        self.call_api_raw("getUserPersonalChatMessages", &req).await
     }
 }
 
@@ -3771,23 +3502,17 @@ impl Bot {
         user_id: i64,
         params: Option<GetUserProfileAudiosParams>,
     ) -> Result<UserProfileAudios, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GetUserProfileAudiosParams>,
         }
-        self.call_api("getUserProfileAudios", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            user_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("getUserProfileAudios", &req).await
     }
 }
 
@@ -3824,23 +3549,17 @@ impl Bot {
         user_id: i64,
         params: Option<GetUserProfilePhotosParams>,
     ) -> Result<UserProfilePhotos, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GetUserProfilePhotosParams>,
         }
-        self.call_api("getUserProfilePhotos", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            user_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("getUserProfilePhotos", &req).await
     }
 }
 
@@ -3848,9 +3567,10 @@ impl Bot {
     /// Use this method to get current webhook status. Requires no parameters. On success, returns a WebhookInfo object. If the bot is using getUpdates, will return an object with the url field empty.
     /// See: https://core.telegram.org/bots/api#getwebhookinfo
     pub(crate) async fn raw_get_webhook_info(&self) -> Result<WebhookInfo, BotError> {
-        let mut req = serde_json::Map::new();
-        self.call_api("getWebhookInfo", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req {}
+        let req = Req {};
+        self.call_api_raw("getWebhookInfo", &req).await
     }
 }
 
@@ -3896,31 +3616,21 @@ impl Bot {
         star_count: i64,
         params: Option<GiftPremiumSubscriptionParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "month_count".into(),
-            serde_json::to_value(month_count).unwrap_or_default(),
-        );
-        req.insert(
-            "star_count".into(),
-            serde_json::to_value(star_count).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            month_count: i64,
+            star_count: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a GiftPremiumSubscriptionParams>,
         }
-        self.call_api("giftPremiumSubscription", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            user_id,
+            month_count,
+            star_count,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("giftPremiumSubscription", &req).await
     }
 }
 
@@ -3931,13 +3641,13 @@ impl Bot {
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        self.call_api("hideGeneralForumTopic", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+        }
+        let chat_id = chat_id.into();
+        let req = Req { chat_id: &chat_id };
+        self.call_api_raw("hideGeneralForumTopic", &req).await
     }
 }
 
@@ -3948,13 +3658,13 @@ impl Bot {
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        self.call_api("leaveChat", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+        }
+        let chat_id = chat_id.into();
+        let req = Req { chat_id: &chat_id };
+        self.call_api_raw("leaveChat", &req).await
     }
 }
 
@@ -3962,9 +3672,10 @@ impl Bot {
     /// Use this method to log out from the cloud Bot API server before launching the bot locally. You must log out the bot before running it locally, otherwise there is no guarantee that the bot will receive updates. After a successful call, you can immediately log in on a local server, but will not be able to log in back to the cloud Bot API server for 10 minutes. Returns True on success. Requires no parameters.
     /// See: https://core.telegram.org/bots/api#logout
     pub(crate) async fn raw_log_out(&self) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        self.call_api("logOut", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req {}
+        let req = Req {};
+        self.call_api_raw("logOut", &req).await
     }
 }
 
@@ -4002,27 +3713,20 @@ impl Bot {
         message_id: i64,
         params: Option<PinChatMessageParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_id".into(),
-            serde_json::to_value(message_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            message_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a PinChatMessageParams>,
         }
-        self.call_api("pinChatMessage", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            message_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("pinChatMessage", &req).await
     }
 }
 
@@ -4089,31 +3793,22 @@ impl Bot {
         active_period: i64,
         params: Option<PostStoryParams>,
     ) -> Result<Story, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "content".into(),
-            serde_json::to_value(content).unwrap_or_default(),
-        );
-        req.insert(
-            "active_period".into(),
-            serde_json::to_value(active_period).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            content: &'a InputStoryContent,
+            active_period: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a PostStoryParams>,
         }
-        self.call_api("postStory", serde_json::Value::Object(req))
-            .await
+        let business_connection_id = business_connection_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            content: &content,
+            active_period,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("postStory", &req).await
     }
 }
 
@@ -4256,27 +3951,20 @@ impl Bot {
         user_id: i64,
         params: Option<PromoteChatMemberParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            user_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a PromoteChatMemberParams>,
         }
-        self.call_api("promoteChatMember", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            user_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("promoteChatMember", &req).await
     }
 }
 
@@ -4289,21 +3977,19 @@ impl Bot {
         chat_id: i64,
         message_id: i64,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id).unwrap_or_default(),
-        );
-        req.insert(
-            "message_id".into(),
-            serde_json::to_value(message_id).unwrap_or_default(),
-        );
-        self.call_api("readBusinessMessage", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            chat_id: i64,
+            message_id: i64,
+        }
+        let business_connection_id = business_connection_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            chat_id,
+            message_id,
+        };
+        self.call_api_raw("readBusinessMessage", &req).await
     }
 }
 
@@ -4315,17 +4001,17 @@ impl Bot {
         user_id: i64,
         telegram_payment_charge_id: impl Into<String>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "telegram_payment_charge_id".into(),
-            serde_json::to_value(telegram_payment_charge_id.into()).unwrap_or_default(),
-        );
-        self.call_api("refundStarPayment", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            telegram_payment_charge_id: &'a str,
+        }
+        let telegram_payment_charge_id = telegram_payment_charge_id.into();
+        let req = Req {
+            user_id,
+            telegram_payment_charge_id: &telegram_payment_charge_id,
+        };
+        self.call_api_raw("refundStarPayment", &req).await
     }
 }
 
@@ -4355,26 +4041,19 @@ impl Bot {
         business_connection_id: impl Into<String>,
         params: Option<RemoveBusinessAccountProfilePhotoParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a RemoveBusinessAccountProfilePhotoParams>,
         }
-        self.call_api(
-            "removeBusinessAccountProfilePhoto",
-            serde_json::Value::Object(req),
-        )
-        .await
+        let business_connection_id = business_connection_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("removeBusinessAccountProfilePhoto", &req)
+            .await
     }
 }
 
@@ -4385,13 +4064,13 @@ impl Bot {
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        self.call_api("removeChatVerification", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+        }
+        let chat_id = chat_id.into();
+        let req = Req { chat_id: &chat_id };
+        self.call_api_raw("removeChatVerification", &req).await
     }
 }
 
@@ -4399,9 +4078,10 @@ impl Bot {
     /// Removes the profile photo of the bot. Requires no parameters. Returns True on success.
     /// See: https://core.telegram.org/bots/api#removemyprofilephoto
     pub(crate) async fn raw_remove_my_profile_photo(&self) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        self.call_api("removeMyProfilePhoto", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req {}
+        let req = Req {};
+        self.call_api_raw("removeMyProfilePhoto", &req).await
     }
 }
 
@@ -4412,13 +4092,12 @@ impl Bot {
         &self,
         user_id: i64,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        self.call_api("removeUserVerification", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req {
+            user_id: i64,
+        }
+        let req = Req { user_id };
+        self.call_api_raw("removeUserVerification", &req).await
     }
 }
 
@@ -4430,17 +4109,17 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         message_thread_id: i64,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_thread_id".into(),
-            serde_json::to_value(message_thread_id).unwrap_or_default(),
-        );
-        self.call_api("reopenForumTopic", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            message_thread_id: i64,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            message_thread_id,
+        };
+        self.call_api_raw("reopenForumTopic", &req).await
     }
 }
 
@@ -4451,13 +4130,13 @@ impl Bot {
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        self.call_api("reopenGeneralForumTopic", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+        }
+        let chat_id = chat_id.into();
+        let req = Req { chat_id: &chat_id };
+        self.call_api_raw("reopenGeneralForumTopic", &req).await
     }
 }
 
@@ -4468,13 +4147,12 @@ impl Bot {
         &self,
         user_id: i64,
     ) -> Result<String, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        self.call_api("replaceManagedBotToken", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req {
+            user_id: i64,
+        }
+        let req = Req { user_id };
+        self.call_api_raw("replaceManagedBotToken", &req).await
     }
 }
 
@@ -4488,25 +4166,22 @@ impl Bot {
         old_sticker: impl Into<String>,
         sticker: InputSticker,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "name".into(),
-            serde_json::to_value(name.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "old_sticker".into(),
-            serde_json::to_value(old_sticker.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "sticker".into(),
-            serde_json::to_value(sticker).unwrap_or_default(),
-        );
-        self.call_api("replaceStickerInSet", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            name: &'a str,
+            old_sticker: &'a str,
+            sticker: &'a InputSticker,
+        }
+        let name = name.into();
+        let old_sticker = old_sticker.into();
+        let req = Req {
+            user_id,
+            name: &name,
+            old_sticker: &old_sticker,
+            sticker: &sticker,
+        };
+        self.call_api_raw("replaceStickerInSet", &req).await
     }
 }
 
@@ -4546,35 +4221,24 @@ impl Bot {
         active_period: i64,
         params: Option<RepostStoryParams>,
     ) -> Result<Story, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "from_chat_id".into(),
-            serde_json::to_value(from_chat_id).unwrap_or_default(),
-        );
-        req.insert(
-            "from_story_id".into(),
-            serde_json::to_value(from_story_id).unwrap_or_default(),
-        );
-        req.insert(
-            "active_period".into(),
-            serde_json::to_value(active_period).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            from_chat_id: i64,
+            from_story_id: i64,
+            active_period: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a RepostStoryParams>,
         }
-        self.call_api("repostStory", serde_json::Value::Object(req))
-            .await
+        let business_connection_id = business_connection_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            from_chat_id,
+            from_story_id,
+            active_period,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("repostStory", &req).await
     }
 }
 
@@ -4613,31 +4277,22 @@ impl Bot {
         permissions: ChatPermissions,
         params: Option<RestrictChatMemberParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "permissions".into(),
-            serde_json::to_value(permissions).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            user_id: i64,
+            permissions: &'a ChatPermissions,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a RestrictChatMemberParams>,
         }
-        self.call_api("restrictChatMember", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            user_id,
+            permissions: &permissions,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("restrictChatMember", &req).await
     }
 }
 
@@ -4649,17 +4304,18 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         invite_link: impl Into<String>,
     ) -> Result<ChatInviteLink, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "invite_link".into(),
-            serde_json::to_value(invite_link.into()).unwrap_or_default(),
-        );
-        self.call_api("revokeChatInviteLink", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            invite_link: &'a str,
+        }
+        let chat_id = chat_id.into();
+        let invite_link = invite_link.into();
+        let req = Req {
+            chat_id: &chat_id,
+            invite_link: &invite_link,
+        };
+        self.call_api_raw("revokeChatInviteLink", &req).await
     }
 }
 
@@ -4711,27 +4367,19 @@ impl Bot {
         result: InlineQueryResult,
         params: Option<SavePreparedInlineMessageParams>,
     ) -> Result<PreparedInlineMessage, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "result".into(),
-            serde_json::to_value(result).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            result: &'a InlineQueryResult,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SavePreparedInlineMessageParams>,
         }
-        self.call_api("savePreparedInlineMessage", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            user_id,
+            result: &result,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("savePreparedInlineMessage", &req).await
     }
 }
 
@@ -4743,17 +4391,16 @@ impl Bot {
         user_id: i64,
         button: KeyboardButton,
     ) -> Result<PreparedKeyboardButton, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "button".into(),
-            serde_json::to_value(button).unwrap_or_default(),
-        );
-        self.call_api("savePreparedKeyboardButton", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            button: &'a KeyboardButton,
+        }
+        let req = Req {
+            user_id,
+            button: &button,
+        };
+        self.call_api_raw("savePreparedKeyboardButton", &req).await
     }
 }
 
@@ -5125,27 +4772,21 @@ impl Bot {
         action: impl Into<String>,
         params: Option<SendChatActionParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "action".into(),
-            serde_json::to_value(action.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            action: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendChatActionParams>,
         }
-        self.call_api("sendChatAction", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let action = action.into();
+        let req = Req {
+            chat_id: &chat_id,
+            action: &action,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendChatAction", &req).await
     }
 }
 
@@ -5205,31 +4846,23 @@ impl Bot {
         checklist: InputChecklist,
         params: Option<SendChecklistParams>,
     ) -> Result<Message, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "checklist".into(),
-            serde_json::to_value(checklist).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            chat_id: &'a ChatId,
+            checklist: &'a InputChecklist,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendChecklistParams>,
         }
-        self.call_api("sendChecklist", serde_json::Value::Object(req))
-            .await
+        let business_connection_id = business_connection_id.into();
+        let chat_id = chat_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            chat_id: &chat_id,
+            checklist: &checklist,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendChecklist", &req).await
     }
 }
 
@@ -5338,31 +4971,24 @@ impl Bot {
         first_name: impl Into<String>,
         params: Option<SendContactParams>,
     ) -> Result<Message, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "phone_number".into(),
-            serde_json::to_value(phone_number.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "first_name".into(),
-            serde_json::to_value(first_name.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            phone_number: &'a str,
+            first_name: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendContactParams>,
         }
-        self.call_api("sendContact", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let phone_number = phone_number.into();
+        let first_name = first_name.into();
+        let req = Req {
+            chat_id: &chat_id,
+            phone_number: &phone_number,
+            first_name: &first_name,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendContact", &req).await
     }
 }
 
@@ -5462,23 +5088,18 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         params: Option<SendDiceParams>,
     ) -> Result<Message, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendDiceParams>,
         }
-        self.call_api("sendDice", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendDice", &req).await
     }
 }
 
@@ -5703,27 +5324,21 @@ impl Bot {
         game_short_name: impl Into<String>,
         params: Option<SendGameParams>,
     ) -> Result<Message, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "game_short_name".into(),
-            serde_json::to_value(game_short_name.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            game_short_name: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendGameParams>,
         }
-        self.call_api("sendGame", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let game_short_name = game_short_name.into();
+        let req = Req {
+            chat_id: &chat_id,
+            game_short_name: &game_short_name,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendGame", &req).await
     }
 }
 
@@ -5788,23 +5403,18 @@ impl Bot {
         gift_id: impl Into<String>,
         params: Option<SendGiftParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "gift_id".into(),
-            serde_json::to_value(gift_id.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            gift_id: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendGiftParams>,
         }
-        self.call_api("sendGift", serde_json::Value::Object(req))
-            .await
+        let gift_id = gift_id.into();
+        let req = Req {
+            gift_id: &gift_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendGift", &req).await
     }
 }
 
@@ -6007,43 +5617,32 @@ impl Bot {
         prices: Vec<LabeledPrice>,
         params: Option<SendInvoiceParams>,
     ) -> Result<Message, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "title".into(),
-            serde_json::to_value(title.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "description".into(),
-            serde_json::to_value(description.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "payload".into(),
-            serde_json::to_value(payload.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "currency".into(),
-            serde_json::to_value(currency.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "prices".into(),
-            serde_json::to_value(prices).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            title: &'a str,
+            description: &'a str,
+            payload: &'a str,
+            currency: &'a str,
+            prices: &'a Vec<LabeledPrice>,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendInvoiceParams>,
         }
-        self.call_api("sendInvoice", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let title = title.into();
+        let description = description.into();
+        let payload = payload.into();
+        let currency = currency.into();
+        let req = Req {
+            chat_id: &chat_id,
+            title: &title,
+            description: &description,
+            payload: &payload,
+            currency: &currency,
+            prices: &prices,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendInvoice", &req).await
     }
 }
 
@@ -6319,31 +5918,22 @@ impl Bot {
         longitude: f64,
         params: Option<SendLocationParams>,
     ) -> Result<Message, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "latitude".into(),
-            serde_json::to_value(latitude).unwrap_or_default(),
-        );
-        req.insert(
-            "longitude".into(),
-            serde_json::to_value(longitude).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            latitude: f64,
+            longitude: f64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendLocationParams>,
         }
-        self.call_api("sendLocation", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            latitude,
+            longitude,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendLocation", &req).await
     }
 }
 
@@ -6423,27 +6013,20 @@ impl Bot {
         media: Vec<InputMedia>,
         params: Option<SendMediaGroupParams>,
     ) -> Result<Vec<Message>, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "media".into(),
-            serde_json::to_value(&media).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            media: &'a Vec<InputMedia>,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendMediaGroupParams>,
         }
-        self.call_api("sendMediaGroup", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            media: &media,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendMediaGroup", &req).await
     }
 }
 
@@ -6558,27 +6141,21 @@ impl Bot {
         text: impl Into<String>,
         params: Option<SendMessageParams>,
     ) -> Result<Message, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "text".into(),
-            serde_json::to_value(text.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            text: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendMessageParams>,
         }
-        self.call_api("sendMessage", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let text = text.into();
+        let req = Req {
+            chat_id: &chat_id,
+            text: &text,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendMessage", &req).await
     }
 }
 
@@ -6630,27 +6207,19 @@ impl Bot {
         draft_id: i64,
         params: Option<SendMessageDraftParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id).unwrap_or_default(),
-        );
-        req.insert(
-            "draft_id".into(),
-            serde_json::to_value(draft_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: i64,
+            draft_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendMessageDraftParams>,
         }
-        self.call_api("sendMessageDraft", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            chat_id,
+            draft_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendMessageDraft", &req).await
     }
 }
 
@@ -6773,31 +6342,22 @@ impl Bot {
         media: Vec<InputPaidMedia>,
         params: Option<SendPaidMediaParams>,
     ) -> Result<Message, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "star_count".into(),
-            serde_json::to_value(star_count).unwrap_or_default(),
-        );
-        req.insert(
-            "media".into(),
-            serde_json::to_value(media).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            star_count: i64,
+            media: &'a Vec<InputPaidMedia>,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendPaidMediaParams>,
         }
-        self.call_api("sendPaidMedia", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            star_count,
+            media: &media,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendPaidMedia", &req).await
     }
 }
 
@@ -7185,31 +6745,23 @@ impl Bot {
         options: Vec<InputPollOption>,
         params: Option<SendPollParams>,
     ) -> Result<Message, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "question".into(),
-            serde_json::to_value(question.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "options".into(),
-            serde_json::to_value(options).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            question: &'a str,
+            options: &'a Vec<InputPollOption>,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendPollParams>,
         }
-        self.call_api("sendPoll", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let question = question.into();
+        let req = Req {
+            chat_id: &chat_id,
+            question: &question,
+            options: &options,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendPoll", &req).await
     }
 }
 
@@ -7451,39 +7003,28 @@ impl Bot {
         address: impl Into<String>,
         params: Option<SendVenueParams>,
     ) -> Result<Message, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "latitude".into(),
-            serde_json::to_value(latitude).unwrap_or_default(),
-        );
-        req.insert(
-            "longitude".into(),
-            serde_json::to_value(longitude).unwrap_or_default(),
-        );
-        req.insert(
-            "title".into(),
-            serde_json::to_value(title.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "address".into(),
-            serde_json::to_value(address.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            latitude: f64,
+            longitude: f64,
+            title: &'a str,
+            address: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendVenueParams>,
         }
-        self.call_api("sendVenue", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let title = title.into();
+        let address = address.into();
+        let req = Req {
+            chat_id: &chat_id,
+            latitude,
+            longitude,
+            title: &title,
+            address: &address,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendVenue", &req).await
     }
 }
 
@@ -7976,23 +7517,18 @@ impl Bot {
         business_connection_id: impl Into<String>,
         params: Option<SetBusinessAccountBioParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetBusinessAccountBioParams>,
         }
-        self.call_api("setBusinessAccountBio", serde_json::Value::Object(req))
-            .await
+        let business_connection_id = business_connection_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setBusinessAccountBio", &req).await
     }
 }
 
@@ -8005,24 +7541,20 @@ impl Bot {
         show_gift_button: bool,
         accepted_gift_types: AcceptedGiftTypes,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "show_gift_button".into(),
-            serde_json::to_value(show_gift_button).unwrap_or_default(),
-        );
-        req.insert(
-            "accepted_gift_types".into(),
-            serde_json::to_value(accepted_gift_types).unwrap_or_default(),
-        );
-        self.call_api(
-            "setBusinessAccountGiftSettings",
-            serde_json::Value::Object(req),
-        )
-        .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            show_gift_button: bool,
+            accepted_gift_types: &'a AcceptedGiftTypes,
+        }
+        let business_connection_id = business_connection_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            show_gift_button,
+            accepted_gift_types: &accepted_gift_types,
+        };
+        self.call_api_raw("setBusinessAccountGiftSettings", &req)
+            .await
     }
 }
 
@@ -8053,27 +7585,21 @@ impl Bot {
         first_name: impl Into<String>,
         params: Option<SetBusinessAccountNameParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "first_name".into(),
-            serde_json::to_value(first_name.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            first_name: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetBusinessAccountNameParams>,
         }
-        self.call_api("setBusinessAccountName", serde_json::Value::Object(req))
-            .await
+        let business_connection_id = business_connection_id.into();
+        let first_name = first_name.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            first_name: &first_name,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setBusinessAccountName", &req).await
     }
 }
 
@@ -8104,30 +7630,21 @@ impl Bot {
         photo: InputProfilePhoto,
         params: Option<SetBusinessAccountProfilePhotoParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "photo".into(),
-            serde_json::to_value(photo).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            photo: &'a InputProfilePhoto,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetBusinessAccountProfilePhotoParams>,
         }
-        self.call_api(
-            "setBusinessAccountProfilePhoto",
-            serde_json::Value::Object(req),
-        )
-        .await
+        let business_connection_id = business_connection_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            photo: &photo,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setBusinessAccountProfilePhoto", &req)
+            .await
     }
 }
 
@@ -8157,23 +7674,18 @@ impl Bot {
         business_connection_id: impl Into<String>,
         params: Option<SetBusinessAccountUsernameParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetBusinessAccountUsernameParams>,
         }
-        self.call_api("setBusinessAccountUsername", serde_json::Value::Object(req))
-            .await
+        let business_connection_id = business_connection_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setBusinessAccountUsername", &req).await
     }
 }
 
@@ -8186,24 +7698,21 @@ impl Bot {
         user_id: i64,
         custom_title: impl Into<String>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "custom_title".into(),
-            serde_json::to_value(custom_title.into()).unwrap_or_default(),
-        );
-        self.call_api(
-            "setChatAdministratorCustomTitle",
-            serde_json::Value::Object(req),
-        )
-        .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            user_id: i64,
+            custom_title: &'a str,
+        }
+        let chat_id = chat_id.into();
+        let custom_title = custom_title.into();
+        let req = Req {
+            chat_id: &chat_id,
+            user_id,
+            custom_title: &custom_title,
+        };
+        self.call_api_raw("setChatAdministratorCustomTitle", &req)
+            .await
     }
 }
 
@@ -8233,23 +7742,18 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         params: Option<SetChatDescriptionParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetChatDescriptionParams>,
         }
-        self.call_api("setChatDescription", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setChatDescription", &req).await
     }
 }
 
@@ -8280,27 +7784,20 @@ impl Bot {
         user_id: i64,
         params: Option<SetChatMemberTagParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            user_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetChatMemberTagParams>,
         }
-        self.call_api("setChatMemberTag", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            user_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setChatMemberTag", &req).await
     }
 }
 
@@ -8336,19 +7833,15 @@ impl Bot {
         &self,
         params: Option<SetChatMenuButtonParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetChatMenuButtonParams>,
         }
-        self.call_api("setChatMenuButton", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setChatMenuButton", &req).await
     }
 }
 
@@ -8379,27 +7872,20 @@ impl Bot {
         permissions: ChatPermissions,
         params: Option<SetChatPermissionsParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "permissions".into(),
-            serde_json::to_value(permissions).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            permissions: &'a ChatPermissions,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetChatPermissionsParams>,
         }
-        self.call_api("setChatPermissions", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            permissions: &permissions,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setChatPermissions", &req).await
     }
 }
 
@@ -8411,17 +7897,17 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         photo: InputFile,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "photo".into(),
-            serde_json::to_value(photo).unwrap_or_default(),
-        );
-        self.call_api("setChatPhoto", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            photo: &'a InputFile,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            photo: &photo,
+        };
+        self.call_api_raw("setChatPhoto", &req).await
     }
 }
 
@@ -8433,17 +7919,18 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         sticker_set_name: impl Into<String>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "sticker_set_name".into(),
-            serde_json::to_value(sticker_set_name.into()).unwrap_or_default(),
-        );
-        self.call_api("setChatStickerSet", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            sticker_set_name: &'a str,
+        }
+        let chat_id = chat_id.into();
+        let sticker_set_name = sticker_set_name.into();
+        let req = Req {
+            chat_id: &chat_id,
+            sticker_set_name: &sticker_set_name,
+        };
+        self.call_api_raw("setChatStickerSet", &req).await
     }
 }
 
@@ -8455,17 +7942,18 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         title: impl Into<String>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "title".into(),
-            serde_json::to_value(title.into()).unwrap_or_default(),
-        );
-        self.call_api("setChatTitle", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            title: &'a str,
+        }
+        let chat_id = chat_id.into();
+        let title = title.into();
+        let req = Req {
+            chat_id: &chat_id,
+            title: &title,
+        };
+        self.call_api_raw("setChatTitle", &req).await
     }
 }
 
@@ -8495,26 +7983,19 @@ impl Bot {
         name: impl Into<String>,
         params: Option<SetCustomEmojiStickerSetThumbnailParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "name".into(),
-            serde_json::to_value(name.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            name: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetCustomEmojiStickerSetThumbnailParams>,
         }
-        self.call_api(
-            "setCustomEmojiStickerSetThumbnail",
-            serde_json::Value::Object(req),
-        )
-        .await
+        let name = name.into();
+        let req = Req {
+            name: &name,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setCustomEmojiStickerSetThumbnail", &req)
+            .await
     }
 }
 
@@ -8573,27 +8054,19 @@ impl Bot {
         score: i64,
         params: Option<SetGameScoreParams>,
     ) -> Result<serde_json::Value, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "score".into(),
-            serde_json::to_value(score).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            score: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetGameScoreParams>,
         }
-        self.call_api("setGameScore", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            user_id,
+            score,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setGameScore", &req).await
     }
 }
 
@@ -8624,30 +8097,19 @@ impl Bot {
         is_access_restricted: bool,
         params: Option<SetManagedBotAccessSettingsParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "is_access_restricted".into(),
-            serde_json::to_value(is_access_restricted).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            is_access_restricted: bool,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetManagedBotAccessSettingsParams>,
         }
-        self.call_api(
-            "setManagedBotAccessSettings",
-            serde_json::Value::Object(req),
-        )
-        .await
+        let req = Req {
+            user_id,
+            is_access_restricted,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setManagedBotAccessSettings", &req).await
     }
 }
 
@@ -8685,27 +8147,20 @@ impl Bot {
         message_id: i64,
         params: Option<SetMessageReactionParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_id".into(),
-            serde_json::to_value(message_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            message_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetMessageReactionParams>,
         }
-        self.call_api("setMessageReaction", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            message_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setMessageReaction", &req).await
     }
 }
 
@@ -8742,23 +8197,17 @@ impl Bot {
         commands: Vec<BotCommand>,
         params: Option<SetMyCommandsParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "commands".into(),
-            serde_json::to_value(commands).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            commands: &'a Vec<BotCommand>,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetMyCommandsParams>,
         }
-        self.call_api("setMyCommands", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            commands: &commands,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setMyCommands", &req).await
     }
 }
 
@@ -8794,22 +8243,16 @@ impl Bot {
         &self,
         params: Option<SetMyDefaultAdministratorRightsParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetMyDefaultAdministratorRightsParams>,
         }
-        self.call_api(
-            "setMyDefaultAdministratorRights",
-            serde_json::Value::Object(req),
-        )
-        .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setMyDefaultAdministratorRights", &req)
+            .await
     }
 }
 
@@ -8845,19 +8288,15 @@ impl Bot {
         &self,
         params: Option<SetMyDescriptionParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetMyDescriptionParams>,
         }
-        self.call_api("setMyDescription", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setMyDescription", &req).await
     }
 }
 
@@ -8893,19 +8332,15 @@ impl Bot {
         &self,
         params: Option<SetMyNameParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetMyNameParams>,
         }
-        self.call_api("setMyName", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setMyName", &req).await
     }
 }
 
@@ -8916,13 +8351,12 @@ impl Bot {
         &self,
         photo: InputProfilePhoto,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "photo".into(),
-            serde_json::to_value(photo).unwrap_or_default(),
-        );
-        self.call_api("setMyProfilePhoto", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            photo: &'a InputProfilePhoto,
+        }
+        let req = Req { photo: &photo };
+        self.call_api_raw("setMyProfilePhoto", &req).await
     }
 }
 
@@ -8958,19 +8392,15 @@ impl Bot {
         &self,
         params: Option<SetMyShortDescriptionParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetMyShortDescriptionParams>,
         }
-        self.call_api("setMyShortDescription", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setMyShortDescription", &req).await
     }
 }
 
@@ -8983,17 +8413,16 @@ impl Bot {
         user_id: i64,
         errors: Vec<PassportElementError>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "errors".into(),
-            serde_json::to_value(errors).unwrap_or_default(),
-        );
-        self.call_api("setPassportDataErrors", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            errors: &'a Vec<PassportElementError>,
+        }
+        let req = Req {
+            user_id,
+            errors: &errors,
+        };
+        self.call_api_raw("setPassportDataErrors", &req).await
     }
 }
 
@@ -9005,17 +8434,17 @@ impl Bot {
         sticker: impl Into<String>,
         emoji_list: Vec<String>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "sticker".into(),
-            serde_json::to_value(sticker.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "emoji_list".into(),
-            serde_json::to_value(emoji_list).unwrap_or_default(),
-        );
-        self.call_api("setStickerEmojiList", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            sticker: &'a str,
+            emoji_list: &'a Vec<String>,
+        }
+        let sticker = sticker.into();
+        let req = Req {
+            sticker: &sticker,
+            emoji_list: &emoji_list,
+        };
+        self.call_api_raw("setStickerEmojiList", &req).await
     }
 }
 
@@ -9045,23 +8474,18 @@ impl Bot {
         sticker: impl Into<String>,
         params: Option<SetStickerKeywordsParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "sticker".into(),
-            serde_json::to_value(sticker.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            sticker: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetStickerKeywordsParams>,
         }
-        self.call_api("setStickerKeywords", serde_json::Value::Object(req))
-            .await
+        let sticker = sticker.into();
+        let req = Req {
+            sticker: &sticker,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setStickerKeywords", &req).await
     }
 }
 
@@ -9091,23 +8515,18 @@ impl Bot {
         sticker: impl Into<String>,
         params: Option<SetStickerMaskPositionParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "sticker".into(),
-            serde_json::to_value(sticker.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            sticker: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetStickerMaskPositionParams>,
         }
-        self.call_api("setStickerMaskPosition", serde_json::Value::Object(req))
-            .await
+        let sticker = sticker.into();
+        let req = Req {
+            sticker: &sticker,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setStickerMaskPosition", &req).await
     }
 }
 
@@ -9119,17 +8538,17 @@ impl Bot {
         sticker: impl Into<String>,
         position: i64,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "sticker".into(),
-            serde_json::to_value(sticker.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "position".into(),
-            serde_json::to_value(position).unwrap_or_default(),
-        );
-        self.call_api("setStickerPositionInSet", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            sticker: &'a str,
+            position: i64,
+        }
+        let sticker = sticker.into();
+        let req = Req {
+            sticker: &sticker,
+            position,
+        };
+        self.call_api_raw("setStickerPositionInSet", &req).await
     }
 }
 
@@ -9161,31 +8580,23 @@ impl Bot {
         format: impl Into<String>,
         params: Option<SetStickerSetThumbnailParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "name".into(),
-            serde_json::to_value(name.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "format".into(),
-            serde_json::to_value(format.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            name: &'a str,
+            user_id: i64,
+            format: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetStickerSetThumbnailParams>,
         }
-        self.call_api("setStickerSetThumbnail", serde_json::Value::Object(req))
-            .await
+        let name = name.into();
+        let format = format.into();
+        let req = Req {
+            name: &name,
+            user_id,
+            format: &format,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setStickerSetThumbnail", &req).await
     }
 }
 
@@ -9197,17 +8608,18 @@ impl Bot {
         name: impl Into<String>,
         title: impl Into<String>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "name".into(),
-            serde_json::to_value(name.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "title".into(),
-            serde_json::to_value(title.into()).unwrap_or_default(),
-        );
-        self.call_api("setStickerSetTitle", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            name: &'a str,
+            title: &'a str,
+        }
+        let name = name.into();
+        let title = title.into();
+        let req = Req {
+            name: &name,
+            title: &title,
+        };
+        self.call_api_raw("setStickerSetTitle", &req).await
     }
 }
 
@@ -9244,23 +8656,17 @@ impl Bot {
         user_id: i64,
         params: Option<SetUserEmojiStatusParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetUserEmojiStatusParams>,
         }
-        self.call_api("setUserEmojiStatus", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            user_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setUserEmojiStatus", &req).await
     }
 }
 
@@ -9326,23 +8732,18 @@ impl Bot {
         url: impl Into<String>,
         params: Option<SetWebhookParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "url".into(),
-            serde_json::to_value(url.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            url: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetWebhookParams>,
         }
-        self.call_api("setWebhook", serde_json::Value::Object(req))
-            .await
+        let url = url.into();
+        let req = Req {
+            url: &url,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setWebhook", &req).await
     }
 }
 
@@ -9399,19 +8800,15 @@ impl Bot {
         &self,
         params: Option<StopMessageLiveLocationParams>,
     ) -> Result<serde_json::Value, BotError> {
-        let mut req = serde_json::Map::new();
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a StopMessageLiveLocationParams>,
         }
-        self.call_api("stopMessageLiveLocation", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("stopMessageLiveLocation", &req).await
     }
 }
 
@@ -9449,27 +8846,20 @@ impl Bot {
         message_id: i64,
         params: Option<StopPollParams>,
     ) -> Result<Poll, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_id".into(),
-            serde_json::to_value(message_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            message_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a StopPollParams>,
         }
-        self.call_api("stopPoll", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            message_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("stopPoll", &req).await
     }
 }
 
@@ -9481,20 +8871,18 @@ impl Bot {
         business_connection_id: impl Into<String>,
         star_count: i64,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "star_count".into(),
-            serde_json::to_value(star_count).unwrap_or_default(),
-        );
-        self.call_api(
-            "transferBusinessAccountStars",
-            serde_json::Value::Object(req),
-        )
-        .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            star_count: i64,
+        }
+        let business_connection_id = business_connection_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            star_count,
+        };
+        self.call_api_raw("transferBusinessAccountStars", &req)
+            .await
     }
 }
 
@@ -9526,31 +8914,23 @@ impl Bot {
         new_owner_chat_id: i64,
         params: Option<TransferGiftParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "owned_gift_id".into(),
-            serde_json::to_value(owned_gift_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "new_owner_chat_id".into(),
-            serde_json::to_value(new_owner_chat_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            owned_gift_id: &'a str,
+            new_owner_chat_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a TransferGiftParams>,
         }
-        self.call_api("transferGift", serde_json::Value::Object(req))
-            .await
+        let business_connection_id = business_connection_id.into();
+        let owned_gift_id = owned_gift_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            owned_gift_id: &owned_gift_id,
+            new_owner_chat_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("transferGift", &req).await
     }
 }
 
@@ -9581,27 +8961,20 @@ impl Bot {
         user_id: i64,
         params: Option<UnbanChatMemberParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            user_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a UnbanChatMemberParams>,
         }
-        self.call_api("unbanChatMember", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            user_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("unbanChatMember", &req).await
     }
 }
 
@@ -9613,17 +8986,17 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         sender_chat_id: i64,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "sender_chat_id".into(),
-            serde_json::to_value(sender_chat_id).unwrap_or_default(),
-        );
-        self.call_api("unbanChatSenderChat", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            sender_chat_id: i64,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            sender_chat_id,
+        };
+        self.call_api_raw("unbanChatSenderChat", &req).await
     }
 }
 
@@ -9634,13 +9007,13 @@ impl Bot {
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        self.call_api("unhideGeneralForumTopic", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+        }
+        let chat_id = chat_id.into();
+        let req = Req { chat_id: &chat_id };
+        self.call_api_raw("unhideGeneralForumTopic", &req).await
     }
 }
 
@@ -9651,13 +9024,13 @@ impl Bot {
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        self.call_api("unpinAllChatMessages", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+        }
+        let chat_id = chat_id.into();
+        let req = Req { chat_id: &chat_id };
+        self.call_api_raw("unpinAllChatMessages", &req).await
     }
 }
 
@@ -9669,17 +9042,17 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         message_thread_id: i64,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "message_thread_id".into(),
-            serde_json::to_value(message_thread_id).unwrap_or_default(),
-        );
-        self.call_api("unpinAllForumTopicMessages", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            message_thread_id: i64,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            message_thread_id,
+        };
+        self.call_api_raw("unpinAllForumTopicMessages", &req).await
     }
 }
 
@@ -9690,16 +9063,14 @@ impl Bot {
         &self,
         chat_id: impl Into<ChatId>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        self.call_api(
-            "unpinAllGeneralForumTopicMessages",
-            serde_json::Value::Object(req),
-        )
-        .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+        }
+        let chat_id = chat_id.into();
+        let req = Req { chat_id: &chat_id };
+        self.call_api_raw("unpinAllGeneralForumTopicMessages", &req)
+            .await
     }
 }
 
@@ -9736,23 +9107,18 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         params: Option<UnpinChatMessageParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a UnpinChatMessageParams>,
         }
-        self.call_api("unpinChatMessage", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("unpinChatMessage", &req).await
     }
 }
 
@@ -9790,27 +9156,21 @@ impl Bot {
         owned_gift_id: impl Into<String>,
         params: Option<UpgradeGiftParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "business_connection_id".into(),
-            serde_json::to_value(business_connection_id.into()).unwrap_or_default(),
-        );
-        req.insert(
-            "owned_gift_id".into(),
-            serde_json::to_value(owned_gift_id.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            business_connection_id: &'a str,
+            owned_gift_id: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a UpgradeGiftParams>,
         }
-        self.call_api("upgradeGift", serde_json::Value::Object(req))
-            .await
+        let business_connection_id = business_connection_id.into();
+        let owned_gift_id = owned_gift_id.into();
+        let req = Req {
+            business_connection_id: &business_connection_id,
+            owned_gift_id: &owned_gift_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("upgradeGift", &req).await
     }
 }
 
@@ -9823,21 +9183,19 @@ impl Bot {
         sticker: InputFile,
         sticker_format: impl Into<String>,
     ) -> Result<File, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        req.insert(
-            "sticker".into(),
-            serde_json::to_value(sticker).unwrap_or_default(),
-        );
-        req.insert(
-            "sticker_format".into(),
-            serde_json::to_value(sticker_format.into()).unwrap_or_default(),
-        );
-        self.call_api("uploadStickerFile", serde_json::Value::Object(req))
-            .await
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            sticker: &'a InputFile,
+            sticker_format: &'a str,
+        }
+        let sticker_format = sticker_format.into();
+        let req = Req {
+            user_id,
+            sticker: &sticker,
+            sticker_format: &sticker_format,
+        };
+        self.call_api_raw("uploadStickerFile", &req).await
     }
 }
 
@@ -9867,23 +9225,18 @@ impl Bot {
         chat_id: impl Into<ChatId>,
         params: Option<VerifyChatParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "chat_id".into(),
-            serde_json::to_value(chat_id.into()).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a VerifyChatParams>,
         }
-        self.call_api("verifyChat", serde_json::Value::Object(req))
-            .await
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("verifyChat", &req).await
     }
 }
 
@@ -9913,22 +9266,16 @@ impl Bot {
         user_id: i64,
         params: Option<VerifyUserParams>,
     ) -> Result<bool, BotError> {
-        let mut req = serde_json::Map::new();
-        req.insert(
-            "user_id".into(),
-            serde_json::to_value(user_id).unwrap_or_default(),
-        );
-        if let Some(p) = params {
-            let extra = serde_json::to_value(&p).unwrap_or_default();
-            if let serde_json::Value::Object(m) = extra {
-                for (k, v) in m {
-                    if !v.is_null() {
-                        req.insert(k, v);
-                    }
-                }
-            }
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            user_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a VerifyUserParams>,
         }
-        self.call_api("verifyUser", serde_json::Value::Object(req))
-            .await
+        let req = Req {
+            user_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("verifyUser", &req).await
     }
 }
