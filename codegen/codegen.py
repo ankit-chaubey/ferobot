@@ -428,25 +428,26 @@ def generate_methods(spec):
             emit_fn_name = fn_name
             visibility = 'pub'
         lines.append(f'    {visibility} async fn {emit_fn_name}({args}) -> Result<{ret}, BotError> {{')
-        lines.append(f'        let mut req = serde_json::Map::new();')
-        for field in required_fields:
-            fname = safe_field_name(field['name'])
-            ftype = field_rust_type(field, types_map)
-            if ftype == 'InputFileOrString':
-                pass
-            elif ftype == 'InputMedia':
-                lines.append(f'        req.insert("{field["name"]}".into(), serde_json::to_value(&{fname}).unwrap_or_default());')
-            else:
-                expr = f'{fname}.into()' if ftype in ('String', 'ChatId') else fname
-                lines.append(f'        req.insert("{field["name"]}".into(), serde_json::to_value({expr}).unwrap_or_default());')
-        if optional_fields:
-            lines.append(f'        if let Some(p) = params {{')
-            lines.append(f'            let extra = serde_json::to_value(&p).unwrap_or_default();')
-            lines.append(f'            if let serde_json::Value::Object(m) = extra {{')
-            lines.append(f'                for (k, v) in m {{ if !v.is_null() {{ req.insert(k, v); }} }}')
-            lines.append(f'            }}')
-            lines.append(f'        }}')
         if file_fields:
+            # File upload: keep Map-based path for call_api_with_file / multipart
+            lines.append(f'        let mut req = serde_json::Map::new();')
+            for field in required_fields:
+                fname = safe_field_name(field['name'])
+                ftype = field_rust_type(field, types_map)
+                if ftype == 'InputFileOrString':
+                    pass
+                elif ftype == 'InputMedia':
+                    lines.append(f'        req.insert(\"{field["name"]}\".into(), serde_json::to_value(&{fname}).unwrap_or_default());')
+                else:
+                    expr = f'{fname}.into()' if ftype in ('String', 'ChatId') else fname
+                    lines.append(f'        req.insert(\"{field["name"]}\".into(), serde_json::to_value({expr}).unwrap_or_default());')
+            if optional_fields:
+                lines.append(f'        if let Some(p) = params {{')
+                lines.append(f'            let extra = serde_json::to_value(&p).unwrap_or_default();')
+                lines.append(f'            if let serde_json::Value::Object(m) = extra {{')
+                lines.append(f'                for (k, v) in m {{ if !v.is_null() {{ req.insert(k, v); }} }}')
+                lines.append(f'            }}')
+                lines.append(f'        }}')
             if len(file_fields) == 1:
                 fn_arg = safe_field_name(file_fields[0])
                 lines.append(f'        self.call_api_with_file(\"{method_name}\", req, \"{file_fields[0]}\", {fn_arg}.into())')
@@ -464,9 +465,57 @@ def generate_methods(spec):
                 lines.append(f'        )')
                 lines.append(f'        .await')
         else:
-            lines.append(f'        self.call_api(\"{method_name}\", serde_json::Value::Object(req)).await')
+            # Non-file method: flat inline Serialize struct -> call_api_raw
+            # One serde pass, no intermediate Value tree, no BTreeMap insertions.
+            #
+            # Lifetime 'a is only emitted when at least one field is a reference.
+            # InputMedia fields use Vec<InputMedia> in the actual signature.
+            ref_fields = [
+                f for f in required_fields
+                if field_rust_type(f, types_map) not in ('i64', 'i32', 'f64', 'bool', 'InputMedia')
+            ]
+            has_lifetime = bool(ref_fields) or bool(optional_fields)
+            lt = "<'a>" if has_lifetime else ""
+            lines.append(f'        #[derive(serde::Serialize)]')
+            lines.append(f'        struct Req{lt} {{')
+            for field in required_fields:
+                fname = safe_field_name(field['name'])
+                ftype = field_rust_type(field, types_map)
+                if ftype == 'String':
+                    lines.append(f"            {fname}: &'a str,")
+                elif ftype == 'ChatId':
+                    lines.append(f"            {fname}: &'a ChatId,")
+                elif ftype in ('i64', 'i32', 'f64', 'bool'):
+                    lines.append(f'            {fname}: {ftype},')
+                elif ftype == 'InputMedia':
+                    # actual arg is Vec<InputMedia>
+                    lines.append(f"            {fname}: &'a Vec<InputMedia>,") if has_lifetime else lines.append(f'            {fname}: Vec<InputMedia>,')
+                else:
+                    lines.append(f"            {fname}: &'a {ftype},")
+            if optional_fields:
+                lines.append(f'            #[serde(flatten, skip_serializing_if = "Option::is_none")]')
+                lines.append(f"            params: Option<&'a {params_name}>,")
+            lines.append(f'        }}')
+            for field in required_fields:
+                fname = safe_field_name(field['name'])
+                ftype = field_rust_type(field, types_map)
+                if ftype in ('String', 'ChatId'):
+                    lines.append(f'        let {fname} = {fname}.into();')
+            lines.append(f'        let req = Req {{')
+            for field in required_fields:
+                fname = safe_field_name(field['name'])
+                ftype = field_rust_type(field, types_map)
+                if ftype in ('i64', 'i32', 'f64', 'bool'):
+                    lines.append(f'            {fname},')
+                else:
+                    lines.append(f'            {fname}: &{fname},')
+            if optional_fields:
+                lines.append(f'            params: params.as_ref(),')
+            lines.append(f'        }};')
+            lines.append(f'        self.call_api_raw(\"{method_name}\", &req).await')
         lines.append(f'    }}')
         lines.append(f'}}')
+        lines.append(f'')
         lines.append(f'')
     return '\n'.join(lines)
 
