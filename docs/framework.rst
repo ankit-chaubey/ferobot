@@ -35,7 +35,7 @@ Routes ``/command`` messages, optionally with args.
    async fn greet(bot: Bot, ctx: Context) -> HandlerResult {
        let name = ctx.args().first().map(String::as_str).unwrap_or("there");
        if let Some(msg) = ctx.effective_message() {
-           msg.reply(&bot, format!("Hello, {name}!"), None).await?;
+           msg.reply(&bot, format!("Hello, {name}!")).await?;
        }
        Ok(())
    }
@@ -54,7 +54,7 @@ MessageHandler with filters
    async fn on_text(bot: Bot, ctx: Context) -> HandlerResult {
        if let Some(msg) = ctx.effective_message() {
            if let Some(text) = msg.get_text() {
-               msg.reply(&bot, format!("You said: {text}"), None).await?;
+               msg.reply(&bot, format!("You said: {text}")).await?;
            }
        }
        Ok(())
@@ -109,7 +109,7 @@ CallbackQueryHandler
    async fn on_button(bot: Bot, ctx: Context) -> HandlerResult {
        if let Some(cq) = ctx.update.callback_query.as_ref() {
            if cq.data.as_deref() == Some("confirm") {
-               bot.answer_callback_query(&cq.id, None).await?;
+               bot.answer_callback_query(&cq.id).await?;
            }
        }
        Ok(())
@@ -147,7 +147,7 @@ Multi-step flows (FSM) with pluggable state storage.
 
    async fn ask_name(bot: Bot, ctx: Context) -> HandlerResult {
        if let Some(msg) = ctx.effective_message() {
-           msg.reply(&bot, "What is your name?", None).await?;
+           msg.reply(&bot, "What is your name?").await?;
        }
        Err(Box::new(NextState("ask_name".into())))
    }
@@ -155,7 +155,7 @@ Multi-step flows (FSM) with pluggable state storage.
    async fn save_name(bot: Bot, ctx: Context) -> HandlerResult {
        if let Some(msg) = ctx.effective_message() {
            let name = msg.text.clone().unwrap_or_default();
-           msg.reply(&bot, format!("Nice to meet you, {name}!"), None).await?;
+           msg.reply(&bot, format!("Nice to meet you, {name}!")).await?;
        }
        Err(Box::new(EndConversation))
    }
@@ -183,7 +183,7 @@ Redis storage
 
 .. code-block:: toml
 
-   ferobot = { version = "0.1", features = ["redis-storage"] }
+   ferobot = { version = "0.2", features = ["redis-storage"] }
 
 .. code-block:: rust
 

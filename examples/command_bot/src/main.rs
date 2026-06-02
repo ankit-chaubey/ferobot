@@ -18,11 +18,11 @@
 //   BOT_TOKEN=<your token> cargo run --example command_bot
 //
 // Supported commands:
-//   /start        – greeting
-//   /help         – list commands
-//   /ping         – pong
-//   /shout <text> – replies in uppercase
-//   /about        – library info
+//   /start        - greeting
+//   /help         - list commands
+//   /ping         - pong
+//   /shout <text> - replies in uppercase
+//   /about        - library info
 
 use ferobot::{
     framework::{Context, HandlerResult},
@@ -60,11 +60,11 @@ async fn cmd_help(bot: Bot, ctx: Context) -> HandlerResult {
         return Ok(());
     };
     let text = "\
-/start        – greeting\n\
-/help         – this list\n\
-/ping         – latency check\n\
-/shout <text> – YELL BACK\n\
-/about        – library info";
+/start        - greeting\n\
+/help         - this list\n\
+/ping         - latency check\n\
+/shout <text> - YELL BACK\n\
+/about        - library info";
     policy().run(|| msg.reply(&bot, text, None)).await?;
     Ok(())
 }
@@ -97,7 +97,7 @@ async fn cmd_about(bot: Bot, ctx: Context) -> HandlerResult {
         return Ok(());
     };
     let text = "\
-🦀 <b>ferobot v0.1.0</b>\n\
+🦀 <b>ferobot v0.2.0</b>\n\
 Async Telegram Bot API framework for Rust.\n\n\
 • All 285 types and 165 methods, fully generated\n\
 • Dispatcher with group-ordered handler routing\n\

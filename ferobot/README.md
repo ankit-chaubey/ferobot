@@ -4,7 +4,7 @@
 
 <h1>ferobot</h1>
 
-<p>Telegram Bot API library for Rust. All types and methods, fully async.</p>
+<p>Async Telegram Bot API library for Rust.</p>
 
 [![Crates.io](https://img.shields.io/crates/v/ferobot?style=for-the-badge&logo=rust&color=f74c00&labelColor=1a1a2e)](https://crates.io/crates/ferobot)
 [![docs.rs](https://img.shields.io/docsrs/ferobot?style=for-the-badge&logo=docs.rs&color=4a90d9&labelColor=1a1a2e)](https://docs.rs/ferobot)
@@ -15,51 +15,45 @@
 [![Rust](https://img.shields.io/badge/Rust-1.75%2B-f74c00?style=flat-square&logo=rust)](https://www.rust-lang.org)
 [![License](https://img.shields.io/badge/License-MIT-eab308?style=flat-square)](LICENSE)
 
-[Install](#installation) · [Quick Start](#quick-start) · [Examples](#examples) · [API Reference](#api-reference) · [docs.rs](https://docs.rs/ferobot)
+[Install](#installation) · [Quick Start](#quick-start) · [How It Works](#how-it-works) · [docs.rs](https://docs.rs/ferobot)
 
 </div>
 
 ---
 
+## What is ferobot?
+
+ferobot is a Telegram Bot API library for Rust. It covers all methods and types from the official API out of the box, and keeps them in sync automatically.
+
+When Telegram ships a new Bot API version, CI picks up the spec change, regenerates the types and methods, and opens a PR. You get the update without touching anything.
+
+The library is built around Tokio. Every bot method is async, every update runs in its own task, and the dispatcher handles routing, concurrency, and panic recovery out of the box.
+
+---
+
 ## Installation
+
+Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ferobot = "0.1"
+ferobot = "0.2"
 tokio   = { version = "1", features = ["full"] }
 ```
 
-Optional features:
+Optional features you can enable:
 
-```toml
-ferobot = { version = "0.1", features = ["webhook"] }       # built-in axum webhook server
-ferobot = { version = "0.1", features = ["per-chat"] }      # sequential per-chat concurrency
-ferobot = { version = "0.1", features = ["redis-storage"] } # Redis conversation storage
-```
+| Feature | What it adds |
+|---|---|
+| `webhook` | Built-in Axum webhook server |
+| `per-chat` | Sequential update processing per chat ID |
+| `redis-storage` | Redis-backed conversation state |
 
 ---
 
 ## Quick Start
 
-```rust
-use ferobot::Bot;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let bot = Bot::new("YOUR_TOKEN").await?;
-    println!("running as @{}", bot.me.username.as_deref().unwrap_or("?"));
-    bot.send_message(123456789i64, "hello 🦀", None).await?;
-    Ok(())
-}
-```
-
----
-
-## Examples
-
-### Dispatcher + commands
-
-The recommended way to build a bot. Handlers are async functions; the dispatcher routes updates to the first match.
+Get your token from [@BotFather](https://t.me/BotFather), then:
 
 ```rust
 use ferobot::{Bot, CommandHandler, Dispatcher, DispatcherOpts, HandlerResult, Updater};
@@ -85,395 +79,138 @@ async fn main() {
 
 ---
 
-### Echo bot (low-level polling)
+## How It Works
 
-Use `Poller` directly when you don't need the dispatcher.
+### Calling methods
 
-```rust
-use ferobot::{Bot, Poller, UpdateHandler};
-
-#[tokio::main]
-async fn main() {
-    let bot = Bot::new(std::env::var("BOT_TOKEN").unwrap()).await.unwrap();
-
-    let handler: UpdateHandler = Box::new(|bot, update| {
-        Box::pin(async move {
-            let Some(msg) = update.message else { return };
-            let Some(text) = msg.text else { return };
-            let _ = bot.send_message(msg.chat.id, text, None).await;
-        })
-    });
-
-    Poller::new(bot, handler).timeout(30).start().await.unwrap();
-}
-```
-
----
-
-### Middleware
-
-Middleware runs before and after every update. Return `false` from `before` to drop the update.
+Every bot method takes required arguments directly. Optional parameters are passed through a params struct, or you can skip them entirely with `None`:
 
 ```rust
-use ferobot::{Dispatcher, DispatcherOpts, Updater};
-use ferobot::middleware::{LoggingMiddleware, RateLimiter};
+// send a plain message
+bot.send_message(chat_id, "hello").await?;
 
-let opts = DispatcherOpts::default()
-    .middleware(LoggingMiddleware)    // logs every update
-    .middleware(RateLimiter::new(5)); // max 5 updates/sec per chat
-```
-
-Custom middleware:
-
-```rust
-use ferobot::middleware::Middleware;
-use ferobot::{Bot, types::Update};
-use async_trait::async_trait;
-
-struct AuthGuard;
-
-#[async_trait]
-impl Middleware for AuthGuard {
-    async fn before(&self, _bot: &Bot, update: &Update) -> bool {
-        let allowed = [111111111i64, 222222222i64];
-        let uid = update.message.as_ref()
-            .and_then(|m| m.from.as_ref())
-            .map(|u| u.id);
-        uid.map(|id| allowed.contains(&id)).unwrap_or(false)
-    }
-}
-```
-
----
-
-### Retry
-
-Wraps any API call and retries on flood-wait (429) and network errors.
-
-```rust
-use ferobot::RetryPolicy;
-
-let msg = RetryPolicy::new()
-    .max_attempts(3)
-    .run(|| bot.send_message(chat_id, "hello", None))
+// with optional params chained via builder
+bot.send_message(chat_id, "<b>hello</b>")
+    .html()
+    .silent()
+    .reply_to(msg.message_id)
     .await?;
 ```
 
----
-
-### Inline keyboards
-
-```rust
-use ferobot::{ReplyMarkup, gen_methods::SendMessageParams};
-use ferobot::types::{InlineKeyboardButton, InlineKeyboardMarkup};
-
-let keyboard = InlineKeyboardMarkup {
-    inline_keyboard: vec![vec![
-        InlineKeyboardButton {
-            text: "yes".into(),
-            callback_data: Some("yes".into()),
-            ..Default::default()
-        },
-        InlineKeyboardButton {
-            text: "no".into(),
-            callback_data: Some("no".into()),
-            ..Default::default()
-        },
-    ]],
-};
-
-let params = SendMessageParams::new()
-    .reply_markup(ReplyMarkup::InlineKeyboard(keyboard));
-
-bot.send_message(chat_id, "pick one", Some(params)).await?;
-```
-
----
-
-### Callback queries
-
-```rust
-use ferobot::gen_methods::{AnswerCallbackQueryParams, EditMessageTextParams};
-use ferobot::types::MaybeInaccessibleMessage;
-
-let Some(cq) = update.callback_query else { return };
-let data = cq.data.as_deref().unwrap_or("");
-
-bot.answer_callback_query(
-    cq.id.clone(),
-    Some(AnswerCallbackQueryParams::new().text(format!("got: {data}"))),
-).await?;
-
-if let Some(MaybeInaccessibleMessage::Message(m)) = cq.message.as_deref() {
-    let params = EditMessageTextParams::new()
-        .chat_id(m.chat.id)
-        .message_id(m.message_id);
-    bot.edit_message_text(format!("you chose: {data}"), Some(params)).await?;
-}
-```
-
----
-
-### Send files
-
-```rust
-use ferobot::InputFile;
-
-// file already on Telegram
-bot.send_photo(chat_id, "AgACAgIAAxkBAAI...", None).await?;
-
-// URL (Telegram fetches it)
-bot.send_photo(chat_id, "https://example.com/img.jpg", None).await?;
-
-// raw bytes
-let data = tokio::fs::read("photo.jpg").await?;
-bot.send_photo(chat_id, InputFile::memory("photo.jpg", data), None).await?;
-```
-
----
-
-### Webhook (built-in server)
-
-Requires the `webhook` feature.
-
-```rust
-use ferobot::{Bot, Dispatcher, DispatcherOpts, Updater};
-
-let bot = Bot::new(std::env::var("BOT_TOKEN").unwrap()).await.unwrap();
-let dp  = Dispatcher::new(DispatcherOpts::default());
-
-Updater::new(bot, dp)
-    .webhook_port(8443)
-    .webhook_secret("my_secret")
-    .start_webhook("https://yourdomain.com/bot")
-    .await
-    .unwrap();
-```
-
-For local testing: `ngrok http 8443`.
-
----
-
-### Webhook (manual, bring your own server)
-
-```rust
-use axum::{extract::State, http::StatusCode, routing::post, Json, Router};
-use std::sync::Arc;
-use ferobot::{types::Update, Bot};
-
-struct AppState { bot: Bot }
-
-#[tokio::main]
-async fn main() {
-    let bot = Bot::new("YOUR_TOKEN").await.unwrap();
-    bot.set_webhook("https://yourdomain.com/bot", None).await.unwrap();
-
-    let app = Router::new()
-        .route("/bot", post(handle))
-        .with_state(Arc::new(AppState { bot }));
-
-    axum::serve(
-        tokio::net::TcpListener::bind("0.0.0.0:8443").await.unwrap(),
-        app,
-    ).await.unwrap();
-}
-
-async fn handle(State(s): State<Arc<AppState>>, Json(update): Json<Update>) -> StatusCode {
-    let bot = s.bot.clone();
-    tokio::spawn(async move {
-        if let Some(msg) = update.message {
-            let _ = bot.send_message(msg.chat.id, "got it", None).await;
-        }
-    });
-    StatusCode::OK
-}
-```
-
-| | Built-in `WebhookServer` | Manual |
-|---|---|---|
-| Zero boilerplate | yes | no |
-| Secret token validation | built-in | manual |
-| Custom routing / middleware | no | yes |
-| Works with existing server | no | yes |
-| Feature flag needed | `webhook` | no |
-
----
-
-### Error handling
-
-```rust
-use ferobot::BotError;
-
-match bot.send_message(chat_id, "hello", None).await {
-    Ok(msg) => println!("sent #{}", msg.message_id),
-    Err(BotError::Api { code: 403, .. }) => eprintln!("bot was blocked"),
-    Err(e) if e.is_api_error_code(429) => {
-        let secs = e.flood_wait_seconds().unwrap_or(5);
-        tokio::time::sleep(std::time::Duration::from_secs(secs as u64)).await;
-    }
-    Err(e) => eprintln!("error: {e}"),
-}
-```
-
----
-
-### Conversation (FSM)
-
-Multi-step flows with pluggable state storage (in-memory or Redis).
-
-```rust
-use ferobot::{
-    Bot, CommandHandler, ConversationHandler, ConversationOpts,
-    Dispatcher, DispatcherOpts, HandlerResult, MessageHandler, NextState, Updater,
-};
-use ferobot::framework::{Context, filters::message as mf};
-
-async fn ask_name(bot: Bot, ctx: Context) -> HandlerResult {
-    if let Some(msg) = ctx.effective_message() {
-        msg.reply(&bot, "what's your name?", None).await?;
-    }
-    Ok(NextState::new("waiting_name").into())
-}
-
-async fn got_name(bot: Bot, ctx: Context) -> HandlerResult {
-    if let Some(msg) = ctx.effective_message() {
-        let name = msg.get_text().unwrap_or("?");
-        msg.reply(&bot, format!("hi {name}!"), None).await?;
-    }
-    Ok(())
-}
-
-#[tokio::main]
-async fn main() {
-    let bot = Bot::new(std::env::var("BOT_TOKEN").unwrap()).await.unwrap();
-
-    let conv = ConversationHandler::new(
-        ConversationOpts::default(),
-        vec![CommandHandler::new("start", ask_name)],
-        vec![("waiting_name", vec![
-            Box::new(MessageHandler::new("name", mf::text(), got_name))
-        ])],
-        vec![],
-    );
-
-    let mut dp = Dispatcher::new(DispatcherOpts::default());
-    dp.add_handler(conv);
-
-    Updater::new(bot, dp).start_polling().await.unwrap();
-}
-```
-
-Redis storage:
-
-```toml
-ferobot = { version = "0.1", features = ["redis-storage"] }
-```
-
-```rust
-use ferobot::storage::RedisStorage;
-
-let storage = RedisStorage::new("redis://127.0.0.1/")
-    .await?
-    .with_prefix("mybot:")
-    .with_ttl(86400);
-
-let opts = ConversationOpts { storage: Some(storage), ..Default::default() };
-```
-
----
-
-## API Reference
-
-### Bot constructors
-
-| Method | Description |
-|--------|-------------|
-| `Bot::new(token)` | Connect and verify token via `getMe` |
-| `Bot::with_api_url(token, url)` | Use a custom or local Bot API server |
-| `Bot::new_unverified(token)` | Skip `getMe` on startup |
-| `bot.token()` | Get the raw token string |
-| `bot.me` | `User` populated on creation |
-
----
-
-### ChatId
-
-Numeric IDs, negative group IDs, and `@username` strings all work anywhere a `ChatId` is expected:
-
-```rust
-bot.send_message(123456789i64, "user", None).await?;
-bot.send_message(-100123456789i64, "group or channel", None).await?;
-bot.send_message("@username", "by username", None).await?;
-```
-
----
-
-### InputFile
-
-```rust
-// file already on Telegram - pass the file_id string directly
-bot.send_photo(chat_id, "AgACAgIAAxkBAAI...", None).await?;
-
-// URL - pass the URL string directly
-bot.send_photo(chat_id, "https://example.com/img.jpg", None).await?;
-
-// bytes
-InputFile::memory("photo.jpg", bytes)
-```
-
----
-
-### BotError
-
-```rust
-pub enum BotError {
-    Http(reqwest::Error),
-    Json(serde_json::Error),
-    Api {
-        code: i64,
-        description: String,
-        retry_after: Option<i64>,        // present on 429
-        migrate_to_chat_id: Option<i64>, // present on migration errors
-    },
-    InvalidToken,
-    Other(String),
-}
-
-err.is_api_error_code(429)  // bool
-err.flood_wait_seconds()    // Option<i64>
-```
-
----
-
-### Optional params
-
-Every method with optional fields has a `*Params` builder:
+Shortcuts like `.html()`, `.markdown()`, `.silent()`, and `.reply_to(id)` cover the most common options. For anything else, use the params struct directly:
 
 ```rust
 use ferobot::gen_methods::SendMessageParams;
 
 let params = SendMessageParams::new()
-    .parse_mode("HTML".to_string())
+    .parse_mode("HTML")
     .disable_notification(true);
 
 bot.send_message(chat_id, "<b>hello</b>", Some(params)).await?;
 ```
 
----
+### Dispatcher and handlers
 
-## Auto-codegen
+The dispatcher routes incoming updates to the first matching handler. Handlers are plain async functions:
 
-Types and methods are generated from [tgapis/x](https://github.com/tgapis/x/tree/data), which tracks the official Telegram Bot API. CI auto-regenerates on every upstream change.
-
-Manual regeneration:
-
-```sh
-curl -sSf https://raw.githubusercontent.com/tgapis/x/data/botapi.json -o api.json
-python3 codegen/codegen.py api.json ferobot/src/
-cargo build
+```rust
+dp.add_handler(CommandHandler::new("start", start));
+dp.add_handler(MessageHandler::new("echo", mf::text(), echo));
+dp.add_handler(CallbackQueryHandler::new("btn", |_| true, on_button));
 ```
 
-Never edit `gen_types.rs` or `gen_methods.rs` by hand.
+Filters compose with `.and()`, `.or()`, `.not()`:
+
+```rust
+// text that is not a command
+MessageHandler::new("msg", mf::text().and(mf::command().not()), handler)
+```
+
+### Conversations
+
+For multi-step flows (registration, forms, wizards), use `ConversationHandler`. It manages state per user and routes each message to the right step:
+
+```rust
+let conv = ConversationHandler::new(
+    ConversationOpts::default(),
+    vec![CommandHandler::new("start", ask_name)],     // entry points
+    vec![("waiting_name", vec![...])],                 // states
+    vec![],                                            // fallbacks
+);
+```
+
+State is stored in memory by default. Add the `redis-storage` feature for persistence across restarts.
+
+### ChatId and InputFile
+
+`ChatId` accepts integers, negative group IDs, and `@username` strings interchangeably:
+
+```rust
+bot.send_message(123456789_i64, "hi").await?;
+bot.send_message(-100123456789_i64, "hi group").await?;
+bot.send_message("@username", "hi").await?;
+```
+
+`InputFile` accepts a file ID, a URL, or raw bytes at the same call site:
+
+```rust
+bot.send_photo(chat_id, "AgACAgIAAxkBAAI...").await?;                          // file_id
+bot.send_photo(chat_id, "https://example.com/img.jpg").await?;                  // URL
+bot.send_photo(chat_id, InputFile::memory("photo.jpg", bytes)).await?;          // bytes
+```
+
+---
+
+## Raw API
+
+If Telegram ships a new method and you can't wait for the next ferobot release, `bot.raw()` lets you call any method by name with arbitrary params and get back a JSON value.
+
+```rust
+// call any method by name
+let result: serde_json::Value = bot
+    .raw("sendGift")
+    .param("chat_id", 123456789_i64)
+    .param("gift_id", "gift_abc123")
+    .call()
+    .await?;
+```
+
+File uploads work too:
+
+```rust
+bot.raw("sendPhoto")
+    .param("chat_id", chat_id)
+    .file("photo", InputFile::memory("photo.jpg", bytes))
+    .call::<serde_json::Value>()
+    .await?;
+```
+
+For fire-and-forget calls where you don't care about the response:
+
+```rust
+bot.raw("deleteMessage")
+    .param("chat_id", chat_id)
+    .param("message_id", msg_id)
+    .send()
+    .await?;
+```
+
+You can also deserialize into your own struct instead of `serde_json::Value`:
+
+```rust
+#[derive(serde::Deserialize)]
+struct MyUser { id: i64, username: Option<String> }
+
+let user: MyUser = bot.raw("getMe").call().await?;
+```
+
+In practice you rarely need this since CI keeps ferobot in sync within hours of a Telegram release. But it's a useful escape hatch when you're in a hurry or testing something new.
+
+---
+
+## Always Up to Date
+
+ferobot's types and methods are generated from [tgapis/x](https://github.com/tgapis/x/tree/data), a machine-readable mirror of the official Telegram Bot API spec. A GitHub Actions workflow watches the spec repo and triggers regeneration whenever the API changes. The generated files (`gen_types.rs`, `gen_methods.rs`, `fluent.rs`) are never edited by hand.
 
 ---
 
@@ -486,13 +223,13 @@ cargo clippy --workspace -- -D warnings
 cargo fmt --all
 ```
 
-One concern per PR. Run fmt and clippy before submitting. Open a GitHub issue for bugs and features, or email [ankitchaubey.dev@gmail.com](mailto:ankitchaubey.dev@gmail.com) for security issues.
+One concern per PR. For bugs and features, open a GitHub issue. For security issues, email [ankitchaubey.dev@gmail.com](mailto:ankitchaubey.dev@gmail.com).
 
 ---
 
 ## License
 
-MIT License - Copyright (c) 2026 [Ankit Chaubey](https://github.com/ankit-chaubey)
+MIT - Copyright (c) 2026 [Ankit Chaubey](https://github.com/ankit-chaubey)
 
 ---
 

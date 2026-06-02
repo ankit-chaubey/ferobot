@@ -45,7 +45,7 @@
 //! # Redis storage
 //!
 //! ```toml
-//! ferobot = { version = "0.1", features = ["redis-storage"] }
+//! ferobot = { version = "0.2", features = ["redis-storage"] }
 //! ```
 //!
 //! ```rust,no_run

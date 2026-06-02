@@ -12,28 +12,19 @@ Run this whenever api.json is updated (CI does it automatically).
 import re, json
 from pathlib import Path
 
-# ---------------------------------------------------------------------------
 # Paths
-# ---------------------------------------------------------------------------
-
 ROOT    = Path(__file__).parent.parent
 API_JSON = ROOT / "api.json"
 OUT_DIR  = ROOT / "docs" / "reference"
 
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# ---------------------------------------------------------------------------
 # Load spec
-# ---------------------------------------------------------------------------
-
 data       = json.loads(API_JSON.read_text(encoding="utf-8"))
 API_METHODS = data["methods"]
 API_TYPES   = data["types"]
 
-# ---------------------------------------------------------------------------
 # Helpers
-# ---------------------------------------------------------------------------
-
 def to_snake(name: str) -> str:
     s = re.sub(r"([A-Z][a-z]+)", r"_\1", name)
     s = re.sub(r"([a-z])([A-Z])", r"\1_\2", s)
@@ -92,10 +83,7 @@ def rst_table(rows: list[dict]) -> str:
         ]
     return "\n".join(lines) + "\n"
 
-# ---------------------------------------------------------------------------
 # Method categories (mirrors generate_docs.py ordering)
-# ---------------------------------------------------------------------------
-
 CATEGORIES = {
     "Sending Messages":     ["sendMessage","sendPhoto","sendVideo","sendAudio","sendDocument",
                              "sendAnimation","sendVoice","sendVideoNote","sendSticker",
@@ -140,10 +128,7 @@ CATEGORIES = {
 }
 _categorized = {m for ms in CATEGORIES.values() for m in ms}
 
-# ---------------------------------------------------------------------------
 # Build methods.rst
-# ---------------------------------------------------------------------------
-
 def build_methods_rst() -> str:
     total = len(API_METHODS)
     lines = [
@@ -211,10 +196,7 @@ def build_methods_rst() -> str:
 
     return "\n".join(lines)
 
-# ---------------------------------------------------------------------------
 # Build types.rst
-# ---------------------------------------------------------------------------
-
 def build_types_rst() -> str:
     total = len(API_TYPES)
     lines = [
@@ -258,10 +240,7 @@ def build_types_rst() -> str:
 
     return "\n".join(lines)
 
-# ---------------------------------------------------------------------------
 # Write
-# ---------------------------------------------------------------------------
-
 def main():
     methods_path = OUT_DIR / "methods.rst"
     types_path   = OUT_DIR / "types.rst"

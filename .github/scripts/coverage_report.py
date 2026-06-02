@@ -5,17 +5,13 @@ import re
 import sys
 from pathlib import Path
 
-# -------------------------------------------------
 # Telegram abstract / conceptual types
-# -------------------------------------------------
 IGNORED_TYPES = {
     "InputFile",
     "InputMedia",
 }
 
-# -------------------------------------------------
 # Helpers
-# -------------------------------------------------
 def read(path: str) -> str:
     return Path(path).read_text(encoding="utf-8")
 
@@ -24,9 +20,7 @@ def snake_case(name: str) -> str:
     s = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', s)
     return s.lower()
 
-# -------------------------------------------------
 # Args  - accepts an optional --markdown flag
-# -------------------------------------------------
 args = sys.argv[1:]
 markdown = "--markdown" in args
 args = [a for a in args if a != "--markdown"]
@@ -49,9 +43,7 @@ missing_types      = []
 implemented_methods = []
 missing_methods    = []
 
-# -------------------------------------------------
 # Type coverage
-# -------------------------------------------------
 for name, info in all_types.items():
     if name in IGNORED_TYPES:
         implemented_types.append(name)
@@ -65,12 +57,10 @@ for name, info in all_types.items():
     else:
         missing_types.append(name)
 
-# -------------------------------------------------
 # Method coverage
 # Methods are generated as:  pub async fn snake_name
 # e.g. sendMessage -> pub async fn send_message
 # Some methods are implemented as sync builder-pattern `pub fn` in fluent.rs.
-# -------------------------------------------------
 FLUENT_SOURCES = ["ferobot/src/fluent.rs"]
 
 gen_fns = set(re.findall(r'pub async fn (\w+)', methods_src))
@@ -90,9 +80,7 @@ for name in all_methods:
     else:
         missing_methods.append(name)
 
-# -------------------------------------------------
 # Compute stats
-# -------------------------------------------------
 total_types   = len(all_types)
 total_methods = len(all_methods)
 
@@ -102,9 +90,7 @@ methods_covered = len(implemented_methods)
 types_pct   = int((types_covered   / total_types)   * 100) if total_types   else 100
 methods_pct = int((methods_covered / total_methods) * 100) if total_methods else 100
 
-# -------------------------------------------------
 # Output - plain text or Markdown
-# -------------------------------------------------
 if markdown:
     print("## 📊 ferobot API Coverage - Telegram Bot API\n")
     print("| Category | Covered | Total | % |")
@@ -143,8 +129,6 @@ else:
         print("\n⚠️  Missing Methods:")
         print(" ", missing_methods)
 
-# -------------------------------------------------
 # Strict CI enforcement (both modes must fail hard)
-# -------------------------------------------------
 if missing_types or missing_methods:
     sys.exit(1)

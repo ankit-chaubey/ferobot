@@ -7,6 +7,21 @@ Auto-generated API updates use the [Telegram Bot API spec](https://github.com/Pa
 
 ---
 
+## [0.2.0] - 2026-06-02
+
+### Changed
+
+- Rewrote `ReqwestClient::with_timeout` to build the inner client directly instead of delegating to `for_api_with_timeout`
+- Simplified `ReqwestClient::for_api`: removed HTTP/2 settings (`http2_adaptive_window`, `http2_keep_alive_*`), gzip, and `connect_timeout`; pool reduced from 512 to 200; keepalive interval changed from 30s to 60s
+- Simplified `ReqwestClient::for_polling`: removed `connect_timeout`, `pool_idle_timeout`, `tcp_nodelay`, and HTTP/2 settings; keepalive interval changed to 60s
+- Removed `call_api_raw` from `Bot` (fast-path that serialized directly to bytes, bypassing `serde_json::Value`)
+- Removed `post_json_raw` from `BotClient` trait and `ReqwestClient` (zero-copy raw bytes POST path)
+- Webhook handler reverted from optimised single-spawn (`catch_unwind`) to double-spawn for panic isolation; body deserialization moved back to axum's `Json` extractor
+- `reqwest` feature set reduced: removed `http2`, `rustls-tls`, and `gzip` from non-wasm target
+- Version bumped to `0.2.0` across `Cargo.toml`, docs, and README
+
+---
+
 ## [0.1.2] - 2026-05-08
 
 ### Telegram Bot API: `Bot API 10.0`

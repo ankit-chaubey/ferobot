@@ -214,18 +214,12 @@ impl WebhookServer {
     }
 }
 
-/// Webhook handler - optimised for minimum response latency.
-///
-/// Parses the body manually from raw bytes (avoids axum's `Json` extractor
-/// allocating a second deserialization path), returns `200 OK` with an empty
-/// body before the handler task even starts, and uses a single `tokio::spawn`
-/// with `catch_unwind` instead of the previous double-spawn.
 async fn handle_update(
     State(state): State<Arc<AppState>>,
     headers: HeaderMap,
     body: Bytes,
 ) -> impl IntoResponse {
-    // --- 1. Authenticate ---
+    // authenticate
     if let Some(ref expected) = state.secret_token {
         let provided = headers
             .get("x-telegram-bot-api-secret-token")
@@ -237,7 +231,7 @@ async fn handle_update(
         }
     }
 
-    // --- 2. Deserialize from raw bytes (single pass, no Value intermediate) ---
+    // deserialize from raw bytes (single pass, no Value intermediate)
     let update: Update = match serde_json::from_slice(&body) {
         Ok(u) => u,
         Err(e) => {
@@ -247,7 +241,7 @@ async fn handle_update(
         }
     };
 
-    // --- 3. Concurrency gate (non-blocking) ---
+    // concurrency gate (non-blocking)
     let permit = match state.semaphore.clone().try_acquire_owned() {
         Ok(p) => p,
         Err(_) => {
@@ -259,8 +253,7 @@ async fn handle_update(
     let bot = state.bot.clone();
     let handler = Arc::clone(&state.handler);
 
-    // --- 4. Spawn and return 200 immediately ---
-    // Single spawn with catch_unwind: half the task overhead of double-spawn.
+    // single spawn with catch_unwind; return 200 immediately
     tokio::spawn(async move {
         let _permit = permit;
         let result = std::panic::AssertUnwindSafe((handler)(bot, update))

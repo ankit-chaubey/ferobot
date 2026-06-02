@@ -23,7 +23,7 @@ Add ferobot to ``Cargo.toml``:
 .. code-block:: toml
 
    [dependencies]
-   ferobot = "0.1"
+   ferobot = "0.2"
    tokio   = { version = "1", features = ["full"] }
 
 3. Echo bot
@@ -44,7 +44,7 @@ Replace ``src/main.rs``:
            let name = msg.from.as_ref()
                .map(|u| u.first_name.as_str())
                .unwrap_or("there");
-           msg.reply(&bot, format!("Hello, {name}! Send me any text."), None).await?;
+           msg.reply(&bot, format!("Hello, {name}! Send me any text.")).await?;
        }
        Ok(())
    }
@@ -52,7 +52,7 @@ Replace ``src/main.rs``:
    async fn echo(bot: Bot, ctx: Context) -> HandlerResult {
        if let Some(msg) = ctx.effective_message() {
            if let Some(text) = msg.get_text() {
-               msg.reply(&bot, text.to_owned(), None).await?;
+               msg.reply(&bot, text.to_owned()).await?;
            }
        }
        Ok(())
@@ -85,7 +85,7 @@ Enable optional features in ``Cargo.toml``:
 .. code-block:: toml
 
    [dependencies]
-   ferobot = { version = "0.1", features = ["webhook", "per-chat", "redis-storage"] }
+   ferobot = { version = "0.2", features = ["webhook", "per-chat", "redis-storage"] }
 
 .. list-table::
    :header-rows: 1
@@ -134,7 +134,7 @@ Numeric IDs, negative group IDs, and ``@username`` strings all work anywhere a `
 .. code-block:: rust
 
    bot.send_message(123456789i64,       "user",             None).await?;
-   bot.send_message(-100123456789i64,   "group or channel", None).await?;
+   bot.send_message(-100123456789i64,   "group or channel").await?;
    bot.send_message("@username",        "by username",      None).await?;
 
 Error handling
@@ -144,7 +144,7 @@ Error handling
 
    use ferobot::BotError;
 
-   match bot.send_message(chat_id, "hello", None).await {
+   match bot.send_message(chat_id, "hello").await {
        Ok(msg) => println!("sent #{}", msg.message_id),
        Err(BotError::Api { code: 403, .. }) => eprintln!("bot was blocked"),
        Err(e) if e.is_api_error_code(429) => {
@@ -182,7 +182,7 @@ Wraps any API call and retries on flood-wait (429) and network errors:
 
    let msg = RetryPolicy::new()
        .max_attempts(3)
-       .run(|| bot.send_message(chat_id, "hello", None))
+       .run(|| bot.send_message(chat_id, "hello"))
        .await?;
 
 Auto-codegen

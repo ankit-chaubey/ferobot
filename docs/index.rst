@@ -22,7 +22,7 @@ All **165 methods** and **285 types** are auto-generated from the official Teleg
 .. code-block:: toml
 
    [dependencies]
-   ferobot = "0.1"
+   ferobot = "0.2"
    tokio   = { version = "1", features = ["full"] }
 
 .. code-block:: rust
@@ -31,7 +31,7 @@ All **165 methods** and **285 types** are auto-generated from the official Teleg
 
    async fn start(bot: Bot, ctx: Context) -> HandlerResult {
        if let Some(msg) = ctx.effective_message() {
-           msg.reply(&bot, "Hello! I'm running on ferobot.", None).await?;
+           msg.reply(&bot, "Hello! I'm running on ferobot.").await?;
        }
        Ok(())
    }

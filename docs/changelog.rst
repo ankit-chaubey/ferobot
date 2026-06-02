@@ -5,6 +5,24 @@ All notable changes to ferobot are documented here.
 Format follows `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_.
 Versioning follows `Semantic Versioning <https://semver.org/>`_.
 
+0.2.0 - 2026-06-02
+-------------------
+
+- Rewrote ``ReqwestClient::with_timeout`` to build the inner client directly
+- Simplified ``for_api``: removed HTTP/2 settings, gzip, connect_timeout; pool reduced from 512 to 200; keepalive changed to 60s
+- Simplified ``for_polling``: removed connect_timeout, pool_idle_timeout, tcp_nodelay, and HTTP/2 settings
+- Removed ``call_api_raw`` from ``Bot`` and ``post_json_raw`` from the ``BotClient`` trait
+- Webhook handler reverted to double-spawn for panic isolation; body deserialization back to axum's ``Json`` extractor
+- ``reqwest`` feature set reduced: removed ``http2``, ``rustls-tls``, ``gzip`` from non-wasm target
+- Removed AI-style section separator comments from ``.rs`` and ``.py`` source files
+- Replaced en dashes in examples with plain hyphens
+- Version bump across Cargo.toml, docs, and README
+
+0.1.2 - 2026-05-08
+-------------------
+
+Auto-generated from Telegram Bot API 10.0.
+
 0.1.0 - 2026-01-01
 -------------------
 

@@ -1,25 +1,29 @@
 Fluent API
 ==========
 
-Every ``bot.method(required_args)`` accepts an optional params struct for extra fields.
-Use the builder pattern to chain options cleanly, then ``.await``.
+Every ``bot.method(required_args)`` returns a builder that implements ``IntoFuture``.
+Chain optional params before ``.await`` — no ``None``, no ``Some(...)``.
 
 Sending messages
 ----------------
 
 .. code-block:: rust
 
-   use ferobot::gen_methods::SendMessageParams;
+   // just required args
+   bot.send_message(chat_id, "Hello!").await?;
 
-   // Minimal
-   bot.send_message(chat_id, "Hello!", None).await?;
+   // with options chained
+   bot.send_message(chat_id, "<b>Bold text</b>")
+       .html()
+       .silent()
+       .reply_to(msg.message_id)
+       .await?;
 
-   // With options
-   let params = SendMessageParams::new()
-       .parse_mode("HTML".to_string())
-       .disable_notification(true);
-
-   bot.send_message(chat_id, "<b>Bold text</b>", Some(params)).await?;
+   // all options available by field name
+   bot.send_message(chat_id, "hi")
+       .parse_mode("MarkdownV2")
+       .disable_notification(true)
+       .await?;
 
 Sending media
 -------------
@@ -27,26 +31,25 @@ Sending media
 .. code-block:: rust
 
    use ferobot::InputFile;
-   use ferobot::gen_methods::SendPhotoParams;
 
    // File ID already on Telegram
-   bot.send_photo(chat_id, "AgACAgIAAxkBAAI...", None).await?;
+   bot.send_photo(chat_id, "AgACAgIAAxkBAAI...").await?;
 
    // URL: Telegram fetches it
-   bot.send_photo(chat_id, "https://example.com/img.jpg", None).await?;
+   bot.send_photo(chat_id, "https://example.com/img.jpg").await?;
 
    // Raw bytes from disk
-   let data   = tokio::fs::read("photo.jpg").await?;
-   let file   = InputFile::memory("photo.jpg", data);
-   let params = SendPhotoParams::new().caption("Look at this!".to_string());
-   bot.send_photo(chat_id, file, Some(params)).await?;
+   let data = tokio::fs::read("photo.jpg").await?;
+   bot.send_photo(chat_id, InputFile::memory("photo.jpg", data))
+       .caption("Look at this!")
+       .await?;
 
 Inline keyboard
 ---------------
 
 .. code-block:: rust
 
-   use ferobot::{ReplyMarkup, gen_methods::SendMessageParams};
+   use ferobot::ReplyMarkup;
    use ferobot::types::{InlineKeyboardButton, InlineKeyboardMarkup};
 
    let kb = ReplyMarkup::InlineKeyboard(InlineKeyboardMarkup {
@@ -64,35 +67,32 @@ Inline keyboard
        ]],
    });
 
-   let params = SendMessageParams::new().reply_markup(kb);
-   bot.send_message(chat_id, "Confirm?", Some(params)).await?;
+   bot.send_message(chat_id, "Confirm?")
+       .reply_markup(kb)
+       .await?;
 
 Answering callbacks
 -------------------
 
 .. code-block:: rust
 
-   use ferobot::gen_methods::AnswerCallbackQueryParams;
-
-   let params = AnswerCallbackQueryParams::new()
-       .text("Done!".to_string())
-       .show_alert(false);
-
-   bot.answer_callback_query(&cq.id, Some(params)).await?;
+   bot.answer_callback_query(&cq.id)
+       .text("Done!")
+       .show_alert(false)
+       .await?;
 
 Editing messages
 ----------------
 
 .. code-block:: rust
 
-   use ferobot::gen_methods::EditMessageTextParams;
    use ferobot::types::MaybeInaccessibleMessage;
 
    if let Some(MaybeInaccessibleMessage::Message(m)) = cq.message.as_deref() {
-       let params = EditMessageTextParams::new()
+       bot.edit_message_text("Updated text")
            .chat_id(m.chat.id)
-           .message_id(m.message_id);
-       bot.edit_message_text("Updated text", Some(params)).await?;
+           .message_id(m.message_id)
+           .await?;
    }
 
 Message helpers
@@ -101,7 +101,7 @@ Message helpers
 .. code-block:: rust
 
    // Reply to a message
-   msg.reply(&bot, "Thanks!", None).await?;
+   msg.reply(&bot, "Thanks!").await?;
 
    // Get text (also reads caption for media)
    if let Some(text) = msg.get_text() { /* ... */ }
@@ -121,10 +121,10 @@ InputFile
 .. code-block:: rust
 
    // File already on Telegram: pass file_id string directly
-   bot.send_photo(chat_id, "AgACAgIAAxkBAAI...", None).await?;
+   bot.send_photo(chat_id, "AgACAgIAAxkBAAI...").await?;
 
    // URL: pass URL string directly
-   bot.send_photo(chat_id, "https://example.com/img.jpg", None).await?;
+   bot.send_photo(chat_id, "https://example.com/img.jpg").await?;
 
    // Raw bytes
    InputFile::memory("photo.jpg", bytes)
@@ -138,9 +138,9 @@ Call any Bot API method by name with arbitrary params:
 
    let result: serde_json::Value = bot
        .raw("sendMessage")
-       .param("chat_id",   123456789_i64)
-       .param("text",      "Hello from raw!")
-       .param("parse_mode","HTML")
+       .param("chat_id",    123456789_i64)
+       .param("text",       "Hello from raw!")
+       .param("parse_mode", "HTML")
        .call()
        .await?;
 
@@ -162,9 +162,9 @@ Sending files (full reference)
 
 .. code-block:: rust
 
-   // Reading from disk
    let bytes = tokio::fs::read("document.pdf").await?;
-   bot.send_document(chat_id, InputFile::memory("doc.pdf", bytes), None).await?;
+   bot.send_document(chat_id, InputFile::memory("doc.pdf", bytes))
+       .await?;
 
 Webhook (built-in vs manual)
 -----------------------------
@@ -177,20 +177,20 @@ Webhook (built-in vs manual)
      - Built-in ``WebhookServer``
      - Manual (bring your own)
    * - Zero boilerplate
-     - ✓
-     - ✗
+     - yes
+     - no
    * - Secret token validation
      - Built-in
      - Manual
    * - Custom routing / middleware
-     - ✗
-     - ✓
+     - no
+     - yes
    * - Works with existing server
-     - ✗
-     - ✓
+     - no
+     - yes
    * - Feature flag needed
      - ``webhook``
-     - None
+     - none
 
 Manual webhook with Axum:
 
@@ -205,7 +205,7 @@ Manual webhook with Axum:
    #[tokio::main]
    async fn main() {
        let bot = Bot::new("YOUR_TOKEN").await.unwrap();
-       bot.set_webhook("https://yourdomain.com/bot", None).await.unwrap();
+       bot.set_webhook("https://yourdomain.com/bot").await.unwrap();
 
        let app = Router::new()
            .route("/bot", post(handle))
@@ -224,7 +224,7 @@ Manual webhook with Axum:
        let bot = s.bot.clone();
        tokio::spawn(async move {
            if let Some(msg) = update.message {
-               let _ = bot.send_message(msg.chat.id, "got it", None).await;
+               let _ = bot.send_message(msg.chat.id, "got it").await;
            }
        });
        StatusCode::OK

@@ -1,13 +1,3 @@
-# ARCHITECTURE NOTE (updated):
-# gen_methods.rs methods are now PUBLIC and have clean names (no _with_params / _exec suffix).
-# The fluent builder layer (fluent.rs) has been removed.
-# Public API: bot.method_name(required_args, params: Option<MethodParams>)
-# Ergonomic helper: p!(MethodParams { field: value }) macro in macros.rs
-# To regenerate: run this script, then apply:
-#   s/pub\(crate\) async fn (\w+)_with_params/pub async fn /g
-#   s/pub\(crate\) async fn (\w+)_exec/pub async fn /g
-# (or update the codegen templates directly to emit pub async fn with clean names)
-
 #!/usr/bin/env python3
 """
 ferobot - Code Generator
@@ -27,10 +17,13 @@ Example:
 
 Generates:
     gen_types.rs   - All Telegram Bot API types
-    gen_methods.rs - All Telegram Bot API methods (raw, with _with_params suffix for those that have options)
-    fluent.rs      - Fluent IntoFuture builder wrappers for EVERY method
+    gen_methods.rs - All Telegram Bot API methods
 
 No external dependencies required. Pure Python 3.6+.
+Notes:
+  Methods in gen_methods.rs use public names - no _with_params or _exec suffix.
+  The fluent builder layer (fluent.rs) has been removed.
+  Public API: bot.method_name(required_args, params: Option<MethodParams>)
 """
 
 import json
@@ -251,10 +244,7 @@ def generate_setter(fname, rust_type_with_option):
             f'    }}'
         )
 
-# -------------------------------------------------------------------------
 # generate_types  (unchanged from original)
-# -------------------------------------------------------------------------
-
 def generate_types(spec):
     types_map = spec['types']
     version = spec['version']
@@ -324,10 +314,7 @@ def generate_types(spec):
             lines.append('')
     return '\n'.join(lines)
 
-# -------------------------------------------------------------------------
 # generate_methods  (updated: FLUENT_METHODS now auto-computed = all with opts)
-# -------------------------------------------------------------------------
-
 def generate_methods(spec):
     types_map = spec['types']
     methods_map = spec['methods']
@@ -519,10 +506,7 @@ def generate_methods(spec):
         lines.append(f'')
     return '\n'.join(lines)
 
-# -------------------------------------------------------------------------
 # generate_fluent  (NEW - generates fluent wrappers for ALL 169 methods)
-# -------------------------------------------------------------------------
-
 def generate_fluent(spec):
     types_map = spec['types']
     methods_map = spec['methods']
@@ -774,10 +758,7 @@ def generate_fluent(spec):
 
     return '\n'.join(lines)
 
-# -------------------------------------------------------------------------
 # Main
-# -------------------------------------------------------------------------
-
 def main():
     spec_path = sys.argv[1] if len(sys.argv) > 1 else 'api.json'
     out_dir = sys.argv[2] if len(sys.argv) > 2 else '../ferobot/src'
