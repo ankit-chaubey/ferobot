@@ -9,11 +9,11 @@ on:
   workflow_dispatch:
     inputs:
       bump:
-        description: 'Version bump type'
+        description: 'Version bump type (typed = already done, just publish to crates.io)'
         required: true
-        default: 'patch'
+        default: 'typed'
         type: choice
-        options: [patch, minor, major]
+        options: [typed, patch, minor, major]
       dry_run:
         description: 'Dry run (skip actual publish)'
         required: false
@@ -54,6 +54,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install cargo-edit
+        if: github.event.inputs.bump != 'typed'
         run: cargo install cargo-edit --locked
 
       - name: Download diff report
@@ -90,15 +91,9 @@ jobs:
           echo "bump=$BUMP" >> $GITHUB_OUTPUT
           echo "Bump: $BUMP"
 
-      - name: Read current version
-        id: current-ver
-        run: |
-          VER=$(grep '^version' ferobot/Cargo.toml | head -1 | sed 's/version = \"//;s/\"//')
-          echo "version=$VER" >> $GITHUB_OUTPUT
-          echo "Current: $VER"
-
       - name: Bump version
         id: new-ver
+        if: steps.bump-type.outputs.bump != 'typed'
         run: |
           cd ferobot
           cargo set-version --bump ${{ steps.bump-type.outputs.bump }}
@@ -108,11 +103,13 @@ jobs:
 
       - name: API version
         id: api-ver
+        if: steps.bump-type.outputs.bump != 'typed'
         run: |
           VER=$(python3 -c "import json; print(json.load(open('api.json'))['version'])")
           echo "version=$VER" >> $GITHUB_OUTPUT
 
       - name: Update changelog
+        if: steps.bump-type.outputs.bump != 'typed'
         run: |
           python3 .github/scripts/update_changelog.py \
             CHANGELOG.md \
@@ -125,6 +122,7 @@ jobs:
         run: cargo test --workspace
 
       - name: Commit and push
+        if: steps.bump-type.outputs.bump != 'typed'
         run: |
           git config user.name "Ankit Chaubey"
           git config user.email "ankitchaubey.dev@gmail.com"
@@ -137,12 +135,14 @@ jobs:
           git push origin main
 
       - name: Tag
+        if: steps.bump-type.outputs.bump != 'typed'
         run: |
           TAG="v${{ steps.new-ver.outputs.version }}"
           git tag -a "$TAG" -m "Release $TAG - Telegram Bot API ${{ steps.api-ver.outputs.version }}"
           git push origin "$TAG"
 
       - name: GitHub release
+        if: steps.bump-type.outputs.bump != 'typed'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.new-ver.outputs.version }}
@@ -162,4 +162,4 @@ jobs:
         if: github.event.inputs.dry_run == 'true'
         run: |
           cargo publish --manifest-path ferobot/Cargo.toml --dry-run --allow-dirty
-          echo "Dry run passed. Would have published v${{ steps.new-ver.outputs.version }}"
+          echo "Dry run passed."
