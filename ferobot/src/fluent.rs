@@ -13,7 +13,7 @@
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
-// Generated from Telegram Bot API Bot API 10.0
+// Generated from Telegram Bot API Bot API 10.1
 // Spec:    https://github.com/ankit-chaubey/api-spec
 // Project: https://github.com/ankit-chaubey/ferobot
 // Author:  Ankit Chaubey <ankitchaubey.dev@gmail.com>
@@ -156,6 +156,42 @@ impl<'bot> IntoFuture for AnswerCallbackQueryRequest<'bot> {
         Box::pin(async move {
             self.bot
                 .answer_callback_query_with_params(self.callback_query_id, Some(self.params))
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::answer_chat_join_request_query`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#answerchatjoinrequestquery
+pub struct AnswerChatJoinRequestQueryRequest<'bot> {
+    bot: &'bot Bot,
+    chat_join_request_query_id: String,
+    result: String,
+}
+
+impl<'bot> AnswerChatJoinRequestQueryRequest<'bot> {
+    pub(crate) fn new(
+        bot: &'bot Bot,
+        chat_join_request_query_id: impl Into<String>,
+        result: impl Into<String>,
+    ) -> Self {
+        Self {
+            bot,
+            chat_join_request_query_id: chat_join_request_query_id.into(),
+            result: result.into(),
+        }
+    }
+}
+
+impl<'bot> IntoFuture for AnswerChatJoinRequestQueryRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .raw_answer_chat_join_request_query(self.chat_join_request_query_id, self.result)
                 .await
         })
     }
@@ -2173,15 +2209,13 @@ impl<'bot> IntoFuture for EditMessageReplyMarkupRequest<'bot> {
 /// See: https://core.telegram.org/bots/api#editmessagetext
 pub struct EditMessageTextRequest<'bot> {
     bot: &'bot Bot,
-    text: String,
     params: EditMessageTextParams,
 }
 
 impl<'bot> EditMessageTextRequest<'bot> {
-    pub(crate) fn new(bot: &'bot Bot, text: impl Into<String>) -> Self {
+    pub(crate) fn new(bot: &'bot Bot) -> Self {
         Self {
             bot,
-            text: text.into(),
             params: Default::default(),
         }
     }
@@ -2211,6 +2245,10 @@ impl<'bot> EditMessageTextRequest<'bot> {
         self.params.inline_message_id = Some(v.into());
         self
     }
+    pub fn text(mut self, v: impl Into<String>) -> Self {
+        self.params.text = Some(v.into());
+        self
+    }
     pub fn parse_mode(mut self, v: impl Into<String>) -> Self {
         self.params.parse_mode = Some(v.into());
         self
@@ -2221,6 +2259,10 @@ impl<'bot> EditMessageTextRequest<'bot> {
     }
     pub fn link_preview_options(mut self, v: LinkPreviewOptions) -> Self {
         self.params.link_preview_options = Some(Box::new(v));
+        self
+    }
+    pub fn rich_message(mut self, v: InputRichMessage) -> Self {
+        self.params.rich_message = Some(Box::new(v));
         self
     }
     pub fn reply_markup(mut self, v: InlineKeyboardMarkup) -> Self {
@@ -2236,7 +2278,7 @@ impl<'bot> IntoFuture for EditMessageTextRequest<'bot> {
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
             self.bot
-                .edit_message_text_with_params(self.text, Some(self.params))
+                .edit_message_text_with_params(Some(self.params))
                 .await
         })
     }
@@ -4869,6 +4911,45 @@ impl<'bot> IntoFuture for SendChatActionRequest<'bot> {
     }
 }
 
+/// Fluent builder for [`Bot::send_chat_join_request_web_app`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#sendchatjoinrequestwebapp
+pub struct SendChatJoinRequestWebAppRequest<'bot> {
+    bot: &'bot Bot,
+    chat_join_request_query_id: String,
+    web_app_url: String,
+}
+
+impl<'bot> SendChatJoinRequestWebAppRequest<'bot> {
+    pub(crate) fn new(
+        bot: &'bot Bot,
+        chat_join_request_query_id: impl Into<String>,
+        web_app_url: impl Into<String>,
+    ) -> Self {
+        Self {
+            bot,
+            chat_join_request_query_id: chat_join_request_query_id.into(),
+            web_app_url: web_app_url.into(),
+        }
+    }
+}
+
+impl<'bot> IntoFuture for SendChatJoinRequestWebAppRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .raw_send_chat_join_request_web_app(
+                    self.chat_join_request_query_id,
+                    self.web_app_url,
+                )
+                .await
+        })
+    }
+}
+
 /// Fluent builder for [`Bot::send_checklist`]. Implements [`IntoFuture`].
 ///
 /// See: https://core.telegram.org/bots/api#sendchecklist
@@ -6469,6 +6550,147 @@ impl<'bot> IntoFuture for SendPollRequest<'bot> {
         Box::pin(async move {
             self.bot
                 .send_poll_with_params(self.chat_id, self.question, self.options, Some(self.params))
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::send_rich_message`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#sendrichmessage
+pub struct SendRichMessageRequest<'bot> {
+    bot: &'bot Bot,
+    chat_id: ChatId,
+    rich_message: InputRichMessage,
+    params: SendRichMessageParams,
+}
+
+impl<'bot> SendRichMessageRequest<'bot> {
+    pub(crate) fn new(
+        bot: &'bot Bot,
+        chat_id: impl Into<ChatId>,
+        rich_message: InputRichMessage,
+    ) -> Self {
+        Self {
+            bot,
+            chat_id: chat_id.into(),
+            rich_message,
+            params: Default::default(),
+        }
+    }
+
+    /// Send silently (`disable_notification = true`).
+    pub fn silent(self) -> Self {
+        self.disable_notification(true)
+    }
+
+    /// Reply to a message by id.
+    pub fn reply_to(mut self, message_id: i64) -> Self {
+        self.params.reply_parameters = Some(make_reply_params(message_id));
+        self
+    }
+
+    pub fn business_connection_id(mut self, v: impl Into<String>) -> Self {
+        self.params.business_connection_id = Some(v.into());
+        self
+    }
+    pub fn message_thread_id(mut self, v: i64) -> Self {
+        self.params.message_thread_id = Some(v);
+        self
+    }
+    pub fn direct_messages_topic_id(mut self, v: i64) -> Self {
+        self.params.direct_messages_topic_id = Some(v);
+        self
+    }
+    pub fn disable_notification(mut self, v: bool) -> Self {
+        self.params.disable_notification = Some(v);
+        self
+    }
+    pub fn protect_content(mut self, v: bool) -> Self {
+        self.params.protect_content = Some(v);
+        self
+    }
+    pub fn allow_paid_broadcast(mut self, v: bool) -> Self {
+        self.params.allow_paid_broadcast = Some(v);
+        self
+    }
+    pub fn message_effect_id(mut self, v: impl Into<String>) -> Self {
+        self.params.message_effect_id = Some(v.into());
+        self
+    }
+    pub fn suggested_post_parameters(mut self, v: SuggestedPostParameters) -> Self {
+        self.params.suggested_post_parameters = Some(Box::new(v));
+        self
+    }
+    pub fn reply_parameters(mut self, v: ReplyParameters) -> Self {
+        self.params.reply_parameters = Some(Box::new(v));
+        self
+    }
+    pub fn reply_markup(mut self, v: impl Into<ReplyMarkup>) -> Self {
+        self.params.reply_markup = Some(v.into());
+        self
+    }
+}
+
+impl<'bot> IntoFuture for SendRichMessageRequest<'bot> {
+    type Output = Result<Message, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .send_rich_message_with_params(self.chat_id, self.rich_message, Some(self.params))
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::send_rich_message_draft`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#sendrichmessagedraft
+pub struct SendRichMessageDraftRequest<'bot> {
+    bot: &'bot Bot,
+    chat_id: i64,
+    draft_id: i64,
+    rich_message: InputRichMessage,
+    params: SendRichMessageDraftParams,
+}
+
+impl<'bot> SendRichMessageDraftRequest<'bot> {
+    pub(crate) fn new(
+        bot: &'bot Bot,
+        chat_id: i64,
+        draft_id: i64,
+        rich_message: InputRichMessage,
+    ) -> Self {
+        Self {
+            bot,
+            chat_id,
+            draft_id,
+            rich_message,
+            params: Default::default(),
+        }
+    }
+
+    pub fn message_thread_id(mut self, v: i64) -> Self {
+        self.params.message_thread_id = Some(v);
+        self
+    }
+}
+
+impl<'bot> IntoFuture for SendRichMessageDraftRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .send_rich_message_draft_with_params(
+                    self.chat_id,
+                    self.draft_id,
+                    self.rich_message,
+                    Some(self.params),
+                )
                 .await
         })
     }
@@ -8905,6 +9127,16 @@ impl Bot {
         AnswerCallbackQueryRequest::new(self, callback_query_id)
     }
 
+    /// Use this method to process a received chat join request query. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#answerchatjoinrequestquery
+    pub fn answer_chat_join_request_query(
+        &self,
+        chat_join_request_query_id: impl Into<String>,
+        result: impl Into<String>,
+    ) -> AnswerChatJoinRequestQueryRequest<'_> {
+        AnswerChatJoinRequestQueryRequest::new(self, chat_join_request_query_id, result)
+    }
+
     /// Use this method to reply to a received guest message. On success, a SentGuestMessage object is returned.
     /// See: https://core.telegram.org/bots/api#answerguestquery
     pub fn answer_guest_query(
@@ -9317,7 +9549,7 @@ impl Bot {
         EditMessageLiveLocationRequest::new(self, latitude, longitude)
     }
 
-    /// Use this method to edit animation, audio, document, live photo, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo, a live photo, or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
+    /// Use this method to edit animation, audio, document, live photo, photo, or video messages, or to replace a text or a rich message with a media. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo, a live photo, or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
     /// See: https://core.telegram.org/bots/api#editmessagemedia
     pub fn edit_message_media(&self, media: Vec<InputMedia>) -> EditMessageMediaRequest<'_> {
         EditMessageMediaRequest::new(self, media)
@@ -9329,10 +9561,10 @@ impl Bot {
         EditMessageReplyMarkupRequest::new(self)
     }
 
-    /// Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
+    /// Use this method to edit text, rich and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
     /// See: https://core.telegram.org/bots/api#editmessagetext
-    pub fn edit_message_text(&self, text: impl Into<String>) -> EditMessageTextRequest<'_> {
-        EditMessageTextRequest::new(self, text)
+    pub fn edit_message_text(&self) -> EditMessageTextRequest<'_> {
+        EditMessageTextRequest::new(self)
     }
 
     /// Edits a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns Story on success.
@@ -9855,6 +10087,16 @@ impl Bot {
         SendChatActionRequest::new(self, chat_id, action)
     }
 
+    /// Use this method to process a received chat join request query by showing a Mini App to the user before deciding the outcome. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#sendchatjoinrequestwebapp
+    pub fn send_chat_join_request_web_app(
+        &self,
+        chat_join_request_query_id: impl Into<String>,
+        web_app_url: impl Into<String>,
+    ) -> SendChatJoinRequestWebAppRequest<'_> {
+        SendChatJoinRequestWebAppRequest::new(self, chat_join_request_query_id, web_app_url)
+    }
+
     /// Use this method to send a checklist on behalf of a connected business account. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendchecklist
     pub fn send_checklist(
@@ -10001,6 +10243,27 @@ impl Bot {
         options: Vec<InputPollOption>,
     ) -> SendPollRequest<'_> {
         SendPollRequest::new(self, chat_id, question, options)
+    }
+
+    /// Use this method to send rich messages. If the message contains a block with a media element, then the bot must have the right to send the media to the chat. On success, the sent Message is returned.
+    /// See: https://core.telegram.org/bots/api#sendrichmessage
+    pub fn send_rich_message(
+        &self,
+        chat_id: impl Into<ChatId>,
+        rich_message: InputRichMessage,
+    ) -> SendRichMessageRequest<'_> {
+        SendRichMessageRequest::new(self, chat_id, rich_message)
+    }
+
+    /// Use this method to stream a partial rich message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendRichMessage with the complete message to persist it in the user's chat. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#sendrichmessagedraft
+    pub fn send_rich_message_draft(
+        &self,
+        chat_id: i64,
+        draft_id: i64,
+        rich_message: InputRichMessage,
+    ) -> SendRichMessageDraftRequest<'_> {
+        SendRichMessageDraftRequest::new(self, chat_id, draft_id, rich_message)
     }
 
     /// Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent Message is returned.
