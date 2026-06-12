@@ -54,6 +54,48 @@ COPYRIGHT_HEADER = """\
 # optional fields. Do NOT edit by hand; it is rebuilt on every codegen run.
 FLUENT_METHODS = set()  # populated in main() from the spec
 
+RECURSIVE_TYPES = set()
+
+def compute_recursive_types(types_map):
+    """Find types that are part of a cycle through required, non-array,
+    non-optional fields (these need Box<> to have finite size)."""
+    graph = {}
+    for type_name, tg_type in types_map.items():
+        deps = set()
+        for field in tg_type.get('fields', []):
+            if not field.get('required'):
+                continue
+            for t in field.get('types', []):
+                if is_array(t):
+                    continue
+                if t in types_map:
+                    deps.add(t)
+        for variant in tg_type.get('subtypes', []):
+            if variant in types_map:
+                deps.add(variant)
+        graph[type_name] = deps
+
+    recursive = set()
+    for start in graph:
+        stack = [(start, iter(graph.get(start, ())))]
+        visiting = {start}
+        while stack:
+            node, it = stack[-1]
+            advanced = False
+            for nxt in it:
+                if nxt == start:
+                    recursive.add(start)
+                    continue
+                if nxt not in visiting:
+                    visiting.add(nxt)
+                    stack.append((nxt, iter(graph.get(nxt, ()))))
+                    advanced = True
+                    break
+            if not advanced:
+                visiting.discard(node)
+                stack.pop()
+    return recursive
+
 SKIP_TYPES = {
     "InputFile",   # rich enum in ferobot/src/input_file.rs
     "InputMedia",  # ergonomic wrapper enum in ferobot/src/lib.rs
@@ -125,11 +167,13 @@ def tg_to_rust(t, optional, types_map):
         rust = f'Vec<{inner_rust}>'
         return f'Option<{rust}>' if optional else rust
     base = BASE_TYPE_MAP.get(t, t)
+    tg = types_map.get(t)
     if optional:
-        tg = types_map.get(t)
         if tg and t not in BASE_TYPE_MAP:
             return f'Option<Box<{base}>>'
         return f'Option<{base}>'
+    if tg and t not in BASE_TYPE_MAP and t in RECURSIVE_TYPES:
+        return f'Box<{base}>'
     return base
 
 def field_rust_type(field, types_map):
@@ -248,6 +292,8 @@ def generate_setter(fname, rust_type_with_option):
 def generate_types(spec):
     types_map = spec['types']
     version = spec['version']
+    global RECURSIVE_TYPES
+    RECURSIVE_TYPES = compute_recursive_types(types_map)
     lines = []
     lines.append(COPYRIGHT_HEADER.rstrip())
     lines.append('')

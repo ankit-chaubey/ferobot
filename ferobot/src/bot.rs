@@ -122,6 +122,7 @@ fn stub_user(id: i64) -> User {
         can_read_all_group_messages: None,
         supports_guest_queries: None,
         supports_inline_queries: None,
+        supports_join_request_queries: None,
         can_connect_to_business: None,
         has_main_web_app: None,
         has_topics_enabled: None,

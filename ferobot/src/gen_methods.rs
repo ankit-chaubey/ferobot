@@ -13,7 +13,7 @@
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
-// Generated from Telegram Bot API Bot API 10.0
+// Generated from Telegram Bot API Bot API 10.1
 // Spec:    https://github.com/ankit-chaubey/api-spec
 // Project: https://github.com/ankit-chaubey/ferobot
 // Author:  Ankit Chaubey <ankitchaubey.dev@gmail.com>
@@ -55,7 +55,7 @@ impl Bot {
 /// Optional parameters for [`Bot::answer_callback_query_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AnswerCallbackQueryParams {
-    /// Text of the notification. If not specified, nothing will be shown to the user, 0-200 characters
+    /// Text of the notification. If not specified, nothing will be shown to the user, 0-200 characters.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,
     /// If True, an alert will be shown by the client instead of a notification at the top of the chat screen. Defaults to false.
@@ -111,6 +111,29 @@ impl Bot {
             params: params.as_ref(),
         };
         self.call_api_raw("answerCallbackQuery", &req).await
+    }
+}
+
+impl Bot {
+    /// Use this method to process a received chat join request query. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#answerchatjoinrequestquery
+    pub(crate) async fn raw_answer_chat_join_request_query(
+        &self,
+        chat_join_request_query_id: impl Into<String>,
+        result: impl Into<String>,
+    ) -> Result<bool, BotError> {
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_join_request_query_id: &'a str,
+            result: &'a str,
+        }
+        let chat_join_request_query_id = chat_join_request_query_id.into();
+        let result = result.into();
+        let req = Req {
+            chat_join_request_query_id: &chat_join_request_query_id,
+            result: &result,
+        };
+        self.call_api_raw("answerChatJoinRequestQuery", &req).await
     }
 }
 
@@ -344,7 +367,7 @@ impl Bot {
 /// Optional parameters for [`Bot::approve_suggested_post_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ApproveSuggestedPostParams {
-    /// Point in time (Unix timestamp) when the post is expected to be published; omit if the date has already been specified when the suggested post was created. If specified, then the date must be not more than 2678400 seconds (30 days) in the future
+    /// Point in time (Unix timestamp) when the post is expected to be published; omit if the date has already been specified when the suggested post was created. If specified, then the date must be not more than 2678400 seconds (30 days) in the future.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub send_date: Option<i64>,
 }
@@ -542,7 +565,7 @@ pub struct CopyMessageParams {
     /// New start timestamp for the copied video in the message
     #[serde(skip_serializing_if = "Option::is_none")]
     pub video_start_timestamp: Option<i64>,
-    /// New caption for media, 0-1024 characters after entities parsing. If not specified, the original caption is kept
+    /// New caption for media, 0-1024 characters after entities parsing. If not specified, the original caption is kept.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption: Option<String>,
     /// Mode for parsing entities in the new caption. See formatting options for more details.
@@ -572,7 +595,7 @@ pub struct CopyMessageParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -757,7 +780,7 @@ pub struct CreateChatInviteLinkParams {
     /// The maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999
     #[serde(skip_serializing_if = "Option::is_none")]
     pub member_limit: Option<i64>,
-    /// True, if users joining the chat via the link need to be approved by chat administrators. If True, member_limit can't be specified
+    /// True, if users joining the chat via the link need to be approved by chat administrators. If True, member_limit can't be specified.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub creates_join_request: Option<bool>,
 }
@@ -858,7 +881,7 @@ impl Bot {
 /// Optional parameters for [`Bot::create_forum_topic_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CreateForumTopicParams {
-    /// Color of the topic icon in RGB format. Currently, must be one of 7322096 (0x6FB9F0), 16766590 (0xFFD67E), 13338331 (0xCB86DB), 9367192 (0x8EEE98), 16749490 (0xFF93B2), or 16478047 (0xFB6F5F)
+    /// Color of the topic icon in RGB format. Currently, must be one of 7322096 (0x6FB9F0), 16766590 (0xFFD67E), 13338331 (0xCB86DB), 9367192 (0x8EEE98), 16749490 (0xFF93B2), or 16478047 (0xFB6F5F).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub icon_color: Option<i64>,
     /// Unique identifier of the custom emoji shown as the topic icon. Use getForumTopicIconStickers to get all allowed custom emoji identifiers.
@@ -1435,7 +1458,7 @@ pub struct DeleteMyCommandsParams {
     /// A JSON-serialized object, describing scope of users for which the commands are relevant. Defaults to BotCommandScopeDefault.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scope: Option<Box<BotCommandScope>>,
-    /// A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands
+    /// A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub language_code: Option<String>,
 }
@@ -1578,7 +1601,7 @@ pub struct EditChatInviteLinkParams {
     /// The maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999
     #[serde(skip_serializing_if = "Option::is_none")]
     pub member_limit: Option<i64>,
-    /// True, if users joining the chat via the link need to be approved by chat administrators. If True, member_limit can't be specified
+    /// True, if users joining the chat via the link need to be approved by chat administrators. If True, member_limit can't be specified.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub creates_join_request: Option<bool>,
 }
@@ -1681,10 +1704,10 @@ impl Bot {
 /// Optional parameters for [`Bot::edit_forum_topic_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct EditForumTopicParams {
-    /// New topic name, 0-128 characters. If not specified or empty, the current name of the topic will be kept
+    /// New topic name, 0-128 characters. If not specified or empty, the current name of the topic will be kept.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    /// New unique identifier of the custom emoji shown as the topic icon. Use getForumTopicIconStickers to get all allowed custom emoji identifiers. Pass an empty string to remove the icon. If not specified, the current icon will be kept
+    /// New unique identifier of the custom emoji shown as the topic icon. Use getForumTopicIconStickers to get all allowed custom emoji identifiers. Pass an empty string to remove the icon. If not specified, the current icon will be kept.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub icon_custom_emoji_id: Option<String>,
 }
@@ -1761,10 +1784,10 @@ pub struct EditMessageCaptionParams {
     /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
-    /// Required if inline_message_id is not specified. Identifier of the message to edit
+    /// Required if inline_message_id is not specified. Identifier of the message to edit.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message_id: Option<i64>,
-    /// Required if chat_id and message_id are not specified. Identifier of the inline message
+    /// Required if chat_id and message_id are not specified. Identifier of the inline message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_message_id: Option<String>,
     /// New caption of the message, 0-1024 characters after entities parsing
@@ -1779,7 +1802,7 @@ pub struct EditMessageCaptionParams {
     /// Pass True, if the caption must be shown above the message media. Supported only for animation, photo and video messages.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
-    /// A JSON-serialized object for an inline keyboard.
+    /// A JSON-serialized object for an inline keyboard
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<Box<InlineKeyboardMarkup>>,
 }
@@ -1905,13 +1928,13 @@ pub struct EditMessageLiveLocationParams {
     /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
-    /// Required if inline_message_id is not specified. Identifier of the message to edit
+    /// Required if inline_message_id is not specified. Identifier of the message to edit.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message_id: Option<i64>,
-    /// Required if chat_id and message_id are not specified. Identifier of the inline message
+    /// Required if chat_id and message_id are not specified. Identifier of the inline message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_message_id: Option<String>,
-    /// New period in seconds during which the location can be updated, starting from the message send date. If 0x7FFFFFFF is specified, then the location can be updated forever. Otherwise, the new value must not exceed the current live_period by more than a day, and the live location expiration date must remain within the next 90 days. If not specified, then live_period remains unchanged
+    /// New period in seconds during which the location can be updated, starting from the message send date. If 0x7FFFFFFF is specified, then the location can be updated forever. Otherwise, the new value must not exceed the current live_period by more than a day, and the live location expiration date must remain within the next 90 days. If not specified, then live_period remains unchanged.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub live_period: Option<i64>,
     /// The radius of uncertainty for the location, measured in meters; 0-1500
@@ -1923,7 +1946,7 @@ pub struct EditMessageLiveLocationParams {
     /// The maximum distance for proximity alerts about approaching another chat member, in meters. Must be between 1 and 100000 if specified.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub proximity_alert_radius: Option<i64>,
-    /// A JSON-serialized object for a new inline keyboard.
+    /// A JSON-serialized object for a new inline keyboard
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<Box<InlineKeyboardMarkup>>,
 }
@@ -2004,13 +2027,13 @@ pub struct EditMessageMediaParams {
     /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
-    /// Required if inline_message_id is not specified. Identifier of the message to edit
+    /// Required if inline_message_id is not specified. Identifier of the message to edit.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message_id: Option<i64>,
-    /// Required if chat_id and message_id are not specified. Identifier of the inline message
+    /// Required if chat_id and message_id are not specified. Identifier of the inline message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_message_id: Option<String>,
-    /// A JSON-serialized object for a new inline keyboard.
+    /// A JSON-serialized object for a new inline keyboard
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<Box<InlineKeyboardMarkup>>,
 }
@@ -2042,7 +2065,7 @@ impl EditMessageMediaParams {
 }
 
 impl Bot {
-    /// Use this method to edit animation, audio, document, live photo, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo, a live photo, or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
+    /// Use this method to edit animation, audio, document, live photo, photo, or video messages, or to replace a text or a rich message with a media. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo, a live photo, or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
     /// See: https://core.telegram.org/bots/api#editmessagemedia
     pub async fn edit_message_media_with_params(
         &self,
@@ -2072,13 +2095,13 @@ pub struct EditMessageReplyMarkupParams {
     /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
-    /// Required if inline_message_id is not specified. Identifier of the message to edit
+    /// Required if inline_message_id is not specified. Identifier of the message to edit.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message_id: Option<i64>,
-    /// Required if chat_id and message_id are not specified. Identifier of the inline message
+    /// Required if chat_id and message_id are not specified. Identifier of the inline message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_message_id: Option<String>,
-    /// A JSON-serialized object for an inline keyboard.
+    /// A JSON-serialized object for an inline keyboard
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<Box<InlineKeyboardMarkup>>,
 }
@@ -2137,12 +2160,15 @@ pub struct EditMessageTextParams {
     /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
-    /// Required if inline_message_id is not specified. Identifier of the message to edit
+    /// Required if inline_message_id is not specified. Identifier of the message to edit.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message_id: Option<i64>,
-    /// Required if chat_id and message_id are not specified. Identifier of the inline message
+    /// Required if chat_id and message_id are not specified. Identifier of the inline message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_message_id: Option<String>,
+    /// New text of the message, 1-4096 characters after entity parsing; required if rich_message isn't specified
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
     /// Mode for parsing entities in the message text. See formatting options for more details.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub parse_mode: Option<String>,
@@ -2152,7 +2178,10 @@ pub struct EditMessageTextParams {
     /// Link preview generation options for the message
     #[serde(skip_serializing_if = "Option::is_none")]
     pub link_preview_options: Option<Box<LinkPreviewOptions>>,
-    /// A JSON-serialized object for an inline keyboard.
+    /// New rich content of the message; required if text isn't specified
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rich_message: Option<Box<InputRichMessage>>,
+    /// A JSON-serialized object for an inline keyboard
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<Box<InlineKeyboardMarkup>>,
 }
@@ -2177,6 +2206,10 @@ impl EditMessageTextParams {
         self.inline_message_id = Some(v.into());
         self
     }
+    pub fn text(mut self, v: impl Into<String>) -> Self {
+        self.text = Some(v.into());
+        self
+    }
     pub fn parse_mode(mut self, v: impl Into<String>) -> Self {
         self.parse_mode = Some(v.into());
         self
@@ -2189,6 +2222,10 @@ impl EditMessageTextParams {
         self.link_preview_options = Some(v.into());
         self
     }
+    pub fn rich_message(mut self, v: impl Into<Box<InputRichMessage>>) -> Self {
+        self.rich_message = Some(v.into());
+        self
+    }
     pub fn reply_markup(mut self, v: impl Into<Box<InlineKeyboardMarkup>>) -> Self {
         self.reply_markup = Some(v.into());
         self
@@ -2196,22 +2233,18 @@ impl EditMessageTextParams {
 }
 
 impl Bot {
-    /// Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
+    /// Use this method to edit text, rich and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
     /// See: https://core.telegram.org/bots/api#editmessagetext
     pub async fn edit_message_text_with_params(
         &self,
-        text: impl Into<String>,
         params: Option<EditMessageTextParams>,
     ) -> Result<serde_json::Value, BotError> {
         #[derive(serde::Serialize)]
         struct Req<'a> {
-            text: &'a str,
             #[serde(flatten, skip_serializing_if = "Option::is_none")]
             params: Option<&'a EditMessageTextParams>,
         }
-        let text = text.into();
         let req = Req {
-            text: &text,
             params: params.as_ref(),
         };
         self.call_api_raw("editMessageText", &req).await
@@ -2528,7 +2561,7 @@ pub struct GetBusinessAccountGiftsParams {
     /// Offset of the first entry to return as received from the previous request; use empty string to get the first chunk of results
     #[serde(skip_serializing_if = "Option::is_none")]
     pub offset: Option<String>,
-    /// The maximum number of gifts to be returned; 1-100. Defaults to 100
+    /// The maximum number of gifts to be returned; 1-100. Defaults to 100.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<i64>,
 }
@@ -2729,7 +2762,7 @@ pub struct GetChatGiftsParams {
     /// Offset of the first entry to return as received from the previous request; use an empty string to get the first chunk of results
     #[serde(skip_serializing_if = "Option::is_none")]
     pub offset: Option<String>,
-    /// The maximum number of gifts to be returned; 1-100. Defaults to 100
+    /// The maximum number of gifts to be returned; 1-100. Defaults to 100.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<i64>,
 }
@@ -2845,7 +2878,7 @@ impl Bot {
 /// Optional parameters for [`Bot::get_chat_menu_button_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetChatMenuButtonParams {
-    /// Unique identifier for the target private chat. If not specified, default bot's menu button will be returned
+    /// Unique identifier for the target private chat. If not specified, the bot's default menu button will be returned.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<i64>,
 }
@@ -2926,13 +2959,13 @@ impl Bot {
 /// Optional parameters for [`Bot::get_game_high_scores_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GetGameHighScoresParams {
-    /// Required if inline_message_id is not specified. Unique identifier for the target chat
+    /// Required if inline_message_id is not specified. Unique identifier for the target chat.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<i64>,
-    /// Required if inline_message_id is not specified. Identifier of the sent message
+    /// Required if inline_message_id is not specified. Identifier of the sent message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message_id: Option<i64>,
-    /// Required if chat_id and message_id are not specified. Identifier of the inline message
+    /// Required if chat_id and message_id are not specified. Identifier of the inline message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_message_id: Option<String>,
 }
@@ -3386,7 +3419,7 @@ pub struct GetUserGiftsParams {
     /// Offset of the first entry to return as received from the previous request; use an empty string to get the first chunk of results
     #[serde(skip_serializing_if = "Option::is_none")]
     pub offset: Option<String>,
-    /// The maximum number of gifts to be returned; 1-100. Defaults to 100
+    /// The maximum number of gifts to be returned; 1-100. Defaults to 100.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<i64>,
 }
@@ -3827,7 +3860,7 @@ pub struct PromoteChatMemberParams {
     /// Pass True if the administrator can manage video chats
     #[serde(skip_serializing_if = "Option::is_none")]
     pub can_manage_video_chats: Option<bool>,
-    /// Pass True if the administrator can restrict, ban or unban chat members, or access supergroup statistics. For backward compatibility, defaults to True for promotions of channel administrators
+    /// Pass True if the administrator can restrict, ban or unban chat members, or access supergroup statistics. For backward compatibility, defaults to True for promotions of channel administrators.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub can_restrict_members: Option<bool>,
     /// Pass True if the administrator can add new administrators with a subset of their own privileges or demote administrators that they have promoted, directly or indirectly (promoted by administrators that were appointed by him)
@@ -4248,7 +4281,7 @@ pub struct RestrictChatMemberParams {
     /// Pass True if chat permissions are set independently. Otherwise, the can_send_other_messages and can_add_web_page_previews permissions will imply the can_send_messages, can_send_audios, can_send_documents, can_send_photos, can_send_videos, can_send_video_notes, and can_send_voice_notes permissions; the can_send_polls permission will imply the can_send_messages permission.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub use_independent_chat_permissions: Option<bool>,
-    /// Date when restrictions will be lifted for the user; Unix time. If user is restricted for more than 366 days or less than 30 seconds from the current time, they are considered to be restricted forever
+    /// Date when restrictions will be lifted for the user; Unix time. If user is restricted for more than 366 days or less than 30 seconds from the current time, they are considered to be restricted forever.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub until_date: Option<i64>,
 }
@@ -4461,7 +4494,7 @@ pub struct SendAnimationParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -4628,7 +4661,7 @@ pub struct SendAudioParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -4790,6 +4823,29 @@ impl Bot {
     }
 }
 
+impl Bot {
+    /// Use this method to process a received chat join request query by showing a Mini App to the user before deciding the outcome. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#sendchatjoinrequestwebapp
+    pub(crate) async fn raw_send_chat_join_request_web_app(
+        &self,
+        chat_join_request_query_id: impl Into<String>,
+        web_app_url: impl Into<String>,
+    ) -> Result<bool, BotError> {
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_join_request_query_id: &'a str,
+            web_app_url: &'a str,
+        }
+        let chat_join_request_query_id = chat_join_request_query_id.into();
+        let web_app_url = web_app_url.into();
+        let req = Req {
+            chat_join_request_query_id: &chat_join_request_query_id,
+            web_app_url: &web_app_url,
+        };
+        self.call_api_raw("sendChatJoinRequestWebApp", &req).await
+    }
+}
+
 /// Optional parameters for [`Bot::send_checklist_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendChecklistParams {
@@ -4902,7 +4958,7 @@ pub struct SendContactParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -5004,7 +5060,7 @@ pub struct SendDiceParams {
     /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direct_messages_topic_id: Option<i64>,
-    /// Emoji on which the dice throw animation is based. Currently, must be one of "🎲", "🎯", "🏀", "⚽", "🎳", or "🎰". Dice can have values 1-6 for "🎲", "🎯" and "🎳", values 1-5 for "🏀" and "⚽", and values 1-64 for "🎰". Defaults to "🎲"
+    /// Emoji on which the dice throw animation is based. Currently, must be one of "🎲", "🎯", "🏀", "⚽", "🎳", or "🎰". Dice can have values 1-6 for "🎲", "🎯" and "🎳", values 1-5 for "🏀" and "⚽", and values 1-64 for "🎰". Defaults to "🎲".
     #[serde(skip_serializing_if = "Option::is_none")]
     pub emoji: Option<String>,
     /// Sends the message silently. Users will receive a notification with no sound.
@@ -5025,7 +5081,7 @@ pub struct SendDiceParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -5148,7 +5204,7 @@ pub struct SendDocumentParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -5436,7 +5492,7 @@ pub struct SendInvoiceParams {
     /// A JSON-serialized array of suggested amounts of tips in the smallest units of the currency (integer, not float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed max_tip_amount.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suggested_tip_amounts: Option<Vec<i64>>,
-    /// Unique deep-linking parameter. If left empty, forwarded copies of the sent message will have a Pay button, allowing multiple users to pay directly from the forwarded message, using the same invoice. If non-empty, forwarded copies of the sent message will have a URL button with a deep link to the bot (instead of a Pay button), with the value used as the start parameter
+    /// Unique deep-linking parameter. If left empty, forwarded copies of the sent message will have a Pay button, allowing multiple users to pay directly from the forwarded message, using the same invoice. If non-empty, forwarded copies of the sent message will have a URL button with a deep link to the bot (instead of a Pay button), with the value used as the start parameter.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub start_parameter: Option<String>,
     /// JSON-serialized data about the invoice, which will be shared with the payment provider. A detailed description of required fields should be provided by the payment provider.
@@ -5814,7 +5870,7 @@ pub struct SendLocationParams {
     /// The radius of uncertainty for the location, measured in meters; 0-1500
     #[serde(skip_serializing_if = "Option::is_none")]
     pub horizontal_accuracy: Option<f64>,
-    /// Period in seconds during which the location will be updated (see Live Locations, should be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely.
+    /// Period in seconds during which the location will be updated (see Live Locations, should be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely
     #[serde(skip_serializing_if = "Option::is_none")]
     pub live_period: Option<i64>,
     /// For live locations, a direction in which the user is moving, in degrees. Must be between 1 and 360 if specified.
@@ -5841,7 +5897,7 @@ pub struct SendLocationParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -6069,7 +6125,7 @@ pub struct SendMessageParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -6265,7 +6321,7 @@ pub struct SendPaidMediaParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -6406,7 +6462,7 @@ pub struct SendPhotoParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -6515,10 +6571,10 @@ pub struct SendPollParams {
     /// Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message_thread_id: Option<i64>,
-    /// Mode for parsing entities in the question. See formatting options for more details. Currently, only custom emoji entities are allowed
+    /// Mode for parsing entities in the question. See formatting options for more details. Currently, only custom emoji entities are allowed.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub question_parse_mode: Option<String>,
-    /// A JSON-serialized list of special entities that appear in the poll question. It can be specified instead of question_parse_mode
+    /// A JSON-serialized list of special entities that appear in the poll question. It can be specified instead of question_parse_mode.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub question_entities: Option<Vec<MessageEntity>>,
     /// True, if the poll needs to be anonymous, defaults to True
@@ -6546,7 +6602,7 @@ pub struct SendPollParams {
     /// Pass True, if voting is limited to users who have been members of the chat where the poll is being sent for more than 24 hours; for channel chats only
     #[serde(skip_serializing_if = "Option::is_none")]
     pub members_only: Option<bool>,
-    /// A JSON-serialized list of 0-12 two-letter ISO 3166-1 alpha-2 country codes indicating the countries from which users can vote in the poll; for channel chats only. If omitted or empty, then users from any country can participate in the poll.
+    /// A JSON-serialized list of 0-12 two-letter ISO 3166-1 alpha-2 country codes indicating the countries from which users can vote in the poll; for channel chats only. Use "FT" as a country code to allow users with anonymous numbers to vote. If omitted or empty, then users from any country can participate in the poll.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub country_codes: Option<Vec<String>>,
     /// A JSON-serialized list of monotonically increasing 0-based identifiers of the correct answer options, required for polls in quiz mode
@@ -6558,7 +6614,7 @@ pub struct SendPollParams {
     /// Mode for parsing entities in the explanation. See formatting options for more details.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub explanation_parse_mode: Option<String>,
-    /// A JSON-serialized list of special entities that appear in the poll explanation. It can be specified instead of explanation_parse_mode
+    /// A JSON-serialized list of special entities that appear in the poll explanation. It can be specified instead of explanation_parse_mode.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub explanation_entities: Option<Vec<MessageEntity>>,
     /// Media added to the quiz explanation
@@ -6600,7 +6656,7 @@ pub struct SendPollParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -6765,6 +6821,159 @@ impl Bot {
     }
 }
 
+/// Optional parameters for [`Bot::send_rich_message_with_params`]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct SendRichMessageParams {
+    /// Unique identifier of the business connection on behalf of which the message will be sent
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub business_connection_id: Option<String>,
+    /// Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message_thread_id: Option<i64>,
+    /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub direct_messages_topic_id: Option<i64>,
+    /// Sends the message silently. Users will receive a notification with no sound.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub disable_notification: Option<bool>,
+    /// Protects the contents of the sent message from forwarding and saving
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub protect_content: Option<bool>,
+    /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub allow_paid_broadcast: Option<bool>,
+    /// Unique identifier of the message effect to be added to the message; for private chats only
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message_effect_id: Option<String>,
+    /// A JSON-serialized object containing the parameters of the suggested post to send; for direct messages chats only. If the message is sent as a reply to another suggested post, then that suggested post is automatically declined.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub suggested_post_parameters: Option<Box<SuggestedPostParameters>>,
+    /// Description of the message to reply to
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reply_parameters: Option<Box<ReplyParameters>>,
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reply_markup: Option<ReplyMarkup>,
+}
+
+impl SendRichMessageParams {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn business_connection_id(mut self, v: impl Into<String>) -> Self {
+        self.business_connection_id = Some(v.into());
+        self
+    }
+    pub fn message_thread_id(mut self, v: impl Into<i64>) -> Self {
+        self.message_thread_id = Some(v.into());
+        self
+    }
+    pub fn direct_messages_topic_id(mut self, v: impl Into<i64>) -> Self {
+        self.direct_messages_topic_id = Some(v.into());
+        self
+    }
+    pub fn disable_notification(mut self, v: impl Into<bool>) -> Self {
+        self.disable_notification = Some(v.into());
+        self
+    }
+    pub fn protect_content(mut self, v: impl Into<bool>) -> Self {
+        self.protect_content = Some(v.into());
+        self
+    }
+    pub fn allow_paid_broadcast(mut self, v: impl Into<bool>) -> Self {
+        self.allow_paid_broadcast = Some(v.into());
+        self
+    }
+    pub fn message_effect_id(mut self, v: impl Into<String>) -> Self {
+        self.message_effect_id = Some(v.into());
+        self
+    }
+    pub fn suggested_post_parameters(mut self, v: impl Into<Box<SuggestedPostParameters>>) -> Self {
+        self.suggested_post_parameters = Some(v.into());
+        self
+    }
+    pub fn reply_parameters(mut self, v: impl Into<Box<ReplyParameters>>) -> Self {
+        self.reply_parameters = Some(v.into());
+        self
+    }
+    pub fn reply_markup(mut self, v: impl Into<ReplyMarkup>) -> Self {
+        self.reply_markup = Some(v.into());
+        self
+    }
+}
+
+impl Bot {
+    /// Use this method to send rich messages. If the message contains a block with a media element, then the bot must have the right to send the media to the chat. On success, the sent Message is returned.
+    /// See: https://core.telegram.org/bots/api#sendrichmessage
+    pub async fn send_rich_message_with_params(
+        &self,
+        chat_id: impl Into<ChatId>,
+        rich_message: InputRichMessage,
+        params: Option<SendRichMessageParams>,
+    ) -> Result<Message, BotError> {
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            rich_message: &'a InputRichMessage,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendRichMessageParams>,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            rich_message: &rich_message,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendRichMessage", &req).await
+    }
+}
+
+/// Optional parameters for [`Bot::send_rich_message_draft_with_params`]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct SendRichMessageDraftParams {
+    /// Unique identifier for the target message thread
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message_thread_id: Option<i64>,
+}
+
+impl SendRichMessageDraftParams {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn message_thread_id(mut self, v: impl Into<i64>) -> Self {
+        self.message_thread_id = Some(v.into());
+        self
+    }
+}
+
+impl Bot {
+    /// Use this method to stream a partial rich message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendRichMessage with the complete message to persist it in the user's chat. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#sendrichmessagedraft
+    pub async fn send_rich_message_draft_with_params(
+        &self,
+        chat_id: i64,
+        draft_id: i64,
+        rich_message: InputRichMessage,
+        params: Option<SendRichMessageDraftParams>,
+    ) -> Result<bool, BotError> {
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: i64,
+            draft_id: i64,
+            rich_message: &'a InputRichMessage,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SendRichMessageDraftParams>,
+        }
+        let req = Req {
+            chat_id,
+            draft_id,
+            rich_message: &rich_message,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("sendRichMessageDraft", &req).await
+    }
+}
+
 /// Optional parameters for [`Bot::send_sticker_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendStickerParams {
@@ -6798,7 +7007,7 @@ pub struct SendStickerParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -6924,7 +7133,7 @@ pub struct SendVenueParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -7094,7 +7303,7 @@ pub struct SendVideoParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -7261,7 +7470,7 @@ pub struct SendVideoNoteParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -7395,7 +7604,7 @@ pub struct SendVoiceParams {
     /// Description of the message to reply to
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_parameters: Option<Box<ReplyParameters>>,
-    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
+    /// Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<ReplyMarkup>,
 }
@@ -7804,10 +8013,10 @@ impl Bot {
 /// Optional parameters for [`Bot::set_chat_menu_button_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetChatMenuButtonParams {
-    /// Unique identifier for the target private chat. If not specified, default bot's menu button will be changed
+    /// Unique identifier for the target private chat. If not specified, the bot's default menu button will be changed.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<i64>,
-    /// A JSON-serialized object for the bot's new menu button. Defaults to MenuButtonDefault
+    /// A JSON-serialized object for the bot's new menu button. Defaults to MenuButtonDefault.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub menu_button: Option<Box<MenuButton>>,
 }
@@ -7960,7 +8169,7 @@ impl Bot {
 /// Optional parameters for [`Bot::set_custom_emoji_sticker_set_thumbnail_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetCustomEmojiStickerSetThumbnailParams {
-    /// Custom emoji identifier of a sticker from the sticker set; pass an empty string to drop the thumbnail and use the first sticker as the thumbnail.
+    /// Custom emoji identifier of a sticker from the sticker set; pass an empty string to drop the thumbnail and use the first sticker as the thumbnail
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom_emoji_id: Option<String>,
 }
@@ -8002,19 +8211,19 @@ impl Bot {
 /// Optional parameters for [`Bot::set_game_score_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetGameScoreParams {
-    /// Pass True if the high score is allowed to decrease. This can be useful when fixing mistakes or banning cheaters
+    /// Pass True if the high score is allowed to decrease. This can be useful when fixing mistakes or banning cheaters.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub force: Option<bool>,
     /// Pass True if the game message should not be automatically edited to include the current scoreboard
     #[serde(skip_serializing_if = "Option::is_none")]
     pub disable_edit_message: Option<bool>,
-    /// Required if inline_message_id is not specified. Unique identifier for the target chat
+    /// Required if inline_message_id is not specified. Unique identifier for the target chat.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<i64>,
-    /// Required if inline_message_id is not specified. Identifier of the sent message
+    /// Required if inline_message_id is not specified. Identifier of the sent message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message_id: Option<i64>,
-    /// Required if chat_id and message_id are not specified. Identifier of the inline message
+    /// Required if chat_id and message_id are not specified. Identifier of the inline message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_message_id: Option<String>,
 }
@@ -8170,7 +8379,7 @@ pub struct SetMyCommandsParams {
     /// A JSON-serialized object, describing scope of users for which the commands are relevant. Defaults to BotCommandScopeDefault.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scope: Option<Box<BotCommandScope>>,
-    /// A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands
+    /// A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub language_code: Option<String>,
 }
@@ -8756,13 +8965,13 @@ pub struct StopMessageLiveLocationParams {
     /// Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
-    /// Required if inline_message_id is not specified. Identifier of the message with live location to stop
+    /// Required if inline_message_id is not specified. Identifier of the message with live location to stop.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message_id: Option<i64>,
-    /// Required if chat_id and message_id are not specified. Identifier of the inline message
+    /// Required if chat_id and message_id are not specified. Identifier of the inline message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_message_id: Option<String>,
-    /// A JSON-serialized object for a new inline keyboard.
+    /// A JSON-serialized object for a new inline keyboard
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<Box<InlineKeyboardMarkup>>,
 }
@@ -8818,7 +9027,7 @@ pub struct StopPollParams {
     /// Unique identifier of the business connection on behalf of which the message to be edited was sent
     #[serde(skip_serializing_if = "Option::is_none")]
     pub business_connection_id: Option<String>,
-    /// A JSON-serialized object for a new message inline keyboard.
+    /// A JSON-serialized object for a new message inline keyboard
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<Box<InlineKeyboardMarkup>>,
 }
