@@ -5276,11 +5276,7 @@ pub struct RichBlockBlockQuotation {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct RichBlockCaption {
     /// Block caption
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// Optional. Block credit which corresponds to the HTML tag <cite>
     #[serde(skip_serializing_if = "Option::is_none")]
     pub credit: Option<Box<RichText>>,
@@ -5308,11 +5304,7 @@ pub struct RichBlockDetails {
     #[serde(rename = "type")]
     pub r#type: String,
     /// Always shown summary of the block
-<<<<<<< Updated upstream
-    pub summary: RichText,
-=======
     pub summary: Box<RichText>,
->>>>>>> Stashed changes
     /// Content of the block
     pub blocks: Vec<RichBlock>,
     /// Optional. True, if the content of the block is visible by default
@@ -5337,11 +5329,7 @@ pub struct RichBlockFooter {
     #[serde(rename = "type")]
     pub r#type: String,
     /// Text of the block
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
 }
 
 /// A list of blocks, corresponding to the HTML tag <ul> or <ol> with multiple nested tags <li>.
@@ -5417,11 +5405,7 @@ pub struct RichBlockParagraph {
     #[serde(rename = "type")]
     pub r#type: String,
     /// Text of the block
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
 }
 
 /// A block with a photo, corresponding to the HTML tag <photo>.
@@ -5449,11 +5433,7 @@ pub struct RichBlockPreformatted {
     #[serde(rename = "type")]
     pub r#type: String,
     /// Text of the block
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// Optional. The programming language of the text
     #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<String>,
@@ -5467,11 +5447,7 @@ pub struct RichBlockPullQuotation {
     #[serde(rename = "type")]
     pub r#type: String,
     /// Text of the block
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// Optional. Credit of the block
     #[serde(skip_serializing_if = "Option::is_none")]
     pub credit: Option<Box<RichText>>,
@@ -5485,11 +5461,7 @@ pub struct RichBlockSectionHeading {
     #[serde(rename = "type")]
     pub r#type: String,
     /// Text of the block
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// Relative size of the text font; 1-6, 1 is the largest, 6 is the smallest
     pub size: i64,
 }
@@ -5558,11 +5530,7 @@ pub struct RichBlockThinking {
     #[serde(rename = "type")]
     pub r#type: String,
     /// Text of the block. See https://t.me/addemoji/AIActions for examples of custom emoji, which are recommended for usage in the block.
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
 }
 
 /// A block with a video, corresponding to the HTML tag <video>.
@@ -5683,11 +5651,7 @@ pub struct RichTextAnchorLink {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The link text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// The name of the anchor. If the name is empty, then the link brings back to the top of the message.
     pub anchor_name: String,
 }
@@ -5700,11 +5664,7 @@ pub struct RichTextBankCardNumber {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// The bank card number
     pub bank_card_number: String,
 }
@@ -5717,11 +5677,7 @@ pub struct RichTextBold {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
 }
 
 /// A bot command.
@@ -5732,11 +5688,7 @@ pub struct RichTextBotCommand {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// The bot command
     pub bot_command: String,
 }
@@ -5749,11 +5701,7 @@ pub struct RichTextCashtag {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// The cashtag
     pub cashtag: String,
 }
@@ -5766,11 +5714,7 @@ pub struct RichTextCode {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
 }
 
 /// A custom emoji.
@@ -5794,11 +5738,7 @@ pub struct RichTextDateTime {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// The Unix time associated with the entity
     pub unix_time: i64,
     /// The string that defines the formatting of the date and time. See date-time entity formatting for more details.
@@ -5813,11 +5753,7 @@ pub struct RichTextEmailAddress {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// The email address
     pub email_address: String,
 }
@@ -5830,11 +5766,7 @@ pub struct RichTextHashtag {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// The hashtag
     pub hashtag: String,
 }
@@ -5847,11 +5779,7 @@ pub struct RichTextItalic {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
 }
 
 /// A marked text.
@@ -5862,11 +5790,7 @@ pub struct RichTextMarked {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
 }
 
 /// A mathematical expression.
@@ -5888,11 +5812,7 @@ pub struct RichTextMention {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// The username
     pub username: String,
 }
@@ -5905,11 +5825,7 @@ pub struct RichTextPhoneNumber {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// The phone number
     pub phone_number: String,
 }
@@ -5922,11 +5838,7 @@ pub struct RichTextReference {
     #[serde(rename = "type")]
     pub r#type: String,
     /// Text of the reference
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// The name of the reference
     pub name: String,
 }
@@ -5939,11 +5851,7 @@ pub struct RichTextReferenceLink {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The link text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// The name of the reference
     pub reference_name: String,
 }
@@ -5956,11 +5864,7 @@ pub struct RichTextSpoiler {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
 }
 
 /// A strikethrough text.
@@ -5971,11 +5875,7 @@ pub struct RichTextStrikethrough {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
 }
 
 /// A subscript text.
@@ -5986,11 +5886,7 @@ pub struct RichTextSubscript {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
 }
 
 /// A superscript text.
@@ -6001,11 +5897,7 @@ pub struct RichTextSuperscript {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
 }
 
 /// A mention of a Telegram user by their identifier.
@@ -6016,11 +5908,7 @@ pub struct RichTextTextMention {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// The mentioned user
     pub user: User,
 }
@@ -6033,11 +5921,7 @@ pub struct RichTextUnderline {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
 }
 
 /// A text with a link.
@@ -6048,11 +5932,7 @@ pub struct RichTextUrl {
     #[serde(rename = "type")]
     pub r#type: String,
     /// The text
-<<<<<<< Updated upstream
-    pub text: RichText,
-=======
     pub text: Box<RichText>,
->>>>>>> Stashed changes
     /// URL of the link
     pub url: String,
 }
