@@ -13,7 +13,7 @@
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
-// Generated from Telegram Bot API Bot API 10.1
+// Generated from Telegram Bot API Bot API 10.2
 // Spec:    https://github.com/ankit-chaubey/api-spec
 // Project: https://github.com/ankit-chaubey/ferobot
 // Author:  Ankit Chaubey <ankitchaubey.dev@gmail.com>
@@ -280,6 +280,9 @@ pub struct BotCommand {
     pub command: String,
     /// Description of the command; 1-256 characters
     pub description: String,
+    /// Optional. True, if the command sends an ephemeral message, which can be seen only by the sender of the message and the bot
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_ephemeral: Option<bool>,
 }
 
 /// This object represents the scope to which bot commands are applied. Currently, the following 7 scopes are supported:
@@ -396,6 +399,18 @@ pub struct BotName {
 pub struct BotShortDescription {
     /// The bot's short description
     pub short_description: String,
+}
+
+/// This object contains information about changes to a user payment subscription toward the current bot.
+/// https://core.telegram.org/bots/api#botsubscriptionupdated
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct BotSubscriptionUpdated {
+    /// User who subscribed for payments toward the bot
+    pub user: User,
+    /// Bot-specified invoice payload
+    pub invoice_payload: String,
+    /// The new state of the subscription. Currently, it can be one of "canceled" if the user canceled the subscription, "active" if the user re-enabled a previously canceled subscription, or "failed" if payment for the subscription failed.
+    pub state: String,
 }
 
 /// Represents the rights of a business bot.
@@ -622,7 +637,7 @@ pub struct ChatAdministratorRights {
     /// Optional. True, if the administrator can manage direct messages of the channel and decline suggested posts; for channels only
     #[serde(skip_serializing_if = "Option::is_none")]
     pub can_manage_direct_messages: Option<bool>,
-    /// Optional. True, if the administrator can edit the tags of regular members; for groups and supergroups only. If omitted defaults to the value of can_pin_messages.
+    /// Optional. True, if the administrator can edit the tags of regular members; for groups and supergroups only. If omitted, defaults to the value of can_pin_messages.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub can_manage_tags: Option<bool>,
 }
@@ -890,6 +905,9 @@ pub struct ChatFullInfo {
     /// Optional. The bot that processes join request queries in the chat. The field is only available to chat administrators.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub guard_bot: Option<Box<User>>,
+    /// Optional. The Community to which the chat belongs
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub community: Option<Box<Community>>,
 }
 
 /// Represents an invite link for a chat.
@@ -944,7 +962,7 @@ pub struct ChatJoinRequest {
     /// Optional. Chat invite link that was used by the user to send the join request
     #[serde(skip_serializing_if = "Option::is_none")]
     pub invite_link: Option<Box<ChatInviteLink>>,
-    /// Optional. Identifier of the join request query. If present, then the bot must call sendChatJoinRequestWebApp or directly call answerChatJoinRequestQuery within 10 seconds.
+    /// Optional. Identifier of the join request query; for bots assigned to process join requests only. If present, then the bot must call sendChatJoinRequestWebApp or directly call answerChatJoinRequestQuery within 10 seconds.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub query_id: Option<String>,
 }
@@ -1025,7 +1043,7 @@ pub struct ChatMemberAdministrator {
     /// Optional. True, if the administrator can manage direct messages of the channel and decline suggested posts; for channels only
     #[serde(skip_serializing_if = "Option::is_none")]
     pub can_manage_direct_messages: Option<bool>,
-    /// Optional. True, if the administrator can edit the tags of regular members; for groups and supergroups only. If omitted defaults to the value of can_pin_messages.
+    /// Optional. True, if the administrator can edit the tags of regular members; for groups and supergroups only. If omitted, defaults to the value of can_pin_messages.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub can_manage_tags: Option<bool>,
     /// Optional. Custom title for this user
@@ -1226,7 +1244,7 @@ pub struct ChatPermissions {
     /// Optional. True, if the user is allowed to pin messages. Ignored in public supergroups.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub can_pin_messages: Option<bool>,
-    /// Optional. True, if the user is allowed to create forum topics. If omitted defaults to the value of can_pin_messages.
+    /// Optional. True, if the user is allowed to create forum topics. If omitted, defaults to the value of can_pin_messages.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub can_manage_topics: Option<bool>,
 }
@@ -1350,6 +1368,29 @@ pub struct ChosenInlineResult {
     pub query: String,
 }
 
+/// Represents a community (a group of chats).
+/// https://core.telegram.org/bots/api#community
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Community {
+    /// Unique identifier for this community. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this identifier.
+    pub id: i64,
+    /// Name of the community
+    pub name: String,
+}
+
+/// Describes a service message about a chat being added to a community.
+/// https://core.telegram.org/bots/api#communitychatadded
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct CommunityChatAdded {
+    /// The new community to which the chat belongs
+    pub community: Community,
+}
+
+/// Describes a service message about a chat being removed from a community. Currently holds no information.
+/// https://core.telegram.org/bots/api#communitychatremoved
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+pub struct CommunityChatRemoved {}
+
 /// This object represents a phone contact.
 /// https://core.telegram.org/bots/api#contact
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -1391,7 +1432,7 @@ pub struct Dice {
 /// https://core.telegram.org/bots/api#directmessagepricechanged
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct DirectMessagePriceChanged {
-    /// True, if direct messages are enabled for the channel chat; false otherwise
+    /// True, if direct messages are enabled for the channel chat; False otherwise
     pub are_direct_messages_enabled: bool,
     /// Optional. The new number of Telegram Stars that must be paid by users for each direct message sent to the channel. Does not apply to users who have been exempted by administrators. Defaults to 0.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -2165,7 +2206,7 @@ pub struct InlineQueryResultCachedGif {
     /// Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Optional. Pass True, if the caption must be shown above the message media
+    /// Optional. Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Optional. Inline keyboard attached to the message
@@ -2199,7 +2240,7 @@ pub struct InlineQueryResultCachedMpeg4Gif {
     /// Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Optional. Pass True, if the caption must be shown above the message media
+    /// Optional. Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Optional. Inline keyboard attached to the message
@@ -2236,7 +2277,7 @@ pub struct InlineQueryResultCachedPhoto {
     /// Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Optional. Pass True, if the caption must be shown above the message media
+    /// Optional. Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Optional. Inline keyboard attached to the message
@@ -2291,7 +2332,7 @@ pub struct InlineQueryResultCachedVideo {
     /// Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Optional. Pass True, if the caption must be shown above the message media
+    /// Optional. Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Optional. Inline keyboard attached to the message
@@ -2465,7 +2506,7 @@ pub struct InlineQueryResultGif {
     /// Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Optional. Pass True, if the caption must be shown above the message media
+    /// Optional. Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Optional. Inline keyboard attached to the message
@@ -2557,7 +2598,7 @@ pub struct InlineQueryResultMpeg4Gif {
     /// Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Optional. Pass True, if the caption must be shown above the message media
+    /// Optional. Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Optional. Inline keyboard attached to the message
@@ -2602,7 +2643,7 @@ pub struct InlineQueryResultPhoto {
     /// Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Optional. Pass True, if the caption must be shown above the message media
+    /// Optional. Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Optional. Inline keyboard attached to the message
@@ -2685,7 +2726,7 @@ pub struct InlineQueryResultVideo {
     /// Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Optional. Pass True, if the caption must be shown above the message media
+    /// Optional. Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Optional. Video width
@@ -2829,7 +2870,7 @@ pub struct InputInvoiceMessageContent {
     /// Optional. The maximum accepted amount for tips in the smallest units of the currency (integer, not float/double). For example, for a maximum tip of US$ 1.45 pass max_tip_amount = 145. See the exp parameter in currencies.json, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0. Not supported for payments in Telegram Stars.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_tip_amount: Option<i64>,
-    /// Optional. A JSON-serialized array of suggested amounts of tip in the smallest units of the currency (integer, not float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed max_tip_amount.
+    /// Optional. A JSON-serialized Array of suggested amounts of tip in the smallest units of the currency (integer, not float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed max_tip_amount.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suggested_tip_amounts: Option<Vec<i64>>,
     /// Optional. A JSON-serialized object for data about the invoice, which will be shared with the payment provider. A detailed description of the required fields should be provided by the payment provider.
@@ -2896,7 +2937,7 @@ pub struct InputLocationMessageContent {
 /// https://core.telegram.org/bots/api#inputmediaanimation
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct InputMediaAnimation {
-    /// Type of the result, must be animation
+    /// Type of the media, must be animation
     #[serde(rename = "type")]
     pub r#type: String,
     /// File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass "attach://<file_attach_name>" to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
@@ -2913,7 +2954,7 @@ pub struct InputMediaAnimation {
     /// Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Optional. Pass True, if the caption must be shown above the message media
+    /// Optional. Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Optional. Animation width
@@ -2934,7 +2975,7 @@ pub struct InputMediaAnimation {
 /// https://core.telegram.org/bots/api#inputmediaaudio
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct InputMediaAudio {
-    /// Type of the result, must be audio
+    /// Type of the media, must be audio
     #[serde(rename = "type")]
     pub r#type: String,
     /// File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass "attach://<file_attach_name>" to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
@@ -2966,7 +3007,7 @@ pub struct InputMediaAudio {
 /// https://core.telegram.org/bots/api#inputmediadocument
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct InputMediaDocument {
-    /// Type of the result, must be document
+    /// Type of the media, must be document
     #[serde(rename = "type")]
     pub r#type: String,
     /// File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass "attach://<file_attach_name>" to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
@@ -2992,7 +3033,7 @@ pub struct InputMediaDocument {
 /// https://core.telegram.org/bots/api#inputmedialink
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct InputMediaLink {
-    /// Type of the result, must be link
+    /// Type of the media, must be link
     #[serde(rename = "type")]
     pub r#type: String,
     /// HTTP URL of the link
@@ -3003,7 +3044,7 @@ pub struct InputMediaLink {
 /// https://core.telegram.org/bots/api#inputmedialivephoto
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct InputMediaLivePhoto {
-    /// Type of the result, must be live_photo
+    /// Type of the media, must be live_photo
     #[serde(rename = "type")]
     pub r#type: String,
     /// Video of the live photo to send. Pass a file_id to send a file that exists on the Telegram servers (recommended) or pass "attach://<file_attach_name>" to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files: https://core.telegram.org/bots/api#sending-files. Sending live photos by a URL is currently unsupported.
@@ -3019,7 +3060,7 @@ pub struct InputMediaLivePhoto {
     /// Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Optional. Pass True, if the caption must be shown above the message media
+    /// Optional. Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Optional. Pass True if the live photo needs to be covered with a spoiler animation
@@ -3031,7 +3072,7 @@ pub struct InputMediaLivePhoto {
 /// https://core.telegram.org/bots/api#inputmedialocation
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct InputMediaLocation {
-    /// Type of the result, must be location
+    /// Type of the media, must be location
     #[serde(rename = "type")]
     pub r#type: String,
     /// Latitude of the location
@@ -3047,7 +3088,7 @@ pub struct InputMediaLocation {
 /// https://core.telegram.org/bots/api#inputmediaphoto
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct InputMediaPhoto {
-    /// Type of the result, must be photo
+    /// Type of the media, must be photo
     #[serde(rename = "type")]
     pub r#type: String,
     /// File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass "attach://<file_attach_name>" to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
@@ -3061,7 +3102,7 @@ pub struct InputMediaPhoto {
     /// Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Optional. Pass True, if the caption must be shown above the message media
+    /// Optional. Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Optional. Pass True if the photo needs to be covered with a spoiler animation
@@ -3073,7 +3114,7 @@ pub struct InputMediaPhoto {
 /// https://core.telegram.org/bots/api#inputmediasticker
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct InputMediaSticker {
-    /// Type of the result, must be sticker
+    /// Type of the media, must be sticker
     #[serde(rename = "type")]
     pub r#type: String,
     /// File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a .WEBP sticker from the Internet, or pass "attach://<file_attach_name>" to upload a new .WEBP, .TGS, or .WEBM sticker using multipart/form-data under <file_attach_name> name. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
@@ -3087,7 +3128,7 @@ pub struct InputMediaSticker {
 /// https://core.telegram.org/bots/api#inputmediavenue
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct InputMediaVenue {
-    /// Type of the result, must be venue
+    /// Type of the media, must be venue
     #[serde(rename = "type")]
     pub r#type: String,
     /// Latitude of the location
@@ -3116,7 +3157,7 @@ pub struct InputMediaVenue {
 /// https://core.telegram.org/bots/api#inputmediavideo
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct InputMediaVideo {
-    /// Type of the result, must be video
+    /// Type of the media, must be video
     #[serde(rename = "type")]
     pub r#type: String,
     /// File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass "attach://<file_attach_name>" to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
@@ -3139,7 +3180,7 @@ pub struct InputMediaVideo {
     /// Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Optional. Pass True, if the caption must be shown above the message media
+    /// Optional. Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Optional. Video width
@@ -3157,6 +3198,29 @@ pub struct InputMediaVideo {
     /// Optional. Pass True if the video needs to be covered with a spoiler animation
     #[serde(skip_serializing_if = "Option::is_none")]
     pub has_spoiler: Option<bool>,
+}
+
+/// Represents a voice message file to be sent.
+/// https://core.telegram.org/bots/api#inputmediavoicenote
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputMediaVoiceNote {
+    /// Type of the media, must be voice_note
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass "attach://<file_attach_name>" to upload a new one using multipart/form-data under <file_attach_name> name. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
+    pub media: String,
+    /// Optional. Caption of the voice message to be sent, 0-1024 characters after entities parsing
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption: Option<String>,
+    /// Optional. Mode for parsing entities in the voice message caption. See formatting options for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parse_mode: Option<String>,
+    /// Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption_entities: Option<Vec<MessageEntity>>,
+    /// Optional. Duration of the voice message in seconds
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub duration: Option<i64>,
 }
 
 /// This object represents the content of a message to be sent as a result of an inline query. Telegram clients currently support the following types:
@@ -3346,16 +3410,376 @@ pub struct InputProfilePhotoStatic {
     pub photo: String,
 }
 
-/// Describes a rich message to be sent. Exactly one of the fields html or markdown must be used.
+/// This object represents a block in a rich formatted message to be sent. Currently, it can be any of the following types:
+/// - InputRichBlockParagraph
+/// - InputRichBlockSectionHeading
+/// - InputRichBlockPreformatted
+/// - InputRichBlockFooter
+/// - InputRichBlockDivider
+/// - InputRichBlockMathematicalExpression
+/// - InputRichBlockAnchor
+/// - InputRichBlockList
+/// - InputRichBlockBlockQuotation
+/// - InputRichBlockPullQuotation
+/// - InputRichBlockCollage
+/// - InputRichBlockSlideshow
+/// - InputRichBlockTable
+/// - InputRichBlockDetails
+/// - InputRichBlockMap
+/// - InputRichBlockAnimation
+/// - InputRichBlockAudio
+/// - InputRichBlockPhoto
+/// - InputRichBlockVideo
+/// - InputRichBlockVoiceNote
+/// - InputRichBlockThinking
+/// https://core.telegram.org/bots/api#inputrichblock
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(untagged)]
+pub enum InputRichBlock {
+    InputRichBlockParagraph(InputRichBlockParagraph),
+    InputRichBlockSectionHeading(InputRichBlockSectionHeading),
+    InputRichBlockPreformatted(InputRichBlockPreformatted),
+    InputRichBlockFooter(InputRichBlockFooter),
+    InputRichBlockDivider(InputRichBlockDivider),
+    InputRichBlockMathematicalExpression(InputRichBlockMathematicalExpression),
+    InputRichBlockAnchor(InputRichBlockAnchor),
+    InputRichBlockList(InputRichBlockList),
+    InputRichBlockBlockQuotation(InputRichBlockBlockQuotation),
+    InputRichBlockPullQuotation(InputRichBlockPullQuotation),
+    InputRichBlockCollage(InputRichBlockCollage),
+    InputRichBlockSlideshow(InputRichBlockSlideshow),
+    InputRichBlockTable(InputRichBlockTable),
+    InputRichBlockDetails(InputRichBlockDetails),
+    InputRichBlockMap(InputRichBlockMap),
+    InputRichBlockAnimation(InputRichBlockAnimation),
+    InputRichBlockAudio(InputRichBlockAudio),
+    InputRichBlockPhoto(InputRichBlockPhoto),
+    InputRichBlockVideo(InputRichBlockVideo),
+    InputRichBlockVoiceNote(InputRichBlockVoiceNote),
+    InputRichBlockThinking(InputRichBlockThinking),
+}
+
+/// A block with an anchor, corresponding to the HTML tag <a> with the attribute name.
+/// https://core.telegram.org/bots/api#inputrichblockanchor
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockAnchor {
+    /// Type of the block, always "anchor"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// The name of the anchor
+    pub name: String,
+}
+
+/// A block with an animation, corresponding to the HTML tag <video>.
+/// https://core.telegram.org/bots/api#inputrichblockanimation
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockAnimation {
+    /// Type of the block, always "animation"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// The animation. Caption is ignored.
+    pub animation: InputMediaAnimation,
+    /// Optional. Caption of the block
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption: Option<Box<RichBlockCaption>>,
+}
+
+/// A block with a music file, corresponding to the HTML tag <audio>.
+/// https://core.telegram.org/bots/api#inputrichblockaudio
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockAudio {
+    /// Type of the block, always "audio"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// The audio. Caption is ignored.
+    pub audio: InputMediaAudio,
+    /// Optional. Caption of the block
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption: Option<Box<RichBlockCaption>>,
+}
+
+/// A block quotation, corresponding to the HTML tag <blockquote>.
+/// https://core.telegram.org/bots/api#inputrichblockblockquotation
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockBlockQuotation {
+    /// Type of the block, always "blockquote"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Content of the block
+    pub blocks: Vec<InputRichBlock>,
+    /// Optional. Credit of the block
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub credit: Option<Box<RichText>>,
+}
+
+/// A collage, corresponding to the custom HTML tag <tg-collage>.
+/// https://core.telegram.org/bots/api#inputrichblockcollage
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockCollage {
+    /// Type of the block, always "collage"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Elements of the collage
+    pub blocks: Vec<InputRichBlock>,
+    /// Optional. Caption of the block
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption: Option<Box<RichBlockCaption>>,
+}
+
+/// An expandable block for details disclosure, corresponding to the HTML tag <details>.
+/// https://core.telegram.org/bots/api#inputrichblockdetails
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockDetails {
+    /// Type of the block, always "details"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Always shown summary of the block
+    pub summary: Box<RichText>,
+    /// Content of the block
+    pub blocks: Vec<InputRichBlock>,
+    /// Optional. Pass True if the content of the block is visible by default
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_open: Option<bool>,
+}
+
+/// A divider, corresponding to the HTML tag <hr/>.
+/// https://core.telegram.org/bots/api#inputrichblockdivider
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockDivider {
+    /// Type of the block, always "divider"
+    #[serde(rename = "type")]
+    pub r#type: String,
+}
+
+/// A footer, corresponding to the HTML tag <footer>.
+/// https://core.telegram.org/bots/api#inputrichblockfooter
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockFooter {
+    /// Type of the block, always "footer"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Text of the block
+    pub text: Box<RichText>,
+}
+
+/// A list of blocks, corresponding to the HTML tag <ul> or <ol> with multiple nested tags <li>.
+/// https://core.telegram.org/bots/api#inputrichblocklist
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockList {
+    /// Type of the block, always "list"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Items of the list
+    pub items: Vec<InputRichBlockListItem>,
+}
+
+/// An item of a list to be sent.
+/// https://core.telegram.org/bots/api#inputrichblocklistitem
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockListItem {
+    /// The content of the item
+    pub blocks: Vec<InputRichBlock>,
+    /// Optional. Pass True if the item has a checkbox
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub has_checkbox: Option<bool>,
+    /// Optional. Pass True if the item has a checked checkbox
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_checked: Option<bool>,
+    /// Optional. For ordered lists, the numeric value of the item label
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub value: Option<i64>,
+    /// Optional. For ordered lists, the type of the item label; must be one of "a" for lowercase letters, "A" for uppercase letters, "i" for lowercase Roman numerals, "I" for uppercase Roman numerals, or "1" for decimal numbers
+    #[serde(rename = "type")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub r#type: Option<String>,
+}
+
+/// A block with a map, corresponding to the custom HTML tag <tg-map>. The map's width and height must not exceed 10000 in total. The width and height ratio must be at most 20.
+/// https://core.telegram.org/bots/api#inputrichblockmap
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockMap {
+    /// Type of the block, always "map"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Location of the center of the map
+    pub location: Location,
+    /// Map zoom level; 0-24
+    pub zoom: i64,
+    /// Map width; 0-10000
+    pub width: i64,
+    /// Map height; 0-10000
+    pub height: i64,
+    /// Optional. Caption of the block
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption: Option<Box<RichBlockCaption>>,
+}
+
+/// A block with a mathematical expression in LaTeX format, corresponding to the custom HTML tag <tg-math-block>.
+/// https://core.telegram.org/bots/api#inputrichblockmathematicalexpression
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockMathematicalExpression {
+    /// Type of the block, always "mathematical_expression"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// The mathematical expression in LaTeX format
+    pub expression: String,
+}
+
+/// A text paragraph, corresponding to the HTML tag <p>.
+/// https://core.telegram.org/bots/api#inputrichblockparagraph
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockParagraph {
+    /// Type of the block, always "paragraph"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Text of the block
+    pub text: Box<RichText>,
+}
+
+/// A block with a photo, corresponding to the HTML tag <img>.
+/// https://core.telegram.org/bots/api#inputrichblockphoto
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockPhoto {
+    /// Type of the block, always "photo"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// The photo. Caption is ignored.
+    pub photo: InputMediaPhoto,
+    /// Optional. Caption of the block
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption: Option<Box<RichBlockCaption>>,
+}
+
+/// A preformatted text block, corresponding to the nested HTML tags <pre> and <code>.
+/// https://core.telegram.org/bots/api#inputrichblockpreformatted
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockPreformatted {
+    /// Type of the block, always "pre"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Text of the block
+    pub text: Box<RichText>,
+    /// Optional. The programming language of the text
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+}
+
+/// A quotation with centered text, loosely corresponding to the HTML tag <aside>.
+/// https://core.telegram.org/bots/api#inputrichblockpullquotation
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockPullQuotation {
+    /// Type of the block, always "pullquote"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Text of the block
+    pub text: Box<RichText>,
+    /// Optional. Credit of the block
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub credit: Option<Box<RichText>>,
+}
+
+/// A section heading, corresponding to the HTML tags <h1>, <h2>, <h3>, <h4>, <h5>, or <h6>.
+/// https://core.telegram.org/bots/api#inputrichblocksectionheading
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockSectionHeading {
+    /// Type of the block, always "heading"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Text of the block
+    pub text: Box<RichText>,
+    /// Relative size of the text font; 1-6, 1 is the largest, 6 is the smallest
+    pub size: i64,
+}
+
+/// A slideshow, corresponding to the custom HTML tag <tg-slideshow>.
+/// https://core.telegram.org/bots/api#inputrichblockslideshow
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockSlideshow {
+    /// Type of the block, always "slideshow"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Elements of the slideshow
+    pub blocks: Vec<InputRichBlock>,
+    /// Optional. Caption of the block
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption: Option<Box<RichBlockCaption>>,
+}
+
+/// A table, corresponding to the HTML tag <table>.
+/// https://core.telegram.org/bots/api#inputrichblocktable
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockTable {
+    /// Type of the block, always "table"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Cells of the table
+    pub cells: Vec<Vec<RichBlockTableCell>>,
+    /// Optional. Pass True if the table has borders
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_bordered: Option<bool>,
+    /// Optional. Pass True if the table is striped
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_striped: Option<bool>,
+    /// Optional. Caption of the table
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption: Option<Box<RichText>>,
+}
+
+/// A block with a "Thinking..." placeholder, corresponding to the custom HTML tag <tg-thinking>. The block may be used only in sendRichMessageDraft, therefore it can't be received in messages. See https://t.me/addemoji/AIActions for examples of custom emoji that are recommended for usage in the block.
+/// https://core.telegram.org/bots/api#inputrichblockthinking
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockThinking {
+    /// Type of the block, always "thinking"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// Text of the block. See https://t.me/addemoji/AIActions for examples of custom emoji that are recommended for usage in the block.
+    pub text: Box<RichText>,
+}
+
+/// A block with a video, corresponding to the HTML tag <video>.
+/// https://core.telegram.org/bots/api#inputrichblockvideo
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockVideo {
+    /// Type of the block, always "video"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// The video. Caption is ignored.
+    pub video: InputMediaVideo,
+    /// Optional. Caption of the block
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption: Option<Box<RichBlockCaption>>,
+}
+
+/// A block with a voice note, corresponding to the HTML tag <audio>.
+/// https://core.telegram.org/bots/api#inputrichblockvoicenote
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichBlockVoiceNote {
+    /// Type of the block, always "voice_note"
+    #[serde(rename = "type")]
+    pub r#type: String,
+    /// The voice note. Caption is ignored.
+    pub voice_note: InputMediaVoiceNote,
+    /// Optional. Caption of the block
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption: Option<Box<RichBlockCaption>>,
+}
+
+/// Describes a rich message to be sent. Exactly one of the fields html, markdown, or blocks must be used.
 /// https://core.telegram.org/bots/api#inputrichmessage
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct InputRichMessage {
-    /// Optional. Content of the rich message to send described using HTML formatting. See rich message formatting options for more details.
+    /// Optional. Content of the rich message to send described as a list of blocks
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub blocks: Option<Vec<InputRichBlock>>,
+    /// Optional. Content of the rich message to send described using HTML formatting. See rich message formatting options for more details. Use media field to specify the media used in the message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub html: Option<String>,
-    /// Optional. Content of the rich message to send described using Markdown formatting. See rich message formatting options for more details.
+    /// Optional. Content of the rich message to send described using Markdown formatting. See rich message formatting options for more details. Use media field to specify the media used in the message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub markdown: Option<String>,
+    /// Optional. List of media that are specified in the markdown or html fields using tg://photo?id=, tg://video?id=, and tg://audio?id= links
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub media: Option<Vec<InputRichMessageMedia>>,
     /// Optional. Pass True if the rich message must be shown right-to-left
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_rtl: Option<bool>,
@@ -3370,6 +3794,16 @@ pub struct InputRichMessage {
 pub struct InputRichMessageContent {
     /// The message to be sent
     pub rich_message: InputRichMessage,
+}
+
+/// Describes a media element embedded in an outgoing rich message.
+/// https://core.telegram.org/bots/api#inputrichmessagemedia
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InputRichMessageMedia {
+    /// Unique identifier of the media used in a tg://photo?id=, tg://video?id=, or tg://audio?id= link. 1-64 characters, only A-Z, a-z, 0-9, _ and - are allowed.
+    pub id: String,
+    /// The media to be sent. Everything except the media itself and its properties is ignored.
+    pub media: InputMedia,
 }
 
 /// This object describes a sticker to be added to a sticker set.
@@ -3826,7 +4260,7 @@ pub struct MenuButtonWebApp {
 /// https://core.telegram.org/bots/api#message
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Message {
-    /// Unique message identifier inside this chat. In specific instances (e.g., message containing a video sent to a big chat), the server might automatically schedule a message instead of sending it immediately. In such cases, this field will be 0 and the relevant message will be unusable until it is actually sent.
+    /// Unique message identifier inside this chat; 0 for ephemeral messages. In specific instances (e.g., a message containing a video sent to a big chat), the server might automatically schedule a message instead of sending it immediately. In such cases, this field will be 0 and the relevant message will be unusable until it is actually sent.
     pub message_id: i64,
     /// Optional. Unique identifier of a message thread or forum topic to which the message belongs; for supergroups and private chats only
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -3849,6 +4283,12 @@ pub struct Message {
     /// Optional. Tag or custom title of the sender of the message; for supergroups only
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sender_tag: Option<String>,
+    /// Optional. For ephemeral messages, the user who received the message
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receiver_user: Option<Box<User>>,
+    /// Optional. For ephemeral messages, identifier of the ephemeral message inside this chat. The identifier may be reused for another ephemeral message after the message is deleted or expires.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ephemeral_message_id: Option<i64>,
     /// Date the message was sent in Unix time. It is always a positive number, representing a valid date.
     pub date: i64,
     /// Optional. The unique identifier for the guest query. Use this identifier with the method answerGuestQuery to send a response message. If non-empty, the message belongs to the chat where the guest bot was summoned, which may not coincide with other existing bot chats sharing the same identifier.
@@ -3868,7 +4308,7 @@ pub struct Message {
     /// Optional. True, if the message is a channel post that was automatically forwarded to the connected discussion group
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_automatic_forward: Option<bool>,
-    /// Optional. For replies in the same chat and message thread, the original message. Note that the Message object in this field will not contain further reply_to_message fields even if it itself is a reply.
+    /// Optional. For replies in the same chat and message thread, the original message. Note that the Message object in this field will not contain further reply_to_message fields even if it itself is a reply. If the message is a reply to an ephemeral message, then this field may be omitted.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_to_message: Option<Box<Message>>,
     /// Optional. Information about the message that is being replied to, which may come from another chat or forum topic
@@ -4075,7 +4515,7 @@ pub struct Message {
     /// Optional. Telegram Passport data
     #[serde(skip_serializing_if = "Option::is_none")]
     pub passport_data: Option<Box<PassportData>>,
-    /// Optional. Service message. A user in the chat triggered another user's proximity alert while sharing Live Location.
+    /// Optional. Service message: a user in the chat triggered another user's proximity alert while sharing Live Location
     #[serde(skip_serializing_if = "Option::is_none")]
     pub proximity_alert_triggered: Option<Box<ProximityAlertTriggered>>,
     /// Optional. Service message: user boosted the chat
@@ -4090,6 +4530,12 @@ pub struct Message {
     /// Optional. Service message: tasks were added to a checklist
     #[serde(skip_serializing_if = "Option::is_none")]
     pub checklist_tasks_added: Option<Box<ChecklistTasksAdded>>,
+    /// Optional. Service message: chat added to a Community
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub community_chat_added: Option<Box<CommunityChatAdded>>,
+    /// Optional. Service message: chat removed from a Community
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub community_chat_removed: Option<Box<CommunityChatRemoved>>,
     /// Optional. Service message: the price for paid messages in the corresponding direct messages chat of a channel has changed
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direct_message_price_changed: Option<Box<DirectMessagePriceChanged>>,
@@ -5050,13 +5496,13 @@ pub struct RefundedPayment {
 pub struct ReplyKeyboardMarkup {
     /// Array of button rows, each represented by an Array of KeyboardButton objects
     pub keyboard: Vec<Vec<KeyboardButton>>,
-    /// Optional. Requests clients to always show the keyboard when the regular keyboard is hidden. Defaults to false, in which case the custom keyboard can be hidden and opened with a keyboard icon.
+    /// Optional. Requests clients to always show the keyboard when the regular keyboard is hidden. Defaults to False, in which case the custom keyboard can be hidden and opened with a keyboard icon.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_persistent: Option<bool>,
-    /// Optional. Requests clients to resize the keyboard vertically for optimal fit (e.g., make the keyboard smaller if there are just two rows of buttons). Defaults to false, in which case the custom keyboard is always of the same height as the app's standard keyboard.
+    /// Optional. Requests clients to resize the keyboard vertically for optimal fit (e.g., make the keyboard smaller if there are just two rows of buttons). Defaults to False, in which case the custom keyboard is always of the same height as the app's standard keyboard.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resize_keyboard: Option<bool>,
-    /// Optional. Requests clients to hide the keyboard as soon as it's been used. The keyboard will still be available, but clients will automatically display the usual letter-keyboard in the chat - the user can press a special button in the input field to see the custom keyboard again. Defaults to false.
+    /// Optional. Requests clients to hide the keyboard as soon as it's been used. The keyboard will still be available, but clients will automatically display the usual letter-keyboard in the chat - the user can press a special button in the input field to see the custom keyboard again. Defaults to False.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub one_time_keyboard: Option<bool>,
     /// Optional. The placeholder to be shown in the input field when the keyboard is active; 1-64 characters
@@ -5082,15 +5528,19 @@ pub struct ReplyKeyboardRemove {
 /// https://core.telegram.org/bots/api#replyparameters
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct ReplyParameters {
-    /// Identifier of the message that will be replied to in the current chat, or in the chat chat_id if it is specified
-    pub message_id: i64,
-    /// Optional. If the message to be replied to is from a different chat, unique identifier for the chat or username of the bot, supergroup or channel in the format @username. Not supported for messages sent on behalf of a business account and messages from channel direct messages chats.
+    /// Optional. Identifier of the message that will be replied to in the current chat, or in the chat chat_id if it is specified. Required if ephemeral_message_id isn't specified.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message_id: Option<i64>,
+    /// Optional. If the message to be replied to is from a different chat, unique identifier for the chat or username of the bot, supergroup or channel in the format @username. Not supported for messages sent on behalf of a business account, messages from channel direct messages chats and ephemeral messages.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_id: Option<ChatId>,
-    /// Optional. Pass True if the message should be sent even if the specified message to be replied to is not found. Always False for replies in another chat or forum topic. Always True for messages sent on behalf of a business account.
+    /// Optional. Identifier of the incoming ephemeral message that will be replied to in the current chat. A reply to an ephemeral message must itself be an ephemeral message. An ephemeral message may only be replied to within 15 seconds of being sent. Required if message_id isn't specified.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ephemeral_message_id: Option<i64>,
+    /// Optional. Pass True if the message should be sent even if the specified message to be replied to is not found. Always False for replies in another chat or forum topic, and sent ephemeral messages. Always True for messages sent on behalf of a business account.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_sending_without_reply: Option<bool>,
-    /// Optional. Quoted part of the message to be replied to; 0-1024 characters after entities parsing. The quote must be an exact substring of the message to be replied to, including bold, italic, underline, strikethrough, spoiler, custom_emoji, and date_time entities. The message will fail to send if the quote isn't found in the original message.
+    /// Optional. Quoted part of the message to be replied to; 0-1024 characters after entities parsing. The quote must be an exact substring of the message to be replied to, including bold, italic, underline, strikethrough, spoiler, custom_emoji, and date_time entities. The message will fail to send if the quote isn't found in the original message. Ignored for ephemeral messages.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub quote: Option<String>,
     /// Optional. Mode for parsing entities in the quote. See formatting options for more details.
@@ -5408,7 +5858,7 @@ pub struct RichBlockParagraph {
     pub text: Box<RichText>,
 }
 
-/// A block with a photo, corresponding to the HTML tag <photo>.
+/// A block with a photo, corresponding to the HTML tag <img>.
 /// https://core.telegram.org/bots/api#richblockphoto
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct RichBlockPhoto {
@@ -5522,14 +5972,14 @@ pub struct RichBlockTableCell {
     pub valign: String,
 }
 
-/// A block with a "Thinking..." placeholder, corresponding to the custom HTML tag <tg-thinking>. The block may be used only in sendRichMessageDraft, therefore it can't be received in messages. See https://t.me/addemoji/AIActions for examples of custom emoji, which are recommended for usage in the block.
+/// A block with a "Thinking..." placeholder, corresponding to the custom HTML tag <tg-thinking>. The block may be used only in sendRichMessageDraft, therefore it can't be received in messages. See https://t.me/addemoji/AIActions for examples of custom emoji that are recommended for usage in the block.
 /// https://core.telegram.org/bots/api#richblockthinking
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct RichBlockThinking {
     /// Type of the block, always "thinking"
     #[serde(rename = "type")]
     pub r#type: String,
-    /// Text of the block. See https://t.me/addemoji/AIActions for examples of custom emoji, which are recommended for usage in the block.
+    /// Text of the block. See https://t.me/addemoji/AIActions for examples of custom emoji that are recommended for usage in the block.
     pub text: Box<RichText>,
 }
 
@@ -6335,9 +6785,9 @@ pub struct SuggestedPostPaid {
     /// Optional. Message containing the suggested post. Note that the Message object in this field will not contain the reply_to_message field even if it itself is a reply.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suggested_post_message: Option<Box<Message>>,
-    /// Currency in which the payment was made. Currently, one of "XTR" for Telegram Stars or "TON" for toncoins.
+    /// Currency in which the payment was made. Currently, one of "XTR" for Telegram Stars or "TON" for TON grams.
     pub currency: String,
-    /// Optional. The amount of the currency that was received by the channel in nanotoncoins; for payments in toncoins only
+    /// Optional. The amount of the currency that was received by the channel in nanograms; for payments in TON grams only
     #[serde(skip_serializing_if = "Option::is_none")]
     pub amount: Option<i64>,
     /// Optional. The amount of Telegram Stars that was received by the channel; for payments in Telegram Stars only
@@ -6361,9 +6811,9 @@ pub struct SuggestedPostParameters {
 /// https://core.telegram.org/bots/api#suggestedpostprice
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct SuggestedPostPrice {
-    /// Currency in which the post will be paid. Currently, must be one of "XTR" for Telegram Stars or "TON" for toncoins.
+    /// Currency in which the post will be paid. Currently, must be one of "XTR" for Telegram Stars or "TON" for TON grams.
     pub currency: String,
-    /// The amount of the currency that will be paid for the post in the smallest units of the currency, i.e. Telegram Stars or nanotoncoins. Currently, price in Telegram Stars must be between 5 and 100000, and price in nanotoncoins must be between 10000000 and 10000000000000.
+    /// The amount of the currency that will be paid for the post in the smallest units of the currency, i.e. Telegram Stars or nanograms. Currently, price in Telegram Stars must be between 5 and 100000, and price in nanograms must be between 10000000 and 10000000000000.
     pub amount: i64,
 }
 
@@ -6626,10 +7076,10 @@ pub struct UniqueGiftInfo {
     pub gift: UniqueGift,
     /// Origin of the gift. Currently, either "upgrade" for gifts upgraded from regular gifts, "transfer" for gifts transferred from other users or channels, "resale" for gifts bought from other users, "gifted_upgrade" for upgrades purchased after the gift was sent, or "offer" for gifts bought or sold through gift purchase offers.
     pub origin: String,
-    /// Optional. For gifts bought from other users, the currency in which the payment for the gift was done. Currently, one of "XTR" for Telegram Stars or "TON" for toncoins.
+    /// Optional. For gifts bought from other users, the currency in which the payment for the gift was done. Currently, one of "XTR" for Telegram Stars or "TON" for TON grams.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_resale_currency: Option<String>,
-    /// Optional. For gifts bought from other users, the price paid for the gift in either Telegram Stars or nanotoncoins
+    /// Optional. For gifts bought from other users, the price paid for the gift in either Telegram Stars or nanograms
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_resale_amount: Option<i64>,
     /// Optional. Unique identifier of the received gift for the bot; only present for gifts received on behalf of business accounts
@@ -6752,6 +7202,9 @@ pub struct Update {
     /// Optional. A new bot was created to be managed by the bot, or token or owner of a managed bot was changed
     #[serde(skip_serializing_if = "Option::is_none")]
     pub managed_bot: Option<Box<ManagedBotUpdated>>,
+    /// Optional. User payment subscription has changed
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subscription: Option<Box<BotSubscriptionUpdated>>,
 }
 
 /// This object represents a Telegram user or bot.

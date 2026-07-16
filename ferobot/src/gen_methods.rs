@@ -13,7 +13,7 @@
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
-// Generated from Telegram Bot API Bot API 10.1
+// Generated from Telegram Bot API Bot API 10.2
 // Spec:    https://github.com/ankit-chaubey/api-spec
 // Project: https://github.com/ankit-chaubey/ferobot
 // Author:  Ankit Chaubey <ankitchaubey.dev@gmail.com>
@@ -58,7 +58,7 @@ pub struct AnswerCallbackQueryParams {
     /// Text of the notification. If not specified, nothing will be shown to the user, 0-200 characters.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,
-    /// If True, an alert will be shown by the client instead of a notification at the top of the chat screen. Defaults to false.
+    /// If True, an alert will be shown by the client instead of a notification at the top of the chat screen. Defaults to False.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_alert: Option<bool>,
     /// URL that will be opened by the user's client. If you have created a Game and accepted the conditions via @BotFather, specify the URL that opens your game - note that this will only work if the query comes from a callback_game button. Otherwise, you may use links like t.me/your_bot?start=XXXX that open your bot with a parameter.
@@ -272,7 +272,7 @@ impl Bot {
 /// Optional parameters for [`Bot::answer_shipping_query_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AnswerShippingQueryParams {
-    /// Required if ok is True. A JSON-serialized array of available shipping options.
+    /// Required if ok is True. A JSON-serialized Array of available shipping options.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub shipping_options: Option<Vec<ShippingOption>>,
     /// Required if ok is False. Error message in human readable form that explains why it is impossible to complete the order (e.g. "Sorry, delivery to your desired address is unavailable"). Telegram will display this message to the user.
@@ -574,7 +574,7 @@ pub struct CopyMessageParams {
     /// A JSON-serialized list of special entities that appear in the new caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Pass True, if the caption must be shown above the message media. Ignored if a new caption isn't specified.
+    /// Pass True if the caption must be shown above the message media. Ignored if a new caption isn't specified.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Sends the message silently. Users will receive a notification with no sound.
@@ -739,7 +739,7 @@ impl CopyMessagesParams {
 }
 
 impl Bot {
-    /// Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of MessageId of the sent messages is returned.
+    /// Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an Array of MessageId of the sent messages is returned.
     /// See: https://core.telegram.org/bots/api#copymessages
     pub async fn copy_messages_with_params(
         &self,
@@ -945,7 +945,7 @@ pub struct CreateInvoiceLinkParams {
     /// The maximum accepted amount for tips in the smallest units of the currency (integer, not float/double). For example, for a maximum tip of US$ 1.45 pass max_tip_amount = 145. See the exp parameter in currencies.json, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0. Not supported for payments in Telegram Stars.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_tip_amount: Option<i64>,
-    /// A JSON-serialized array of suggested amounts of tips in the smallest units of the currency (integer, not float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed max_tip_amount.
+    /// A JSON-serialized Array of suggested amounts of tips in the smallest units of the currency (integer, not float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed max_tip_amount.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suggested_tip_amounts: Option<Vec<i64>>,
     /// JSON-serialized data about the invoice, which will be shared with the payment provider. A detailed description of required fields should be provided by the payment provider.
@@ -1326,6 +1326,31 @@ impl Bot {
 }
 
 impl Bot {
+    /// Use this method to delete an ephemeral message. Note that it is not guaranteed that the user will receive the message deletion event, especially if they are offline. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#deleteephemeralmessage
+    pub(crate) async fn raw_delete_ephemeral_message(
+        &self,
+        chat_id: impl Into<ChatId>,
+        receiver_user_id: i64,
+        ephemeral_message_id: i64,
+    ) -> Result<bool, BotError> {
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            receiver_user_id: i64,
+            ephemeral_message_id: i64,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            receiver_user_id,
+            ephemeral_message_id,
+        };
+        self.call_api_raw("deleteEphemeralMessage", &req).await
+    }
+}
+
+impl Bot {
     /// Use this method to delete a forum topic along with all its messages in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_delete_messages administrator rights. Returns True on success.
     /// See: https://core.telegram.org/bots/api#deleteforumtopic
     pub(crate) async fn raw_delete_forum_topic(
@@ -1701,6 +1726,244 @@ impl Bot {
     }
 }
 
+/// Optional parameters for [`Bot::edit_ephemeral_message_caption_with_params`]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct EditEphemeralMessageCaptionParams {
+    /// New caption of the message, 0-1024 characters after entities parsing
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption: Option<String>,
+    /// Mode for parsing entities in the message caption. See formatting options for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parse_mode: Option<String>,
+    /// A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption_entities: Option<Vec<MessageEntity>>,
+    /// A JSON-serialized object for an inline keyboard
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reply_markup: Option<Box<InlineKeyboardMarkup>>,
+}
+
+impl EditEphemeralMessageCaptionParams {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn caption(mut self, v: impl Into<String>) -> Self {
+        self.caption = Some(v.into());
+        self
+    }
+    pub fn parse_mode(mut self, v: impl Into<String>) -> Self {
+        self.parse_mode = Some(v.into());
+        self
+    }
+    pub fn caption_entities(mut self, v: impl Into<Vec<MessageEntity>>) -> Self {
+        self.caption_entities = Some(v.into());
+        self
+    }
+    pub fn reply_markup(mut self, v: impl Into<Box<InlineKeyboardMarkup>>) -> Self {
+        self.reply_markup = Some(v.into());
+        self
+    }
+}
+
+impl Bot {
+    /// Use this method to edit the caption of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+    /// See: https://core.telegram.org/bots/api#editephemeralmessagecaption
+    pub async fn edit_ephemeral_message_caption_with_params(
+        &self,
+        chat_id: impl Into<ChatId>,
+        receiver_user_id: i64,
+        ephemeral_message_id: i64,
+        params: Option<EditEphemeralMessageCaptionParams>,
+    ) -> Result<bool, BotError> {
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            receiver_user_id: i64,
+            ephemeral_message_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a EditEphemeralMessageCaptionParams>,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            receiver_user_id,
+            ephemeral_message_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("editEphemeralMessageCaption", &req).await
+    }
+}
+
+/// Optional parameters for [`Bot::edit_ephemeral_message_media_with_params`]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct EditEphemeralMessageMediaParams {
+    /// A JSON-serialized object for an inline keyboard
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reply_markup: Option<Box<InlineKeyboardMarkup>>,
+}
+
+impl EditEphemeralMessageMediaParams {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn reply_markup(mut self, v: impl Into<Box<InlineKeyboardMarkup>>) -> Self {
+        self.reply_markup = Some(v.into());
+        self
+    }
+}
+
+impl Bot {
+    /// Use this method to edit the media of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+    /// See: https://core.telegram.org/bots/api#editephemeralmessagemedia
+    pub async fn edit_ephemeral_message_media_with_params(
+        &self,
+        chat_id: impl Into<ChatId>,
+        receiver_user_id: i64,
+        ephemeral_message_id: i64,
+        media: Vec<InputMedia>,
+        params: Option<EditEphemeralMessageMediaParams>,
+    ) -> Result<bool, BotError> {
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            receiver_user_id: i64,
+            ephemeral_message_id: i64,
+            media: &'a Vec<InputMedia>,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a EditEphemeralMessageMediaParams>,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            receiver_user_id,
+            ephemeral_message_id,
+            media: &media,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("editEphemeralMessageMedia", &req).await
+    }
+}
+
+/// Optional parameters for [`Bot::edit_ephemeral_message_reply_markup_with_params`]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct EditEphemeralMessageReplyMarkupParams {
+    /// A JSON-serialized object for an inline keyboard
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reply_markup: Option<Box<InlineKeyboardMarkup>>,
+}
+
+impl EditEphemeralMessageReplyMarkupParams {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn reply_markup(mut self, v: impl Into<Box<InlineKeyboardMarkup>>) -> Self {
+        self.reply_markup = Some(v.into());
+        self
+    }
+}
+
+impl Bot {
+    /// Use this method to edit only the reply markup of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+    /// See: https://core.telegram.org/bots/api#editephemeralmessagereplymarkup
+    pub async fn edit_ephemeral_message_reply_markup_with_params(
+        &self,
+        chat_id: impl Into<ChatId>,
+        receiver_user_id: i64,
+        ephemeral_message_id: i64,
+        params: Option<EditEphemeralMessageReplyMarkupParams>,
+    ) -> Result<bool, BotError> {
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            receiver_user_id: i64,
+            ephemeral_message_id: i64,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a EditEphemeralMessageReplyMarkupParams>,
+        }
+        let chat_id = chat_id.into();
+        let req = Req {
+            chat_id: &chat_id,
+            receiver_user_id,
+            ephemeral_message_id,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("editEphemeralMessageReplyMarkup", &req)
+            .await
+    }
+}
+
+/// Optional parameters for [`Bot::edit_ephemeral_message_text_with_params`]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct EditEphemeralMessageTextParams {
+    /// Mode for parsing entities in the message text. See formatting options for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parse_mode: Option<String>,
+    /// A JSON-serialized list of special entities that appear in message text, which can be specified instead of parse_mode
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub entities: Option<Vec<MessageEntity>>,
+    /// Link preview generation options for the message
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub link_preview_options: Option<Box<LinkPreviewOptions>>,
+    /// A JSON-serialized object for an inline keyboard
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reply_markup: Option<Box<InlineKeyboardMarkup>>,
+}
+
+impl EditEphemeralMessageTextParams {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn parse_mode(mut self, v: impl Into<String>) -> Self {
+        self.parse_mode = Some(v.into());
+        self
+    }
+    pub fn entities(mut self, v: impl Into<Vec<MessageEntity>>) -> Self {
+        self.entities = Some(v.into());
+        self
+    }
+    pub fn link_preview_options(mut self, v: impl Into<Box<LinkPreviewOptions>>) -> Self {
+        self.link_preview_options = Some(v.into());
+        self
+    }
+    pub fn reply_markup(mut self, v: impl Into<Box<InlineKeyboardMarkup>>) -> Self {
+        self.reply_markup = Some(v.into());
+        self
+    }
+}
+
+impl Bot {
+    /// Use this method to edit an ephemeral text message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+    /// See: https://core.telegram.org/bots/api#editephemeralmessagetext
+    pub async fn edit_ephemeral_message_text_with_params(
+        &self,
+        chat_id: impl Into<ChatId>,
+        receiver_user_id: i64,
+        ephemeral_message_id: i64,
+        text: impl Into<String>,
+        params: Option<EditEphemeralMessageTextParams>,
+    ) -> Result<bool, BotError> {
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            chat_id: &'a ChatId,
+            receiver_user_id: i64,
+            ephemeral_message_id: i64,
+            text: &'a str,
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a EditEphemeralMessageTextParams>,
+        }
+        let chat_id = chat_id.into();
+        let text = text.into();
+        let req = Req {
+            chat_id: &chat_id,
+            receiver_user_id,
+            ephemeral_message_id,
+            text: &text,
+            params: params.as_ref(),
+        };
+        self.call_api_raw("editEphemeralMessageText", &req).await
+    }
+}
+
 /// Optional parameters for [`Bot::edit_forum_topic_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct EditForumTopicParams {
@@ -1799,7 +2062,7 @@ pub struct EditMessageCaptionParams {
     /// A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Pass True, if the caption must be shown above the message media. Supported only for animation, photo and video messages.
+    /// Pass True if the caption must be shown above the message media. Supported only for animation, photo and video messages.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// A JSON-serialized object for an inline keyboard
@@ -2178,7 +2441,7 @@ pub struct EditMessageTextParams {
     /// Link preview generation options for the message
     #[serde(skip_serializing_if = "Option::is_none")]
     pub link_preview_options: Option<Box<LinkPreviewOptions>>,
-    /// New rich content of the message; required if text isn't specified
+    /// New rich content of the message; required if text isn't specified. Direct upload of new files isn't supported when an inline message is edited.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rich_message: Option<Box<InputRichMessage>>,
     /// A JSON-serialized object for an inline keyboard
@@ -2491,7 +2754,7 @@ impl ForwardMessagesParams {
 }
 
 impl Bot {
-    /// Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an array of MessageId of the sent messages is returned.
+    /// Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an Array of MessageId of the sent messages is returned.
     /// See: https://core.telegram.org/bots/api#forwardmessages
     pub async fn forward_messages_with_params(
         &self,
@@ -2859,7 +3122,7 @@ impl Bot {
 }
 
 impl Bot {
-    /// Use this method to get the number of members in a chat. Returns Int on success.
+    /// Use this method to get the number of members in a chat. Returns Integer on success.
     /// See: https://core.telegram.org/bots/api#getchatmembercount
     pub(crate) async fn raw_get_chat_member_count(
         &self,
@@ -3485,7 +3748,7 @@ impl Bot {
 }
 
 impl Bot {
-    /// Use this method to get the last messages from the personal chat (i.e., the chat currently added to their profile) of a given user. On success, an array of Message objects is returned.
+    /// Use this method to get the last messages from the personal chat (i.e., the chat currently added to their profile) of a given user. On success, an Array of Message objects is returned.
     /// See: https://core.telegram.org/bots/api#getuserpersonalchatmessages
     pub(crate) async fn raw_get_user_personal_chat_messages(
         &self,
@@ -4449,6 +4712,12 @@ pub struct SendAnimationParams {
     /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direct_messages_topic_id: Option<i64>,
+    /// For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receiver_user_id: Option<i64>,
+    /// For outgoing ephemeral messages, identifier of the callback query which triggered the message if any
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub callback_query_id: Option<String>,
     /// Duration of sent animation in seconds
     #[serde(skip_serializing_if = "Option::is_none")]
     pub duration: Option<i64>,
@@ -4470,7 +4739,7 @@ pub struct SendAnimationParams {
     /// A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Pass True, if the caption must be shown above the message media
+    /// Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Pass True if the animation needs to be covered with a spoiler animation
@@ -4513,6 +4782,14 @@ impl SendAnimationParams {
     }
     pub fn direct_messages_topic_id(mut self, v: impl Into<i64>) -> Self {
         self.direct_messages_topic_id = Some(v.into());
+        self
+    }
+    pub fn receiver_user_id(mut self, v: impl Into<i64>) -> Self {
+        self.receiver_user_id = Some(v.into());
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.callback_query_id = Some(v.into());
         self
     }
     pub fn duration(mut self, v: impl Into<i64>) -> Self {
@@ -4622,6 +4899,12 @@ pub struct SendAudioParams {
     /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direct_messages_topic_id: Option<i64>,
+    /// For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receiver_user_id: Option<i64>,
+    /// For outgoing ephemeral messages, identifier of the callback query which triggered the message if any
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub callback_query_id: Option<String>,
     /// Audio caption, 0-1024 characters after entities parsing
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption: Option<String>,
@@ -4680,6 +4963,14 @@ impl SendAudioParams {
     }
     pub fn direct_messages_topic_id(mut self, v: impl Into<i64>) -> Self {
         self.direct_messages_topic_id = Some(v.into());
+        self
+    }
+    pub fn receiver_user_id(mut self, v: impl Into<i64>) -> Self {
+        self.receiver_user_id = Some(v.into());
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.callback_query_id = Some(v.into());
         self
     }
     pub fn caption(mut self, v: impl Into<String>) -> Self {
@@ -4824,7 +5115,7 @@ impl Bot {
 }
 
 impl Bot {
-    /// Use this method to process a received chat join request query by showing a Mini App to the user before deciding the outcome. Returns True on success.
+    /// Use this method to process a received chat join request query by showing a Mini App to the user before deciding the outcome. Call answerChatJoinRequestQuery to resolve the join request query based on the user interaction with the Mini App. Returns True on success.
     /// See: https://core.telegram.org/bots/api#sendchatjoinrequestwebapp
     pub(crate) async fn raw_send_chat_join_request_web_app(
         &self,
@@ -4934,6 +5225,12 @@ pub struct SendContactParams {
     /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direct_messages_topic_id: Option<i64>,
+    /// For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receiver_user_id: Option<i64>,
+    /// For outgoing ephemeral messages, identifier of the callback query which triggered the message if any
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub callback_query_id: Option<String>,
     /// Contact's last name
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_name: Option<String>,
@@ -4977,6 +5274,14 @@ impl SendContactParams {
     }
     pub fn direct_messages_topic_id(mut self, v: impl Into<i64>) -> Self {
         self.direct_messages_topic_id = Some(v.into());
+        self
+    }
+    pub fn receiver_user_id(mut self, v: impl Into<i64>) -> Self {
+        self.receiver_user_id = Some(v.into());
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.callback_query_id = Some(v.into());
         self
     }
     pub fn last_name(mut self, v: impl Into<String>) -> Self {
@@ -5171,6 +5476,12 @@ pub struct SendDocumentParams {
     /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direct_messages_topic_id: Option<i64>,
+    /// For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receiver_user_id: Option<i64>,
+    /// For outgoing ephemeral messages, identifier of the callback query which triggered the message if any
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub callback_query_id: Option<String>,
     /// Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass "attach://<file_attach_name>" if the thumbnail was uploaded using multipart/form-data under <file_attach_name>. More information on Sending Files: https://core.telegram.org/bots/api#sending-files
     #[serde(skip_serializing_if = "Option::is_none")]
     pub thumbnail: Option<InputFileOrString>,
@@ -5223,6 +5534,14 @@ impl SendDocumentParams {
     }
     pub fn direct_messages_topic_id(mut self, v: impl Into<i64>) -> Self {
         self.direct_messages_topic_id = Some(v.into());
+        self
+    }
+    pub fn receiver_user_id(mut self, v: impl Into<i64>) -> Self {
+        self.receiver_user_id = Some(v.into());
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.callback_query_id = Some(v.into());
         self
     }
     pub fn thumbnail(mut self, v: impl Into<InputFileOrString>) -> Self {
@@ -5489,7 +5808,7 @@ pub struct SendInvoiceParams {
     /// The maximum accepted amount for tips in the smallest units of the currency (integer, not float/double). For example, for a maximum tip of US$ 1.45 pass max_tip_amount = 145. See the exp parameter in currencies.json, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0. Not supported for payments in Telegram Stars.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_tip_amount: Option<i64>,
-    /// A JSON-serialized array of suggested amounts of tips in the smallest units of the currency (integer, not float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed max_tip_amount.
+    /// A JSON-serialized Array of suggested amounts of tips in the smallest units of the currency (integer, not float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed max_tip_amount.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suggested_tip_amounts: Option<Vec<i64>>,
     /// Unique deep-linking parameter. If left empty, forwarded copies of the sent message will have a Pay button, allowing multiple users to pay directly from the forwarded message, using the same invoice. If non-empty, forwarded copies of the sent message will have a URL button with a deep link to the bot (instead of a Pay button), with the value used as the start parameter.
@@ -5714,6 +6033,12 @@ pub struct SendLivePhotoParams {
     /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direct_messages_topic_id: Option<i64>,
+    /// For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receiver_user_id: Option<i64>,
+    /// For outgoing ephemeral messages, identifier of the callback query which triggered the message if any
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub callback_query_id: Option<String>,
     /// Video caption (may also be used when resending videos by file_id), 0-1024 characters after entities parsing
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption: Option<String>,
@@ -5723,7 +6048,7 @@ pub struct SendLivePhotoParams {
     /// A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Pass True, if the caption must be shown above the message media
+    /// Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Pass True if the video needs to be covered with a spoiler animation
@@ -5766,6 +6091,14 @@ impl SendLivePhotoParams {
     }
     pub fn direct_messages_topic_id(mut self, v: impl Into<i64>) -> Self {
         self.direct_messages_topic_id = Some(v.into());
+        self
+    }
+    pub fn receiver_user_id(mut self, v: impl Into<i64>) -> Self {
+        self.receiver_user_id = Some(v.into());
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.callback_query_id = Some(v.into());
         self
     }
     pub fn caption(mut self, v: impl Into<String>) -> Self {
@@ -5867,10 +6200,16 @@ pub struct SendLocationParams {
     /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direct_messages_topic_id: Option<i64>,
+    /// For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receiver_user_id: Option<i64>,
+    /// For outgoing ephemeral messages, identifier of the callback query which triggered the message if any
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub callback_query_id: Option<String>,
     /// The radius of uncertainty for the location, measured in meters; 0-1500
     #[serde(skip_serializing_if = "Option::is_none")]
     pub horizontal_accuracy: Option<f64>,
-    /// Period in seconds during which the location will be updated (see Live Locations, should be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely
+    /// Period in seconds during which the location will be updated (see Live Locations), must be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely. Must be 0 for ephemeral messages.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub live_period: Option<i64>,
     /// For live locations, a direction in which the user is moving, in degrees. Must be between 1 and 360 if specified.
@@ -5916,6 +6255,14 @@ impl SendLocationParams {
     }
     pub fn direct_messages_topic_id(mut self, v: impl Into<i64>) -> Self {
         self.direct_messages_topic_id = Some(v.into());
+        self
+    }
+    pub fn receiver_user_id(mut self, v: impl Into<i64>) -> Self {
+        self.receiver_user_id = Some(v.into());
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.callback_query_id = Some(v.into());
         self
     }
     pub fn horizontal_accuracy(mut self, v: impl Into<f64>) -> Self {
@@ -6061,7 +6408,7 @@ impl SendMediaGroupParams {
 }
 
 impl Bot {
-    /// Use this method to send a group of photos, live photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of Message objects that were sent is returned.
+    /// Use this method to send a group of photos, live photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an Array of Message objects that were sent is returned.
     /// See: https://core.telegram.org/bots/api#sendmediagroup
     pub async fn send_media_group_with_params(
         &self,
@@ -6098,6 +6445,12 @@ pub struct SendMessageParams {
     /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direct_messages_topic_id: Option<i64>,
+    /// For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receiver_user_id: Option<i64>,
+    /// For outgoing ephemeral messages, identifier of the callback query which triggered the message if any
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub callback_query_id: Option<String>,
     /// Mode for parsing entities in the message text. See formatting options for more details.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub parse_mode: Option<String>,
@@ -6144,6 +6497,14 @@ impl SendMessageParams {
     }
     pub fn direct_messages_topic_id(mut self, v: impl Into<i64>) -> Self {
         self.direct_messages_topic_id = Some(v.into());
+        self
+    }
+    pub fn receiver_user_id(mut self, v: impl Into<i64>) -> Self {
+        self.receiver_user_id = Some(v.into());
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.callback_query_id = Some(v.into());
         self
     }
     pub fn parse_mode(mut self, v: impl Into<String>) -> Self {
@@ -6303,7 +6664,7 @@ pub struct SendPaidMediaParams {
     /// A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Pass True, if the caption must be shown above the message media
+    /// Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Sends the message silently. Users will receive a notification with no sound.
@@ -6429,6 +6790,12 @@ pub struct SendPhotoParams {
     /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direct_messages_topic_id: Option<i64>,
+    /// For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receiver_user_id: Option<i64>,
+    /// For outgoing ephemeral messages, identifier of the callback query which triggered the message if any
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub callback_query_id: Option<String>,
     /// Photo caption (may also be used when resending photos by file_id), 0-1024 characters after entities parsing
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption: Option<String>,
@@ -6438,7 +6805,7 @@ pub struct SendPhotoParams {
     /// A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Pass True, if the caption must be shown above the message media
+    /// Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Pass True if the photo needs to be covered with a spoiler animation
@@ -6481,6 +6848,14 @@ impl SendPhotoParams {
     }
     pub fn direct_messages_topic_id(mut self, v: impl Into<i64>) -> Self {
         self.direct_messages_topic_id = Some(v.into());
+        self
+    }
+    pub fn receiver_user_id(mut self, v: impl Into<i64>) -> Self {
+        self.receiver_user_id = Some(v.into());
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.callback_query_id = Some(v.into());
         self
     }
     pub fn caption(mut self, v: impl Into<String>) -> Self {
@@ -6584,22 +6959,22 @@ pub struct SendPollParams {
     #[serde(rename = "type")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub r#type: Option<String>,
-    /// Pass True, if the poll allows multiple answers, defaults to False
+    /// Pass True if the poll allows multiple answers, defaults to False
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allows_multiple_answers: Option<bool>,
-    /// Pass True, if the poll allows to change chosen answer options, defaults to False for quizzes and to True for regular polls
+    /// Pass True if the poll allows to change chosen answer options, defaults to False for quizzes and to True for regular polls
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allows_revoting: Option<bool>,
-    /// Pass True, if the poll options must be shown in random order
+    /// Pass True if the poll options must be shown in random order
     #[serde(skip_serializing_if = "Option::is_none")]
     pub shuffle_options: Option<bool>,
-    /// Pass True, if answer options can be added to the poll after creation; not supported for anonymous polls and quizzes
+    /// Pass True if answer options can be added to the poll after creation; not supported for anonymous polls and quizzes
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_adding_options: Option<bool>,
-    /// Pass True, if poll results must be shown only after the poll closes
+    /// Pass True if poll results must be shown only after the poll closes
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hide_results_until_closes: Option<bool>,
-    /// Pass True, if voting is limited to users who have been members of the chat where the poll is being sent for more than 24 hours; for channel chats only
+    /// Pass True if voting is limited to users who have been members of the chat where the poll is being sent for more than 24 hours; for channel chats only
     #[serde(skip_serializing_if = "Option::is_none")]
     pub members_only: Option<bool>,
     /// A JSON-serialized list of 0-12 two-letter ISO 3166-1 alpha-2 country codes indicating the countries from which users can vote in the poll; for channel chats only. Use "FT" as a country code to allow users with anonymous numbers to vote. If omitted or empty, then users from any country can participate in the poll.
@@ -6824,7 +7199,7 @@ impl Bot {
 /// Optional parameters for [`Bot::send_rich_message_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SendRichMessageParams {
-    /// Unique identifier of the business connection on behalf of which the message will be sent
+    /// Unique identifier of the business connection on behalf of which the message will be sent. Bot can send rich messages on behalf of a business account only if the corresponding user can send rich messages.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub business_connection_id: Option<String>,
     /// Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only
@@ -6986,6 +7361,12 @@ pub struct SendStickerParams {
     /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direct_messages_topic_id: Option<i64>,
+    /// For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receiver_user_id: Option<i64>,
+    /// For outgoing ephemeral messages, identifier of the callback query which triggered the message if any
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub callback_query_id: Option<String>,
     /// Emoji associated with the sticker; only for just uploaded stickers
     #[serde(skip_serializing_if = "Option::is_none")]
     pub emoji: Option<String>,
@@ -7026,6 +7407,14 @@ impl SendStickerParams {
     }
     pub fn direct_messages_topic_id(mut self, v: impl Into<i64>) -> Self {
         self.direct_messages_topic_id = Some(v.into());
+        self
+    }
+    pub fn receiver_user_id(mut self, v: impl Into<i64>) -> Self {
+        self.receiver_user_id = Some(v.into());
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.callback_query_id = Some(v.into());
         self
     }
     pub fn emoji(mut self, v: impl Into<String>) -> Self {
@@ -7103,6 +7492,12 @@ pub struct SendVenueParams {
     /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direct_messages_topic_id: Option<i64>,
+    /// For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receiver_user_id: Option<i64>,
+    /// For outgoing ephemeral messages, identifier of the callback query which triggered the message if any
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub callback_query_id: Option<String>,
     /// Foursquare identifier of the venue
     #[serde(skip_serializing_if = "Option::is_none")]
     pub foursquare_id: Option<String>,
@@ -7152,6 +7547,14 @@ impl SendVenueParams {
     }
     pub fn direct_messages_topic_id(mut self, v: impl Into<i64>) -> Self {
         self.direct_messages_topic_id = Some(v.into());
+        self
+    }
+    pub fn receiver_user_id(mut self, v: impl Into<i64>) -> Self {
+        self.receiver_user_id = Some(v.into());
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.callback_query_id = Some(v.into());
         self
     }
     pub fn foursquare_id(mut self, v: impl Into<String>) -> Self {
@@ -7249,6 +7652,12 @@ pub struct SendVideoParams {
     /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direct_messages_topic_id: Option<i64>,
+    /// For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receiver_user_id: Option<i64>,
+    /// For outgoing ephemeral messages, identifier of the callback query which triggered the message if any
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub callback_query_id: Option<String>,
     /// Duration of sent video in seconds
     #[serde(skip_serializing_if = "Option::is_none")]
     pub duration: Option<i64>,
@@ -7276,7 +7685,7 @@ pub struct SendVideoParams {
     /// A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption_entities: Option<Vec<MessageEntity>>,
-    /// Pass True, if the caption must be shown above the message media
+    /// Pass True if the caption must be shown above the message media
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_caption_above_media: Option<bool>,
     /// Pass True if the video needs to be covered with a spoiler animation
@@ -7322,6 +7731,14 @@ impl SendVideoParams {
     }
     pub fn direct_messages_topic_id(mut self, v: impl Into<i64>) -> Self {
         self.direct_messages_topic_id = Some(v.into());
+        self
+    }
+    pub fn receiver_user_id(mut self, v: impl Into<i64>) -> Self {
+        self.receiver_user_id = Some(v.into());
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.callback_query_id = Some(v.into());
         self
     }
     pub fn duration(mut self, v: impl Into<i64>) -> Self {
@@ -7443,6 +7860,12 @@ pub struct SendVideoNoteParams {
     /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direct_messages_topic_id: Option<i64>,
+    /// For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receiver_user_id: Option<i64>,
+    /// For outgoing ephemeral messages, identifier of the callback query which triggered the message if any
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub callback_query_id: Option<String>,
     /// Duration of sent video in seconds
     #[serde(skip_serializing_if = "Option::is_none")]
     pub duration: Option<i64>,
@@ -7489,6 +7912,14 @@ impl SendVideoNoteParams {
     }
     pub fn direct_messages_topic_id(mut self, v: impl Into<i64>) -> Self {
         self.direct_messages_topic_id = Some(v.into());
+        self
+    }
+    pub fn receiver_user_id(mut self, v: impl Into<i64>) -> Self {
+        self.receiver_user_id = Some(v.into());
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.callback_query_id = Some(v.into());
         self
     }
     pub fn duration(mut self, v: impl Into<i64>) -> Self {
@@ -7574,6 +8005,12 @@ pub struct SendVoiceParams {
     /// Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direct_messages_topic_id: Option<i64>,
+    /// For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receiver_user_id: Option<i64>,
+    /// For outgoing ephemeral messages, identifier of the callback query which triggered the message if any
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub callback_query_id: Option<String>,
     /// Voice message caption, 0-1024 characters after entities parsing
     #[serde(skip_serializing_if = "Option::is_none")]
     pub caption: Option<String>,
@@ -7623,6 +8060,14 @@ impl SendVoiceParams {
     }
     pub fn direct_messages_topic_id(mut self, v: impl Into<i64>) -> Self {
         self.direct_messages_topic_id = Some(v.into());
+        self
+    }
+    pub fn receiver_user_id(mut self, v: impl Into<i64>) -> Self {
+        self.receiver_user_id = Some(v.into());
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.callback_query_id = Some(v.into());
         self
     }
     pub fn caption(mut self, v: impl Into<String>) -> Self {
@@ -8282,7 +8727,7 @@ impl Bot {
 /// Optional parameters for [`Bot::set_managed_bot_access_settings_with_params`]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SetManagedBotAccessSettingsParams {
-    /// A JSON-serialized list of up to 10 identifiers of users who will have access to the bot in addition to its owner. Ignored if is_access_restricted is false.
+    /// A JSON-serialized list of up to 10 identifiers of users who will have access to the bot in addition to its owner. Ignored if is_access_restricted is False.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub added_user_ids: Option<Vec<i64>>,
 }

@@ -115,8 +115,9 @@ impl Message {
         let mut p = params.unwrap_or_default();
         if p.reply_parameters.is_none() {
             p.reply_parameters = Some(Box::new(ReplyParameters {
-                message_id: self.message_id,
+                message_id: Some(self.message_id),
                 chat_id: None,
+                ephemeral_message_id: None,
                 allow_sending_without_reply: None,
                 quote: None,
                 quote_parse_mode: None,

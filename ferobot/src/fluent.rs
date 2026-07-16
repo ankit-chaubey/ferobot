@@ -13,7 +13,7 @@
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
-// Generated from Telegram Bot API Bot API 10.1
+// Generated from Telegram Bot API Bot API 10.2
 // Spec:    https://github.com/ankit-chaubey/api-spec
 // Project: https://github.com/ankit-chaubey/ferobot
 // Author:  Ankit Chaubey <ankitchaubey.dev@gmail.com>
@@ -68,7 +68,7 @@ use crate::types::*;
 
 fn make_reply_params(message_id: i64) -> Box<ReplyParameters> {
     Box::new(ReplyParameters {
-        message_id,
+        message_id: Some(message_id),
         ..Default::default()
     })
 }
@@ -1408,6 +1408,49 @@ impl<'bot> IntoFuture for DeleteChatStickerSetRequest<'bot> {
     }
 }
 
+/// Fluent builder for [`Bot::delete_ephemeral_message`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#deleteephemeralmessage
+pub struct DeleteEphemeralMessageRequest<'bot> {
+    bot: &'bot Bot,
+    chat_id: ChatId,
+    receiver_user_id: i64,
+    ephemeral_message_id: i64,
+}
+
+impl<'bot> DeleteEphemeralMessageRequest<'bot> {
+    pub(crate) fn new(
+        bot: &'bot Bot,
+        chat_id: impl Into<ChatId>,
+        receiver_user_id: i64,
+        ephemeral_message_id: i64,
+    ) -> Self {
+        Self {
+            bot,
+            chat_id: chat_id.into(),
+            receiver_user_id,
+            ephemeral_message_id,
+        }
+    }
+}
+
+impl<'bot> IntoFuture for DeleteEphemeralMessageRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .raw_delete_ephemeral_message(
+                    self.chat_id,
+                    self.receiver_user_id,
+                    self.ephemeral_message_id,
+                )
+                .await
+        })
+    }
+}
+
 /// Fluent builder for [`Bot::delete_forum_topic`]. Implements [`IntoFuture`].
 ///
 /// See: https://core.telegram.org/bots/api#deleteforumtopic
@@ -1808,6 +1851,260 @@ impl<'bot> IntoFuture for EditChatSubscriptionInviteLinkRequest<'bot> {
                 .edit_chat_subscription_invite_link_with_params(
                     self.chat_id,
                     self.invite_link,
+                    Some(self.params),
+                )
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::edit_ephemeral_message_caption`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#editephemeralmessagecaption
+pub struct EditEphemeralMessageCaptionRequest<'bot> {
+    bot: &'bot Bot,
+    chat_id: ChatId,
+    receiver_user_id: i64,
+    ephemeral_message_id: i64,
+    params: EditEphemeralMessageCaptionParams,
+}
+
+impl<'bot> EditEphemeralMessageCaptionRequest<'bot> {
+    pub(crate) fn new(
+        bot: &'bot Bot,
+        chat_id: impl Into<ChatId>,
+        receiver_user_id: i64,
+        ephemeral_message_id: i64,
+    ) -> Self {
+        Self {
+            bot,
+            chat_id: chat_id.into(),
+            receiver_user_id,
+            ephemeral_message_id,
+            params: Default::default(),
+        }
+    }
+
+    /// Set `parse_mode` to `"HTML"`.
+    pub fn html(self) -> Self {
+        self.parse_mode("HTML")
+    }
+    /// Set `parse_mode` to `"MarkdownV2"`.
+    pub fn markdown(self) -> Self {
+        self.parse_mode("MarkdownV2")
+    }
+
+    pub fn caption(mut self, v: impl Into<String>) -> Self {
+        self.params.caption = Some(v.into());
+        self
+    }
+    pub fn parse_mode(mut self, v: impl Into<String>) -> Self {
+        self.params.parse_mode = Some(v.into());
+        self
+    }
+    pub fn caption_entities(mut self, v: Vec<MessageEntity>) -> Self {
+        self.params.caption_entities = Some(v);
+        self
+    }
+    pub fn reply_markup(mut self, v: InlineKeyboardMarkup) -> Self {
+        self.params.reply_markup = Some(Box::new(v));
+        self
+    }
+}
+
+impl<'bot> IntoFuture for EditEphemeralMessageCaptionRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .edit_ephemeral_message_caption_with_params(
+                    self.chat_id,
+                    self.receiver_user_id,
+                    self.ephemeral_message_id,
+                    Some(self.params),
+                )
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::edit_ephemeral_message_media`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#editephemeralmessagemedia
+pub struct EditEphemeralMessageMediaRequest<'bot> {
+    bot: &'bot Bot,
+    chat_id: ChatId,
+    receiver_user_id: i64,
+    ephemeral_message_id: i64,
+    media: Vec<InputMedia>,
+    params: EditEphemeralMessageMediaParams,
+}
+
+impl<'bot> EditEphemeralMessageMediaRequest<'bot> {
+    pub(crate) fn new(
+        bot: &'bot Bot,
+        chat_id: impl Into<ChatId>,
+        receiver_user_id: i64,
+        ephemeral_message_id: i64,
+        media: Vec<InputMedia>,
+    ) -> Self {
+        Self {
+            bot,
+            chat_id: chat_id.into(),
+            receiver_user_id,
+            ephemeral_message_id,
+            media,
+            params: Default::default(),
+        }
+    }
+
+    pub fn reply_markup(mut self, v: InlineKeyboardMarkup) -> Self {
+        self.params.reply_markup = Some(Box::new(v));
+        self
+    }
+}
+
+impl<'bot> IntoFuture for EditEphemeralMessageMediaRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .edit_ephemeral_message_media_with_params(
+                    self.chat_id,
+                    self.receiver_user_id,
+                    self.ephemeral_message_id,
+                    self.media,
+                    Some(self.params),
+                )
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::edit_ephemeral_message_reply_markup`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#editephemeralmessagereplymarkup
+pub struct EditEphemeralMessageReplyMarkupRequest<'bot> {
+    bot: &'bot Bot,
+    chat_id: ChatId,
+    receiver_user_id: i64,
+    ephemeral_message_id: i64,
+    params: EditEphemeralMessageReplyMarkupParams,
+}
+
+impl<'bot> EditEphemeralMessageReplyMarkupRequest<'bot> {
+    pub(crate) fn new(
+        bot: &'bot Bot,
+        chat_id: impl Into<ChatId>,
+        receiver_user_id: i64,
+        ephemeral_message_id: i64,
+    ) -> Self {
+        Self {
+            bot,
+            chat_id: chat_id.into(),
+            receiver_user_id,
+            ephemeral_message_id,
+            params: Default::default(),
+        }
+    }
+
+    pub fn reply_markup(mut self, v: InlineKeyboardMarkup) -> Self {
+        self.params.reply_markup = Some(Box::new(v));
+        self
+    }
+}
+
+impl<'bot> IntoFuture for EditEphemeralMessageReplyMarkupRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .edit_ephemeral_message_reply_markup_with_params(
+                    self.chat_id,
+                    self.receiver_user_id,
+                    self.ephemeral_message_id,
+                    Some(self.params),
+                )
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::edit_ephemeral_message_text`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#editephemeralmessagetext
+pub struct EditEphemeralMessageTextRequest<'bot> {
+    bot: &'bot Bot,
+    chat_id: ChatId,
+    receiver_user_id: i64,
+    ephemeral_message_id: i64,
+    text: String,
+    params: EditEphemeralMessageTextParams,
+}
+
+impl<'bot> EditEphemeralMessageTextRequest<'bot> {
+    pub(crate) fn new(
+        bot: &'bot Bot,
+        chat_id: impl Into<ChatId>,
+        receiver_user_id: i64,
+        ephemeral_message_id: i64,
+        text: impl Into<String>,
+    ) -> Self {
+        Self {
+            bot,
+            chat_id: chat_id.into(),
+            receiver_user_id,
+            ephemeral_message_id,
+            text: text.into(),
+            params: Default::default(),
+        }
+    }
+
+    /// Set `parse_mode` to `"HTML"`.
+    pub fn html(self) -> Self {
+        self.parse_mode("HTML")
+    }
+    /// Set `parse_mode` to `"MarkdownV2"`.
+    pub fn markdown(self) -> Self {
+        self.parse_mode("MarkdownV2")
+    }
+
+    pub fn parse_mode(mut self, v: impl Into<String>) -> Self {
+        self.params.parse_mode = Some(v.into());
+        self
+    }
+    pub fn entities(mut self, v: Vec<MessageEntity>) -> Self {
+        self.params.entities = Some(v);
+        self
+    }
+    pub fn link_preview_options(mut self, v: LinkPreviewOptions) -> Self {
+        self.params.link_preview_options = Some(Box::new(v));
+        self
+    }
+    pub fn reply_markup(mut self, v: InlineKeyboardMarkup) -> Self {
+        self.params.reply_markup = Some(Box::new(v));
+        self
+    }
+}
+
+impl<'bot> IntoFuture for EditEphemeralMessageTextRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .edit_ephemeral_message_text_with_params(
+                    self.chat_id,
+                    self.receiver_user_id,
+                    self.ephemeral_message_id,
+                    self.text,
                     Some(self.params),
                 )
                 .await
@@ -4658,6 +4955,14 @@ impl<'bot> SendAnimationRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
+    pub fn receiver_user_id(mut self, v: i64) -> Self {
+        self.params.receiver_user_id = Some(v);
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.params.callback_query_id = Some(v.into());
+        self
+    }
     pub fn duration(mut self, v: i64) -> Self {
         self.params.duration = Some(v);
         self
@@ -4791,6 +5096,14 @@ impl<'bot> SendAudioRequest<'bot> {
     }
     pub fn direct_messages_topic_id(mut self, v: i64) -> Self {
         self.params.direct_messages_topic_id = Some(v);
+        self
+    }
+    pub fn receiver_user_id(mut self, v: i64) -> Self {
+        self.params.receiver_user_id = Some(v);
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.params.callback_query_id = Some(v.into());
         self
     }
     pub fn caption(mut self, v: impl Into<String>) -> Self {
@@ -5078,6 +5391,14 @@ impl<'bot> SendContactRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
+    pub fn receiver_user_id(mut self, v: i64) -> Self {
+        self.params.receiver_user_id = Some(v);
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.params.callback_query_id = Some(v.into());
+        self
+    }
     pub fn last_name(mut self, v: impl Into<String>) -> Self {
         self.params.last_name = Some(v.into());
         self
@@ -5276,6 +5597,14 @@ impl<'bot> SendDocumentRequest<'bot> {
     }
     pub fn direct_messages_topic_id(mut self, v: i64) -> Self {
         self.params.direct_messages_topic_id = Some(v);
+        self
+    }
+    pub fn receiver_user_id(mut self, v: i64) -> Self {
+        self.params.receiver_user_id = Some(v);
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.params.callback_query_id = Some(v.into());
         self
     }
     pub fn thumbnail(mut self, v: impl Into<InputFileOrString>) -> Self {
@@ -5709,6 +6038,14 @@ impl<'bot> SendLivePhotoRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
+    pub fn receiver_user_id(mut self, v: i64) -> Self {
+        self.params.receiver_user_id = Some(v);
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.params.callback_query_id = Some(v.into());
+        self
+    }
     pub fn caption(mut self, v: impl Into<String>) -> Self {
         self.params.caption = Some(v.into());
         self
@@ -5825,6 +6162,14 @@ impl<'bot> SendLocationRequest<'bot> {
     }
     pub fn direct_messages_topic_id(mut self, v: i64) -> Self {
         self.params.direct_messages_topic_id = Some(v);
+        self
+    }
+    pub fn receiver_user_id(mut self, v: i64) -> Self {
+        self.params.receiver_user_id = Some(v);
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.params.callback_query_id = Some(v.into());
         self
     }
     pub fn horizontal_accuracy(mut self, v: f64) -> Self {
@@ -6019,6 +6364,14 @@ impl<'bot> SendMessageRequest<'bot> {
     }
     pub fn direct_messages_topic_id(mut self, v: i64) -> Self {
         self.params.direct_messages_topic_id = Some(v);
+        self
+    }
+    pub fn receiver_user_id(mut self, v: i64) -> Self {
+        self.params.receiver_user_id = Some(v);
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.params.callback_query_id = Some(v.into());
         self
     }
     pub fn parse_mode(mut self, v: impl Into<String>) -> Self {
@@ -6313,6 +6666,14 @@ impl<'bot> SendPhotoRequest<'bot> {
     }
     pub fn direct_messages_topic_id(mut self, v: i64) -> Self {
         self.params.direct_messages_topic_id = Some(v);
+        self
+    }
+    pub fn receiver_user_id(mut self, v: i64) -> Self {
+        self.params.receiver_user_id = Some(v);
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.params.callback_query_id = Some(v.into());
         self
     }
     pub fn caption(mut self, v: impl Into<String>) -> Self {
@@ -6743,6 +7104,14 @@ impl<'bot> SendStickerRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
+    pub fn receiver_user_id(mut self, v: i64) -> Self {
+        self.params.receiver_user_id = Some(v);
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.params.callback_query_id = Some(v.into());
+        self
+    }
     pub fn emoji(mut self, v: impl Into<String>) -> Self {
         self.params.emoji = Some(v.into());
         self
@@ -6844,6 +7213,14 @@ impl<'bot> SendVenueRequest<'bot> {
     }
     pub fn direct_messages_topic_id(mut self, v: i64) -> Self {
         self.params.direct_messages_topic_id = Some(v);
+        self
+    }
+    pub fn receiver_user_id(mut self, v: i64) -> Self {
+        self.params.receiver_user_id = Some(v);
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.params.callback_query_id = Some(v.into());
         self
     }
     pub fn foursquare_id(mut self, v: impl Into<String>) -> Self {
@@ -6966,6 +7343,14 @@ impl<'bot> SendVideoRequest<'bot> {
     }
     pub fn direct_messages_topic_id(mut self, v: i64) -> Self {
         self.params.direct_messages_topic_id = Some(v);
+        self
+    }
+    pub fn receiver_user_id(mut self, v: i64) -> Self {
+        self.params.receiver_user_id = Some(v);
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.params.callback_query_id = Some(v.into());
         self
     }
     pub fn duration(mut self, v: i64) -> Self {
@@ -7106,6 +7491,14 @@ impl<'bot> SendVideoNoteRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
+    pub fn receiver_user_id(mut self, v: i64) -> Self {
+        self.params.receiver_user_id = Some(v);
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.params.callback_query_id = Some(v.into());
+        self
+    }
     pub fn duration(mut self, v: i64) -> Self {
         self.params.duration = Some(v);
         self
@@ -7215,6 +7608,14 @@ impl<'bot> SendVoiceRequest<'bot> {
     }
     pub fn direct_messages_topic_id(mut self, v: i64) -> Self {
         self.params.direct_messages_topic_id = Some(v);
+        self
+    }
+    pub fn receiver_user_id(mut self, v: i64) -> Self {
+        self.params.receiver_user_id = Some(v);
+        self
+    }
+    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
+        self.params.callback_query_id = Some(v.into());
         self
     }
     pub fn caption(mut self, v: impl Into<String>) -> Self {
@@ -9273,7 +9674,7 @@ impl Bot {
         CopyMessageRequest::new(self, chat_id, from_chat_id, message_id)
     }
 
-    /// Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of MessageId of the sent messages is returned.
+    /// Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an Array of MessageId of the sent messages is returned.
     /// See: https://core.telegram.org/bots/api#copymessages
     pub fn copy_messages(
         &self,
@@ -9398,6 +9799,17 @@ impl Bot {
         DeleteChatStickerSetRequest::new(self, chat_id)
     }
 
+    /// Use this method to delete an ephemeral message. Note that it is not guaranteed that the user will receive the message deletion event, especially if they are offline. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#deleteephemeralmessage
+    pub fn delete_ephemeral_message(
+        &self,
+        chat_id: impl Into<ChatId>,
+        receiver_user_id: i64,
+        ephemeral_message_id: i64,
+    ) -> DeleteEphemeralMessageRequest<'_> {
+        DeleteEphemeralMessageRequest::new(self, chat_id, receiver_user_id, ephemeral_message_id)
+    }
+
     /// Use this method to delete a forum topic along with all its messages in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_delete_messages administrator rights. Returns True on success.
     /// See: https://core.telegram.org/bots/api#deleteforumtopic
     pub fn delete_forum_topic(
@@ -9493,6 +9905,74 @@ impl Bot {
         invite_link: impl Into<String>,
     ) -> EditChatSubscriptionInviteLinkRequest<'_> {
         EditChatSubscriptionInviteLinkRequest::new(self, chat_id, invite_link)
+    }
+
+    /// Use this method to edit the caption of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+    /// See: https://core.telegram.org/bots/api#editephemeralmessagecaption
+    pub fn edit_ephemeral_message_caption(
+        &self,
+        chat_id: impl Into<ChatId>,
+        receiver_user_id: i64,
+        ephemeral_message_id: i64,
+    ) -> EditEphemeralMessageCaptionRequest<'_> {
+        EditEphemeralMessageCaptionRequest::new(
+            self,
+            chat_id,
+            receiver_user_id,
+            ephemeral_message_id,
+        )
+    }
+
+    /// Use this method to edit the media of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+    /// See: https://core.telegram.org/bots/api#editephemeralmessagemedia
+    pub fn edit_ephemeral_message_media(
+        &self,
+        chat_id: impl Into<ChatId>,
+        receiver_user_id: i64,
+        ephemeral_message_id: i64,
+        media: Vec<InputMedia>,
+    ) -> EditEphemeralMessageMediaRequest<'_> {
+        EditEphemeralMessageMediaRequest::new(
+            self,
+            chat_id,
+            receiver_user_id,
+            ephemeral_message_id,
+            media,
+        )
+    }
+
+    /// Use this method to edit only the reply markup of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+    /// See: https://core.telegram.org/bots/api#editephemeralmessagereplymarkup
+    pub fn edit_ephemeral_message_reply_markup(
+        &self,
+        chat_id: impl Into<ChatId>,
+        receiver_user_id: i64,
+        ephemeral_message_id: i64,
+    ) -> EditEphemeralMessageReplyMarkupRequest<'_> {
+        EditEphemeralMessageReplyMarkupRequest::new(
+            self,
+            chat_id,
+            receiver_user_id,
+            ephemeral_message_id,
+        )
+    }
+
+    /// Use this method to edit an ephemeral text message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+    /// See: https://core.telegram.org/bots/api#editephemeralmessagetext
+    pub fn edit_ephemeral_message_text(
+        &self,
+        chat_id: impl Into<ChatId>,
+        receiver_user_id: i64,
+        ephemeral_message_id: i64,
+        text: impl Into<String>,
+    ) -> EditEphemeralMessageTextRequest<'_> {
+        EditEphemeralMessageTextRequest::new(
+            self,
+            chat_id,
+            receiver_user_id,
+            ephemeral_message_id,
+            text,
+        )
     }
 
     /// Use this method to edit name and icon of a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success.
@@ -9609,7 +10089,7 @@ impl Bot {
         ForwardMessageRequest::new(self, chat_id, from_chat_id, message_id)
     }
 
-    /// Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an array of MessageId of the sent messages is returned.
+    /// Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an Array of MessageId of the sent messages is returned.
     /// See: https://core.telegram.org/bots/api#forwardmessages
     pub fn forward_messages(
         &self,
@@ -9684,7 +10164,7 @@ impl Bot {
         GetChatMemberRequest::new(self, chat_id, user_id)
     }
 
-    /// Use this method to get the number of members in a chat. Returns Int on success.
+    /// Use this method to get the number of members in a chat. Returns Integer on success.
     /// See: https://core.telegram.org/bots/api#getchatmembercount
     pub fn get_chat_member_count(
         &self,
@@ -9819,7 +10299,7 @@ impl Bot {
         GetUserGiftsRequest::new(self, user_id)
     }
 
-    /// Use this method to get the last messages from the personal chat (i.e., the chat currently added to their profile) of a given user. On success, an array of Message objects is returned.
+    /// Use this method to get the last messages from the personal chat (i.e., the chat currently added to their profile) of a given user. On success, an Array of Message objects is returned.
     /// See: https://core.telegram.org/bots/api#getuserpersonalchatmessages
     pub fn get_user_personal_chat_messages(
         &self,
@@ -10087,7 +10567,7 @@ impl Bot {
         SendChatActionRequest::new(self, chat_id, action)
     }
 
-    /// Use this method to process a received chat join request query by showing a Mini App to the user before deciding the outcome. Returns True on success.
+    /// Use this method to process a received chat join request query by showing a Mini App to the user before deciding the outcome. Call answerChatJoinRequestQuery to resolve the join request query based on the user interaction with the Mini App. Returns True on success.
     /// See: https://core.telegram.org/bots/api#sendchatjoinrequestwebapp
     pub fn send_chat_join_request_web_app(
         &self,
@@ -10187,7 +10667,7 @@ impl Bot {
         SendLocationRequest::new(self, chat_id, latitude, longitude)
     }
 
-    /// Use this method to send a group of photos, live photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of Message objects that were sent is returned.
+    /// Use this method to send a group of photos, live photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an Array of Message objects that were sent is returned.
     /// See: https://core.telegram.org/bots/api#sendmediagroup
     pub fn send_media_group(
         &self,
