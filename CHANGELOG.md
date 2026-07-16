@@ -7,6 +7,15 @@ Auto-generated API updates use the [Telegram Bot API spec](https://github.com/Pa
 
 ---
 
+## [0.2.3] - 2026-07-16
+
+### Telegram Bot API: `Bot API 10.2`
+
+**Changelog:** [core.telegram.org/bots/api#recent-changes](https://core.telegram.org/bots/api#recent-changes)
+
+Manual release.
+
+---
 ## [0.2.2] - 2026-06-12
 
 ### Telegram Bot API: `Bot API 10.1`
