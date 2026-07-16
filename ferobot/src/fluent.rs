@@ -68,7 +68,7 @@ use crate::types::*;
 
 fn make_reply_params(message_id: i64) -> Box<ReplyParameters> {
     Box::new(ReplyParameters {
-        message_id,
+        message_id: Some(message_id),
         ..Default::default()
     })
 }
