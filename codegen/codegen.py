@@ -618,7 +618,7 @@ def generate_fluent(spec):
     # Helper fn
     lines.append('fn make_reply_params(message_id: i64) -> Box<ReplyParameters> {')
     lines.append('    Box::new(ReplyParameters {')
-    lines.append('        message_id,')
+    lines.append('        message_id: Some(message_id),')
     lines.append('        ..Default::default()')
     lines.append('    })')
     lines.append('}')
