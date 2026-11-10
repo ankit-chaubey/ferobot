@@ -13,7 +13,7 @@
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
-// Generated from Telegram Bot API Bot API 10.2
+// Generated from Telegram Bot API Bot API 10.4
 // Spec:    https://github.com/ankit-chaubey/api-spec
 // Project: https://github.com/ankit-chaubey/ferobot
 // Author:  Ankit Chaubey <ankitchaubey.dev@gmail.com>
@@ -413,6 +413,43 @@ impl<'bot> IntoFuture for AnswerWebAppQueryRequest<'bot> {
         Box::pin(async move {
             self.bot
                 .raw_answer_web_app_query(self.web_app_query_id, self.result)
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::answer_widget_query`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#answerwidgetquery
+pub struct AnswerWidgetQueryRequest<'bot> {
+    bot: &'bot Bot,
+    widget_query_id: String,
+    params: AnswerWidgetQueryParams,
+}
+
+impl<'bot> AnswerWidgetQueryRequest<'bot> {
+    pub(crate) fn new(bot: &'bot Bot, widget_query_id: impl Into<String>) -> Self {
+        Self {
+            bot,
+            widget_query_id: widget_query_id.into(),
+            params: Default::default(),
+        }
+    }
+
+    pub fn data(mut self, v: impl Into<String>) -> Self {
+        self.params.data = Some(v.into());
+        self
+    }
+}
+
+impl<'bot> IntoFuture for AnswerWidgetQueryRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .answer_widget_query_with_params(self.widget_query_id, Some(self.params))
                 .await
         })
     }
@@ -1320,6 +1357,42 @@ impl<'bot> IntoFuture for DeleteAllMessageReactionsRequest<'bot> {
     }
 }
 
+/// Fluent builder for [`Bot::delete_business_account_gift`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#deletebusinessaccountgift
+pub struct DeleteBusinessAccountGiftRequest<'bot> {
+    bot: &'bot Bot,
+    business_connection_id: String,
+    owned_gift_id: String,
+}
+
+impl<'bot> DeleteBusinessAccountGiftRequest<'bot> {
+    pub(crate) fn new(
+        bot: &'bot Bot,
+        business_connection_id: impl Into<String>,
+        owned_gift_id: impl Into<String>,
+    ) -> Self {
+        Self {
+            bot,
+            business_connection_id: business_connection_id.into(),
+            owned_gift_id: owned_gift_id.into(),
+        }
+    }
+}
+
+impl<'bot> IntoFuture for DeleteBusinessAccountGiftRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .raw_delete_business_account_gift(self.business_connection_id, self.owned_gift_id)
+                .await
+        })
+    }
+}
+
 /// Fluent builder for [`Bot::delete_business_messages`]. Implements [`IntoFuture`].
 ///
 /// See: https://core.telegram.org/bots/api#deletebusinessmessages
@@ -1906,6 +1979,10 @@ impl<'bot> EditEphemeralMessageCaptionRequest<'bot> {
         self.params.caption_entities = Some(v);
         self
     }
+    pub fn show_caption_above_media(mut self, v: bool) -> Self {
+        self.params.show_caption_above_media = Some(v);
+        self
+    }
     pub fn reply_markup(mut self, v: InlineKeyboardMarkup) -> Self {
         self.params.reply_markup = Some(Box::new(v));
         self
@@ -2044,7 +2121,6 @@ pub struct EditEphemeralMessageTextRequest<'bot> {
     chat_id: ChatId,
     receiver_user_id: i64,
     ephemeral_message_id: i64,
-    text: String,
     params: EditEphemeralMessageTextParams,
 }
 
@@ -2054,14 +2130,12 @@ impl<'bot> EditEphemeralMessageTextRequest<'bot> {
         chat_id: impl Into<ChatId>,
         receiver_user_id: i64,
         ephemeral_message_id: i64,
-        text: impl Into<String>,
     ) -> Self {
         Self {
             bot,
             chat_id: chat_id.into(),
             receiver_user_id,
             ephemeral_message_id,
-            text: text.into(),
             params: Default::default(),
         }
     }
@@ -2075,12 +2149,20 @@ impl<'bot> EditEphemeralMessageTextRequest<'bot> {
         self.parse_mode("MarkdownV2")
     }
 
+    pub fn text(mut self, v: impl Into<String>) -> Self {
+        self.params.text = Some(v.into());
+        self
+    }
     pub fn parse_mode(mut self, v: impl Into<String>) -> Self {
         self.params.parse_mode = Some(v.into());
         self
     }
     pub fn entities(mut self, v: Vec<MessageEntity>) -> Self {
         self.params.entities = Some(v);
+        self
+    }
+    pub fn rich_message(mut self, v: InputRichMessage) -> Self {
+        self.params.rich_message = Some(Box::new(v));
         self
     }
     pub fn link_preview_options(mut self, v: LinkPreviewOptions) -> Self {
@@ -2104,7 +2186,6 @@ impl<'bot> IntoFuture for EditEphemeralMessageTextRequest<'bot> {
                     self.chat_id,
                     self.receiver_user_id,
                     self.ephemeral_message_id,
-                    self.text,
                     Some(self.params),
                 )
                 .await
@@ -2576,6 +2657,104 @@ impl<'bot> IntoFuture for EditMessageTextRequest<'bot> {
         Box::pin(async move {
             self.bot
                 .edit_message_text_with_params(Some(self.params))
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::edit_message_widget_data`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#editmessagewidgetdata
+pub struct EditMessageWidgetDataRequest<'bot> {
+    bot: &'bot Bot,
+    params: EditMessageWidgetDataParams,
+}
+
+impl<'bot> EditMessageWidgetDataRequest<'bot> {
+    pub(crate) fn new(bot: &'bot Bot) -> Self {
+        Self {
+            bot,
+            params: Default::default(),
+        }
+    }
+
+    pub fn chat_id(mut self, v: impl Into<ChatId>) -> Self {
+        self.params.chat_id = Some(v.into());
+        self
+    }
+    pub fn message_id(mut self, v: i64) -> Self {
+        self.params.message_id = Some(v);
+        self
+    }
+    pub fn inline_message_id(mut self, v: impl Into<String>) -> Self {
+        self.params.inline_message_id = Some(v.into());
+        self
+    }
+    pub fn public_data(mut self, v: impl Into<String>) -> Self {
+        self.params.public_data = Some(v.into());
+        self
+    }
+    pub fn chat_data(mut self, v: impl Into<String>) -> Self {
+        self.params.chat_data = Some(v.into());
+        self
+    }
+}
+
+impl<'bot> IntoFuture for EditMessageWidgetDataRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .edit_message_widget_data_with_params(Some(self.params))
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::edit_shared_widget_data`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#editsharedwidgetdata
+pub struct EditSharedWidgetDataRequest<'bot> {
+    bot: &'bot Bot,
+    widget_id: String,
+    public_data: String,
+    params: EditSharedWidgetDataParams,
+}
+
+impl<'bot> EditSharedWidgetDataRequest<'bot> {
+    pub(crate) fn new(
+        bot: &'bot Bot,
+        widget_id: impl Into<String>,
+        public_data: impl Into<String>,
+    ) -> Self {
+        Self {
+            bot,
+            widget_id: widget_id.into(),
+            public_data: public_data.into(),
+            params: Default::default(),
+        }
+    }
+
+    pub fn cache_time(mut self, v: i64) -> Self {
+        self.params.cache_time = Some(v);
+        self
+    }
+}
+
+impl<'bot> IntoFuture for EditSharedWidgetDataRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .edit_shared_widget_data_with_params(
+                    self.widget_id,
+                    self.public_data,
+                    Some(self.params),
+                )
                 .await
         })
     }
@@ -3257,6 +3436,28 @@ impl<'bot> IntoFuture for GetChatMenuButtonRequest<'bot> {
     }
 }
 
+/// Fluent builder for [`Bot::get_chat_share_theme_backdrops`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#getchatsharethemebackdrops
+pub struct GetChatShareThemeBackdropsRequest<'bot> {
+    bot: &'bot Bot,
+}
+
+impl<'bot> GetChatShareThemeBackdropsRequest<'bot> {
+    pub(crate) fn new(bot: &'bot Bot) -> Self {
+        Self { bot }
+    }
+}
+
+impl<'bot> IntoFuture for GetChatShareThemeBackdropsRequest<'bot> {
+    type Output = Result<ChatShareThemeBackdrops, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move { self.bot.raw_get_chat_share_theme_backdrops().await })
+    }
+}
+
 /// Fluent builder for [`Bot::get_custom_emoji_stickers`]. Implements [`IntoFuture`].
 ///
 /// See: https://core.telegram.org/bots/api#getcustomemojistickers
@@ -3711,6 +3912,32 @@ impl<'bot> IntoFuture for GetStickerSetRequest<'bot> {
 
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move { self.bot.raw_get_sticker_set(self.name).await })
+    }
+}
+
+/// Fluent builder for [`Bot::get_unique_gift`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#getuniquegift
+pub struct GetUniqueGiftRequest<'bot> {
+    bot: &'bot Bot,
+    name: String,
+}
+
+impl<'bot> GetUniqueGiftRequest<'bot> {
+    pub(crate) fn new(bot: &'bot Bot, name: impl Into<String>) -> Self {
+        Self {
+            bot,
+            name: name.into(),
+        }
+    }
+}
+
+impl<'bot> IntoFuture for GetUniqueGiftRequest<'bot> {
+    type Output = Result<UniqueGift, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move { self.bot.raw_get_unique_gift(self.name).await })
     }
 }
 
@@ -4334,6 +4561,10 @@ impl<'bot> PromoteChatMemberRequest<'bot> {
         self.params.can_manage_tags = Some(v);
         self
     }
+    pub fn can_send_welcome_messages(mut self, v: bool) -> Self {
+        self.params.can_send_welcome_messages = Some(v);
+        self
+    }
 }
 
 impl<'bot> IntoFuture for PromoteChatMemberRequest<'bot> {
@@ -4904,20 +5135,14 @@ impl<'bot> IntoFuture for SavePreparedKeyboardButtonRequest<'bot> {
 /// See: https://core.telegram.org/bots/api#sendanimation
 pub struct SendAnimationRequest<'bot> {
     bot: &'bot Bot,
-    chat_id: ChatId,
     animation: InputFileOrString,
     params: SendAnimationParams,
 }
 
 impl<'bot> SendAnimationRequest<'bot> {
-    pub(crate) fn new(
-        bot: &'bot Bot,
-        chat_id: impl Into<ChatId>,
-        animation: impl Into<InputFileOrString>,
-    ) -> Self {
+    pub(crate) fn new(bot: &'bot Bot, animation: impl Into<InputFileOrString>) -> Self {
         Self {
             bot,
-            chat_id: chat_id.into(),
             animation: animation.into(),
             params: Default::default(),
         }
@@ -4947,6 +5172,10 @@ impl<'bot> SendAnimationRequest<'bot> {
         self.params.business_connection_id = Some(v.into());
         self
     }
+    pub fn chat_id(mut self, v: impl Into<ChatId>) -> Self {
+        self.params.chat_id = Some(v.into());
+        self
+    }
     pub fn message_thread_id(mut self, v: i64) -> Self {
         self.params.message_thread_id = Some(v);
         self
@@ -4955,12 +5184,8 @@ impl<'bot> SendAnimationRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
-    pub fn receiver_user_id(mut self, v: i64) -> Self {
-        self.params.receiver_user_id = Some(v);
-        self
-    }
-    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
-        self.params.callback_query_id = Some(v.into());
+    pub fn ephemeral_message_parameters(mut self, v: EphemeralMessageParameters) -> Self {
+        self.params.ephemeral_message_parameters = Some(Box::new(v));
         self
     }
     pub fn duration(mut self, v: i64) -> Self {
@@ -5036,7 +5261,7 @@ impl<'bot> IntoFuture for SendAnimationRequest<'bot> {
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
             self.bot
-                .send_animation_with_params(self.chat_id, self.animation, Some(self.params))
+                .send_animation_with_params(self.animation, Some(self.params))
                 .await
         })
     }
@@ -5047,20 +5272,14 @@ impl<'bot> IntoFuture for SendAnimationRequest<'bot> {
 /// See: https://core.telegram.org/bots/api#sendaudio
 pub struct SendAudioRequest<'bot> {
     bot: &'bot Bot,
-    chat_id: ChatId,
     audio: InputFileOrString,
     params: SendAudioParams,
 }
 
 impl<'bot> SendAudioRequest<'bot> {
-    pub(crate) fn new(
-        bot: &'bot Bot,
-        chat_id: impl Into<ChatId>,
-        audio: impl Into<InputFileOrString>,
-    ) -> Self {
+    pub(crate) fn new(bot: &'bot Bot, audio: impl Into<InputFileOrString>) -> Self {
         Self {
             bot,
-            chat_id: chat_id.into(),
             audio: audio.into(),
             params: Default::default(),
         }
@@ -5090,6 +5309,10 @@ impl<'bot> SendAudioRequest<'bot> {
         self.params.business_connection_id = Some(v.into());
         self
     }
+    pub fn chat_id(mut self, v: impl Into<ChatId>) -> Self {
+        self.params.chat_id = Some(v.into());
+        self
+    }
     pub fn message_thread_id(mut self, v: i64) -> Self {
         self.params.message_thread_id = Some(v);
         self
@@ -5098,12 +5321,8 @@ impl<'bot> SendAudioRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
-    pub fn receiver_user_id(mut self, v: i64) -> Self {
-        self.params.receiver_user_id = Some(v);
-        self
-    }
-    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
-        self.params.callback_query_id = Some(v.into());
+    pub fn ephemeral_message_parameters(mut self, v: EphemeralMessageParameters) -> Self {
+        self.params.ephemeral_message_parameters = Some(Box::new(v));
         self
     }
     pub fn caption(mut self, v: impl Into<String>) -> Self {
@@ -5171,7 +5390,7 @@ impl<'bot> IntoFuture for SendAudioRequest<'bot> {
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
             self.bot
-                .send_audio_with_params(self.chat_id, self.audio, Some(self.params))
+                .send_audio_with_params(self.audio, Some(self.params))
                 .await
         })
     }
@@ -5346,7 +5565,6 @@ impl<'bot> IntoFuture for SendChecklistRequest<'bot> {
 /// See: https://core.telegram.org/bots/api#sendcontact
 pub struct SendContactRequest<'bot> {
     bot: &'bot Bot,
-    chat_id: ChatId,
     phone_number: String,
     first_name: String,
     params: SendContactParams,
@@ -5355,13 +5573,11 @@ pub struct SendContactRequest<'bot> {
 impl<'bot> SendContactRequest<'bot> {
     pub(crate) fn new(
         bot: &'bot Bot,
-        chat_id: impl Into<ChatId>,
         phone_number: impl Into<String>,
         first_name: impl Into<String>,
     ) -> Self {
         Self {
             bot,
-            chat_id: chat_id.into(),
             phone_number: phone_number.into(),
             first_name: first_name.into(),
             params: Default::default(),
@@ -5383,6 +5599,10 @@ impl<'bot> SendContactRequest<'bot> {
         self.params.business_connection_id = Some(v.into());
         self
     }
+    pub fn chat_id(mut self, v: impl Into<ChatId>) -> Self {
+        self.params.chat_id = Some(v.into());
+        self
+    }
     pub fn message_thread_id(mut self, v: i64) -> Self {
         self.params.message_thread_id = Some(v);
         self
@@ -5391,12 +5611,8 @@ impl<'bot> SendContactRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
-    pub fn receiver_user_id(mut self, v: i64) -> Self {
-        self.params.receiver_user_id = Some(v);
-        self
-    }
-    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
-        self.params.callback_query_id = Some(v.into());
+    pub fn ephemeral_message_parameters(mut self, v: EphemeralMessageParameters) -> Self {
+        self.params.ephemeral_message_parameters = Some(Box::new(v));
         self
     }
     pub fn last_name(mut self, v: impl Into<String>) -> Self {
@@ -5444,12 +5660,7 @@ impl<'bot> IntoFuture for SendContactRequest<'bot> {
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
             self.bot
-                .send_contact_with_params(
-                    self.chat_id,
-                    self.phone_number,
-                    self.first_name,
-                    Some(self.params),
-                )
+                .send_contact_with_params(self.phone_number, self.first_name, Some(self.params))
                 .await
         })
     }
@@ -5548,20 +5759,14 @@ impl<'bot> IntoFuture for SendDiceRequest<'bot> {
 /// See: https://core.telegram.org/bots/api#senddocument
 pub struct SendDocumentRequest<'bot> {
     bot: &'bot Bot,
-    chat_id: ChatId,
     document: InputFileOrString,
     params: SendDocumentParams,
 }
 
 impl<'bot> SendDocumentRequest<'bot> {
-    pub(crate) fn new(
-        bot: &'bot Bot,
-        chat_id: impl Into<ChatId>,
-        document: impl Into<InputFileOrString>,
-    ) -> Self {
+    pub(crate) fn new(bot: &'bot Bot, document: impl Into<InputFileOrString>) -> Self {
         Self {
             bot,
-            chat_id: chat_id.into(),
             document: document.into(),
             params: Default::default(),
         }
@@ -5591,6 +5796,10 @@ impl<'bot> SendDocumentRequest<'bot> {
         self.params.business_connection_id = Some(v.into());
         self
     }
+    pub fn chat_id(mut self, v: impl Into<ChatId>) -> Self {
+        self.params.chat_id = Some(v.into());
+        self
+    }
     pub fn message_thread_id(mut self, v: i64) -> Self {
         self.params.message_thread_id = Some(v);
         self
@@ -5599,12 +5808,8 @@ impl<'bot> SendDocumentRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
-    pub fn receiver_user_id(mut self, v: i64) -> Self {
-        self.params.receiver_user_id = Some(v);
-        self
-    }
-    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
-        self.params.callback_query_id = Some(v.into());
+    pub fn ephemeral_message_parameters(mut self, v: EphemeralMessageParameters) -> Self {
+        self.params.ephemeral_message_parameters = Some(Box::new(v));
         self
     }
     pub fn thumbnail(mut self, v: impl Into<InputFileOrString>) -> Self {
@@ -5664,7 +5869,7 @@ impl<'bot> IntoFuture for SendDocumentRequest<'bot> {
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
             self.bot
-                .send_document_with_params(self.chat_id, self.document, Some(self.params))
+                .send_document_with_params(self.document, Some(self.params))
                 .await
         })
     }
@@ -5984,7 +6189,6 @@ impl<'bot> IntoFuture for SendInvoiceRequest<'bot> {
 /// See: https://core.telegram.org/bots/api#sendlivephoto
 pub struct SendLivePhotoRequest<'bot> {
     bot: &'bot Bot,
-    chat_id: ChatId,
     live_photo: InputFileOrString,
     photo: InputFileOrString,
     params: SendLivePhotoParams,
@@ -5993,13 +6197,11 @@ pub struct SendLivePhotoRequest<'bot> {
 impl<'bot> SendLivePhotoRequest<'bot> {
     pub(crate) fn new(
         bot: &'bot Bot,
-        chat_id: impl Into<ChatId>,
         live_photo: impl Into<InputFileOrString>,
         photo: impl Into<InputFileOrString>,
     ) -> Self {
         Self {
             bot,
-            chat_id: chat_id.into(),
             live_photo: live_photo.into(),
             photo: photo.into(),
             params: Default::default(),
@@ -6030,6 +6232,10 @@ impl<'bot> SendLivePhotoRequest<'bot> {
         self.params.business_connection_id = Some(v.into());
         self
     }
+    pub fn chat_id(mut self, v: impl Into<ChatId>) -> Self {
+        self.params.chat_id = Some(v.into());
+        self
+    }
     pub fn message_thread_id(mut self, v: i64) -> Self {
         self.params.message_thread_id = Some(v);
         self
@@ -6038,12 +6244,8 @@ impl<'bot> SendLivePhotoRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
-    pub fn receiver_user_id(mut self, v: i64) -> Self {
-        self.params.receiver_user_id = Some(v);
-        self
-    }
-    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
-        self.params.callback_query_id = Some(v.into());
+    pub fn ephemeral_message_parameters(mut self, v: EphemeralMessageParameters) -> Self {
+        self.params.ephemeral_message_parameters = Some(Box::new(v));
         self
     }
     pub fn caption(mut self, v: impl Into<String>) -> Self {
@@ -6103,12 +6305,7 @@ impl<'bot> IntoFuture for SendLivePhotoRequest<'bot> {
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
             self.bot
-                .send_live_photo_with_params(
-                    self.chat_id,
-                    self.live_photo,
-                    self.photo,
-                    Some(self.params),
-                )
+                .send_live_photo_with_params(self.live_photo, self.photo, Some(self.params))
                 .await
         })
     }
@@ -6119,22 +6316,15 @@ impl<'bot> IntoFuture for SendLivePhotoRequest<'bot> {
 /// See: https://core.telegram.org/bots/api#sendlocation
 pub struct SendLocationRequest<'bot> {
     bot: &'bot Bot,
-    chat_id: ChatId,
     latitude: f64,
     longitude: f64,
     params: SendLocationParams,
 }
 
 impl<'bot> SendLocationRequest<'bot> {
-    pub(crate) fn new(
-        bot: &'bot Bot,
-        chat_id: impl Into<ChatId>,
-        latitude: f64,
-        longitude: f64,
-    ) -> Self {
+    pub(crate) fn new(bot: &'bot Bot, latitude: f64, longitude: f64) -> Self {
         Self {
             bot,
-            chat_id: chat_id.into(),
             latitude,
             longitude,
             params: Default::default(),
@@ -6156,6 +6346,10 @@ impl<'bot> SendLocationRequest<'bot> {
         self.params.business_connection_id = Some(v.into());
         self
     }
+    pub fn chat_id(mut self, v: impl Into<ChatId>) -> Self {
+        self.params.chat_id = Some(v.into());
+        self
+    }
     pub fn message_thread_id(mut self, v: i64) -> Self {
         self.params.message_thread_id = Some(v);
         self
@@ -6164,12 +6358,8 @@ impl<'bot> SendLocationRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
-    pub fn receiver_user_id(mut self, v: i64) -> Self {
-        self.params.receiver_user_id = Some(v);
-        self
-    }
-    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
-        self.params.callback_query_id = Some(v.into());
+    pub fn ephemeral_message_parameters(mut self, v: EphemeralMessageParameters) -> Self {
+        self.params.ephemeral_message_parameters = Some(Box::new(v));
         self
     }
     pub fn horizontal_accuracy(mut self, v: f64) -> Self {
@@ -6225,12 +6415,7 @@ impl<'bot> IntoFuture for SendLocationRequest<'bot> {
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
             self.bot
-                .send_location_with_params(
-                    self.chat_id,
-                    self.latitude,
-                    self.longitude,
-                    Some(self.params),
-                )
+                .send_location_with_params(self.latitude, self.longitude, Some(self.params))
                 .await
         })
     }
@@ -6319,16 +6504,14 @@ impl<'bot> IntoFuture for SendMediaGroupRequest<'bot> {
 /// See: https://core.telegram.org/bots/api#sendmessage
 pub struct SendMessageRequest<'bot> {
     bot: &'bot Bot,
-    chat_id: ChatId,
     text: String,
     params: SendMessageParams,
 }
 
 impl<'bot> SendMessageRequest<'bot> {
-    pub(crate) fn new(bot: &'bot Bot, chat_id: impl Into<ChatId>, text: impl Into<String>) -> Self {
+    pub(crate) fn new(bot: &'bot Bot, text: impl Into<String>) -> Self {
         Self {
             bot,
-            chat_id: chat_id.into(),
             text: text.into(),
             params: Default::default(),
         }
@@ -6358,6 +6541,10 @@ impl<'bot> SendMessageRequest<'bot> {
         self.params.business_connection_id = Some(v.into());
         self
     }
+    pub fn chat_id(mut self, v: impl Into<ChatId>) -> Self {
+        self.params.chat_id = Some(v.into());
+        self
+    }
     pub fn message_thread_id(mut self, v: i64) -> Self {
         self.params.message_thread_id = Some(v);
         self
@@ -6366,12 +6553,8 @@ impl<'bot> SendMessageRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
-    pub fn receiver_user_id(mut self, v: i64) -> Self {
-        self.params.receiver_user_id = Some(v);
-        self
-    }
-    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
-        self.params.callback_query_id = Some(v.into());
+    pub fn ephemeral_message_parameters(mut self, v: EphemeralMessageParameters) -> Self {
+        self.params.ephemeral_message_parameters = Some(Box::new(v));
         self
     }
     pub fn parse_mode(mut self, v: impl Into<String>) -> Self {
@@ -6423,7 +6606,7 @@ impl<'bot> IntoFuture for SendMessageRequest<'bot> {
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
             self.bot
-                .send_message_with_params(self.chat_id, self.text, Some(self.params))
+                .send_message_with_params(self.text, Some(self.params))
                 .await
         })
     }
@@ -6472,6 +6655,14 @@ impl<'bot> SendMessageDraftRequest<'bot> {
     }
     pub fn entities(mut self, v: Vec<MessageEntity>) -> Self {
         self.params.entities = Some(v);
+        self
+    }
+    pub fn can_stop(mut self, v: bool) -> Self {
+        self.params.can_stop = Some(v);
+        self
+    }
+    pub fn keep_on_stop(mut self, v: bool) -> Self {
+        self.params.keep_on_stop = Some(v);
         self
     }
 }
@@ -6617,20 +6808,14 @@ impl<'bot> IntoFuture for SendPaidMediaRequest<'bot> {
 /// See: https://core.telegram.org/bots/api#sendphoto
 pub struct SendPhotoRequest<'bot> {
     bot: &'bot Bot,
-    chat_id: ChatId,
     photo: InputFileOrString,
     params: SendPhotoParams,
 }
 
 impl<'bot> SendPhotoRequest<'bot> {
-    pub(crate) fn new(
-        bot: &'bot Bot,
-        chat_id: impl Into<ChatId>,
-        photo: impl Into<InputFileOrString>,
-    ) -> Self {
+    pub(crate) fn new(bot: &'bot Bot, photo: impl Into<InputFileOrString>) -> Self {
         Self {
             bot,
-            chat_id: chat_id.into(),
             photo: photo.into(),
             params: Default::default(),
         }
@@ -6660,6 +6845,10 @@ impl<'bot> SendPhotoRequest<'bot> {
         self.params.business_connection_id = Some(v.into());
         self
     }
+    pub fn chat_id(mut self, v: impl Into<ChatId>) -> Self {
+        self.params.chat_id = Some(v.into());
+        self
+    }
     pub fn message_thread_id(mut self, v: i64) -> Self {
         self.params.message_thread_id = Some(v);
         self
@@ -6668,12 +6857,8 @@ impl<'bot> SendPhotoRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
-    pub fn receiver_user_id(mut self, v: i64) -> Self {
-        self.params.receiver_user_id = Some(v);
-        self
-    }
-    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
-        self.params.callback_query_id = Some(v.into());
+    pub fn ephemeral_message_parameters(mut self, v: EphemeralMessageParameters) -> Self {
+        self.params.ephemeral_message_parameters = Some(Box::new(v));
         self
     }
     pub fn caption(mut self, v: impl Into<String>) -> Self {
@@ -6733,7 +6918,7 @@ impl<'bot> IntoFuture for SendPhotoRequest<'bot> {
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
             self.bot
-                .send_photo_with_params(self.chat_id, self.photo, Some(self.params))
+                .send_photo_with_params(self.photo, Some(self.params))
                 .await
         })
     }
@@ -6921,20 +7106,14 @@ impl<'bot> IntoFuture for SendPollRequest<'bot> {
 /// See: https://core.telegram.org/bots/api#sendrichmessage
 pub struct SendRichMessageRequest<'bot> {
     bot: &'bot Bot,
-    chat_id: ChatId,
     rich_message: InputRichMessage,
     params: SendRichMessageParams,
 }
 
 impl<'bot> SendRichMessageRequest<'bot> {
-    pub(crate) fn new(
-        bot: &'bot Bot,
-        chat_id: impl Into<ChatId>,
-        rich_message: InputRichMessage,
-    ) -> Self {
+    pub(crate) fn new(bot: &'bot Bot, rich_message: InputRichMessage) -> Self {
         Self {
             bot,
-            chat_id: chat_id.into(),
             rich_message,
             params: Default::default(),
         }
@@ -6955,12 +7134,20 @@ impl<'bot> SendRichMessageRequest<'bot> {
         self.params.business_connection_id = Some(v.into());
         self
     }
+    pub fn chat_id(mut self, v: impl Into<ChatId>) -> Self {
+        self.params.chat_id = Some(v.into());
+        self
+    }
     pub fn message_thread_id(mut self, v: i64) -> Self {
         self.params.message_thread_id = Some(v);
         self
     }
     pub fn direct_messages_topic_id(mut self, v: i64) -> Self {
         self.params.direct_messages_topic_id = Some(v);
+        self
+    }
+    pub fn ephemeral_message_parameters(mut self, v: EphemeralMessageParameters) -> Self {
+        self.params.ephemeral_message_parameters = Some(Box::new(v));
         self
     }
     pub fn disable_notification(mut self, v: bool) -> Self {
@@ -7000,7 +7187,7 @@ impl<'bot> IntoFuture for SendRichMessageRequest<'bot> {
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
             self.bot
-                .send_rich_message_with_params(self.chat_id, self.rich_message, Some(self.params))
+                .send_rich_message_with_params(self.rich_message, Some(self.params))
                 .await
         })
     }
@@ -7037,6 +7224,14 @@ impl<'bot> SendRichMessageDraftRequest<'bot> {
         self.params.message_thread_id = Some(v);
         self
     }
+    pub fn can_stop(mut self, v: bool) -> Self {
+        self.params.can_stop = Some(v);
+        self
+    }
+    pub fn keep_on_stop(mut self, v: bool) -> Self {
+        self.params.keep_on_stop = Some(v);
+        self
+    }
 }
 
 impl<'bot> IntoFuture for SendRichMessageDraftRequest<'bot> {
@@ -7057,25 +7252,126 @@ impl<'bot> IntoFuture for SendRichMessageDraftRequest<'bot> {
     }
 }
 
+/// Fluent builder for [`Bot::send_shared_widget`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#sendsharedwidget
+pub struct SendSharedWidgetRequest<'bot> {
+    bot: &'bot Bot,
+    chat_id: ChatId,
+    widget_id: String,
+    params: SendSharedWidgetParams,
+}
+
+impl<'bot> SendSharedWidgetRequest<'bot> {
+    pub(crate) fn new(
+        bot: &'bot Bot,
+        chat_id: impl Into<ChatId>,
+        widget_id: impl Into<String>,
+    ) -> Self {
+        Self {
+            bot,
+            chat_id: chat_id.into(),
+            widget_id: widget_id.into(),
+            params: Default::default(),
+        }
+    }
+
+    /// Set `parse_mode` to `"HTML"`.
+    pub fn html(self) -> Self {
+        self.parse_mode("HTML")
+    }
+    /// Set `parse_mode` to `"MarkdownV2"`.
+    pub fn markdown(self) -> Self {
+        self.parse_mode("MarkdownV2")
+    }
+
+    /// Send silently (`disable_notification = true`).
+    pub fn silent(self) -> Self {
+        self.disable_notification(true)
+    }
+
+    /// Reply to a message by id.
+    pub fn reply_to(mut self, message_id: i64) -> Self {
+        self.params.reply_parameters = Some(make_reply_params(message_id));
+        self
+    }
+
+    pub fn message_thread_id(mut self, v: i64) -> Self {
+        self.params.message_thread_id = Some(v);
+        self
+    }
+    pub fn chat_data(mut self, v: impl Into<String>) -> Self {
+        self.params.chat_data = Some(v.into());
+        self
+    }
+    pub fn caption(mut self, v: impl Into<String>) -> Self {
+        self.params.caption = Some(v.into());
+        self
+    }
+    pub fn parse_mode(mut self, v: impl Into<String>) -> Self {
+        self.params.parse_mode = Some(v.into());
+        self
+    }
+    pub fn caption_entities(mut self, v: Vec<MessageEntity>) -> Self {
+        self.params.caption_entities = Some(v);
+        self
+    }
+    pub fn show_caption_above_media(mut self, v: bool) -> Self {
+        self.params.show_caption_above_media = Some(v);
+        self
+    }
+    pub fn disable_notification(mut self, v: bool) -> Self {
+        self.params.disable_notification = Some(v);
+        self
+    }
+    pub fn protect_content(mut self, v: bool) -> Self {
+        self.params.protect_content = Some(v);
+        self
+    }
+    pub fn allow_paid_broadcast(mut self, v: bool) -> Self {
+        self.params.allow_paid_broadcast = Some(v);
+        self
+    }
+    pub fn message_effect_id(mut self, v: impl Into<String>) -> Self {
+        self.params.message_effect_id = Some(v.into());
+        self
+    }
+    pub fn reply_parameters(mut self, v: ReplyParameters) -> Self {
+        self.params.reply_parameters = Some(Box::new(v));
+        self
+    }
+    pub fn reply_markup(mut self, v: impl Into<ReplyMarkup>) -> Self {
+        self.params.reply_markup = Some(v.into());
+        self
+    }
+}
+
+impl<'bot> IntoFuture for SendSharedWidgetRequest<'bot> {
+    type Output = Result<Message, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .send_shared_widget_with_params(self.chat_id, self.widget_id, Some(self.params))
+                .await
+        })
+    }
+}
+
 /// Fluent builder for [`Bot::send_sticker`]. Implements [`IntoFuture`].
 ///
 /// See: https://core.telegram.org/bots/api#sendsticker
 pub struct SendStickerRequest<'bot> {
     bot: &'bot Bot,
-    chat_id: ChatId,
     sticker: InputFileOrString,
     params: SendStickerParams,
 }
 
 impl<'bot> SendStickerRequest<'bot> {
-    pub(crate) fn new(
-        bot: &'bot Bot,
-        chat_id: impl Into<ChatId>,
-        sticker: impl Into<InputFileOrString>,
-    ) -> Self {
+    pub(crate) fn new(bot: &'bot Bot, sticker: impl Into<InputFileOrString>) -> Self {
         Self {
             bot,
-            chat_id: chat_id.into(),
             sticker: sticker.into(),
             params: Default::default(),
         }
@@ -7096,6 +7392,10 @@ impl<'bot> SendStickerRequest<'bot> {
         self.params.business_connection_id = Some(v.into());
         self
     }
+    pub fn chat_id(mut self, v: impl Into<ChatId>) -> Self {
+        self.params.chat_id = Some(v.into());
+        self
+    }
     pub fn message_thread_id(mut self, v: i64) -> Self {
         self.params.message_thread_id = Some(v);
         self
@@ -7104,12 +7404,8 @@ impl<'bot> SendStickerRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
-    pub fn receiver_user_id(mut self, v: i64) -> Self {
-        self.params.receiver_user_id = Some(v);
-        self
-    }
-    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
-        self.params.callback_query_id = Some(v.into());
+    pub fn ephemeral_message_parameters(mut self, v: EphemeralMessageParameters) -> Self {
+        self.params.ephemeral_message_parameters = Some(Box::new(v));
         self
     }
     pub fn emoji(mut self, v: impl Into<String>) -> Self {
@@ -7153,7 +7449,7 @@ impl<'bot> IntoFuture for SendStickerRequest<'bot> {
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
             self.bot
-                .send_sticker_with_params(self.chat_id, self.sticker, Some(self.params))
+                .send_sticker_with_params(self.sticker, Some(self.params))
                 .await
         })
     }
@@ -7164,7 +7460,6 @@ impl<'bot> IntoFuture for SendStickerRequest<'bot> {
 /// See: https://core.telegram.org/bots/api#sendvenue
 pub struct SendVenueRequest<'bot> {
     bot: &'bot Bot,
-    chat_id: ChatId,
     latitude: f64,
     longitude: f64,
     title: String,
@@ -7175,7 +7470,6 @@ pub struct SendVenueRequest<'bot> {
 impl<'bot> SendVenueRequest<'bot> {
     pub(crate) fn new(
         bot: &'bot Bot,
-        chat_id: impl Into<ChatId>,
         latitude: f64,
         longitude: f64,
         title: impl Into<String>,
@@ -7183,7 +7477,6 @@ impl<'bot> SendVenueRequest<'bot> {
     ) -> Self {
         Self {
             bot,
-            chat_id: chat_id.into(),
             latitude,
             longitude,
             title: title.into(),
@@ -7207,6 +7500,10 @@ impl<'bot> SendVenueRequest<'bot> {
         self.params.business_connection_id = Some(v.into());
         self
     }
+    pub fn chat_id(mut self, v: impl Into<ChatId>) -> Self {
+        self.params.chat_id = Some(v.into());
+        self
+    }
     pub fn message_thread_id(mut self, v: i64) -> Self {
         self.params.message_thread_id = Some(v);
         self
@@ -7215,12 +7512,8 @@ impl<'bot> SendVenueRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
-    pub fn receiver_user_id(mut self, v: i64) -> Self {
-        self.params.receiver_user_id = Some(v);
-        self
-    }
-    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
-        self.params.callback_query_id = Some(v.into());
+    pub fn ephemeral_message_parameters(mut self, v: EphemeralMessageParameters) -> Self {
+        self.params.ephemeral_message_parameters = Some(Box::new(v));
         self
     }
     pub fn foursquare_id(mut self, v: impl Into<String>) -> Self {
@@ -7277,7 +7570,6 @@ impl<'bot> IntoFuture for SendVenueRequest<'bot> {
         Box::pin(async move {
             self.bot
                 .send_venue_with_params(
-                    self.chat_id,
                     self.latitude,
                     self.longitude,
                     self.title,
@@ -7294,20 +7586,14 @@ impl<'bot> IntoFuture for SendVenueRequest<'bot> {
 /// See: https://core.telegram.org/bots/api#sendvideo
 pub struct SendVideoRequest<'bot> {
     bot: &'bot Bot,
-    chat_id: ChatId,
     video: InputFileOrString,
     params: SendVideoParams,
 }
 
 impl<'bot> SendVideoRequest<'bot> {
-    pub(crate) fn new(
-        bot: &'bot Bot,
-        chat_id: impl Into<ChatId>,
-        video: impl Into<InputFileOrString>,
-    ) -> Self {
+    pub(crate) fn new(bot: &'bot Bot, video: impl Into<InputFileOrString>) -> Self {
         Self {
             bot,
-            chat_id: chat_id.into(),
             video: video.into(),
             params: Default::default(),
         }
@@ -7337,6 +7623,10 @@ impl<'bot> SendVideoRequest<'bot> {
         self.params.business_connection_id = Some(v.into());
         self
     }
+    pub fn chat_id(mut self, v: impl Into<ChatId>) -> Self {
+        self.params.chat_id = Some(v.into());
+        self
+    }
     pub fn message_thread_id(mut self, v: i64) -> Self {
         self.params.message_thread_id = Some(v);
         self
@@ -7345,12 +7635,8 @@ impl<'bot> SendVideoRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
-    pub fn receiver_user_id(mut self, v: i64) -> Self {
-        self.params.receiver_user_id = Some(v);
-        self
-    }
-    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
-        self.params.callback_query_id = Some(v.into());
+    pub fn ephemeral_message_parameters(mut self, v: EphemeralMessageParameters) -> Self {
+        self.params.ephemeral_message_parameters = Some(Box::new(v));
         self
     }
     pub fn duration(mut self, v: i64) -> Self {
@@ -7438,7 +7724,7 @@ impl<'bot> IntoFuture for SendVideoRequest<'bot> {
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
             self.bot
-                .send_video_with_params(self.chat_id, self.video, Some(self.params))
+                .send_video_with_params(self.video, Some(self.params))
                 .await
         })
     }
@@ -7449,20 +7735,14 @@ impl<'bot> IntoFuture for SendVideoRequest<'bot> {
 /// See: https://core.telegram.org/bots/api#sendvideonote
 pub struct SendVideoNoteRequest<'bot> {
     bot: &'bot Bot,
-    chat_id: ChatId,
     video_note: InputFileOrString,
     params: SendVideoNoteParams,
 }
 
 impl<'bot> SendVideoNoteRequest<'bot> {
-    pub(crate) fn new(
-        bot: &'bot Bot,
-        chat_id: impl Into<ChatId>,
-        video_note: impl Into<InputFileOrString>,
-    ) -> Self {
+    pub(crate) fn new(bot: &'bot Bot, video_note: impl Into<InputFileOrString>) -> Self {
         Self {
             bot,
-            chat_id: chat_id.into(),
             video_note: video_note.into(),
             params: Default::default(),
         }
@@ -7483,6 +7763,10 @@ impl<'bot> SendVideoNoteRequest<'bot> {
         self.params.business_connection_id = Some(v.into());
         self
     }
+    pub fn chat_id(mut self, v: impl Into<ChatId>) -> Self {
+        self.params.chat_id = Some(v.into());
+        self
+    }
     pub fn message_thread_id(mut self, v: i64) -> Self {
         self.params.message_thread_id = Some(v);
         self
@@ -7491,12 +7775,8 @@ impl<'bot> SendVideoNoteRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
-    pub fn receiver_user_id(mut self, v: i64) -> Self {
-        self.params.receiver_user_id = Some(v);
-        self
-    }
-    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
-        self.params.callback_query_id = Some(v.into());
+    pub fn ephemeral_message_parameters(mut self, v: EphemeralMessageParameters) -> Self {
+        self.params.ephemeral_message_parameters = Some(Box::new(v));
         self
     }
     pub fn duration(mut self, v: i64) -> Self {
@@ -7548,7 +7828,7 @@ impl<'bot> IntoFuture for SendVideoNoteRequest<'bot> {
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
             self.bot
-                .send_video_note_with_params(self.chat_id, self.video_note, Some(self.params))
+                .send_video_note_with_params(self.video_note, Some(self.params))
                 .await
         })
     }
@@ -7559,20 +7839,14 @@ impl<'bot> IntoFuture for SendVideoNoteRequest<'bot> {
 /// See: https://core.telegram.org/bots/api#sendvoice
 pub struct SendVoiceRequest<'bot> {
     bot: &'bot Bot,
-    chat_id: ChatId,
     voice: InputFileOrString,
     params: SendVoiceParams,
 }
 
 impl<'bot> SendVoiceRequest<'bot> {
-    pub(crate) fn new(
-        bot: &'bot Bot,
-        chat_id: impl Into<ChatId>,
-        voice: impl Into<InputFileOrString>,
-    ) -> Self {
+    pub(crate) fn new(bot: &'bot Bot, voice: impl Into<InputFileOrString>) -> Self {
         Self {
             bot,
-            chat_id: chat_id.into(),
             voice: voice.into(),
             params: Default::default(),
         }
@@ -7602,6 +7876,10 @@ impl<'bot> SendVoiceRequest<'bot> {
         self.params.business_connection_id = Some(v.into());
         self
     }
+    pub fn chat_id(mut self, v: impl Into<ChatId>) -> Self {
+        self.params.chat_id = Some(v.into());
+        self
+    }
     pub fn message_thread_id(mut self, v: i64) -> Self {
         self.params.message_thread_id = Some(v);
         self
@@ -7610,12 +7888,8 @@ impl<'bot> SendVoiceRequest<'bot> {
         self.params.direct_messages_topic_id = Some(v);
         self
     }
-    pub fn receiver_user_id(mut self, v: i64) -> Self {
-        self.params.receiver_user_id = Some(v);
-        self
-    }
-    pub fn callback_query_id(mut self, v: impl Into<String>) -> Self {
-        self.params.callback_query_id = Some(v.into());
+    pub fn ephemeral_message_parameters(mut self, v: EphemeralMessageParameters) -> Self {
+        self.params.ephemeral_message_parameters = Some(Box::new(v));
         self
     }
     pub fn caption(mut self, v: impl Into<String>) -> Self {
@@ -7671,7 +7945,130 @@ impl<'bot> IntoFuture for SendVoiceRequest<'bot> {
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(async move {
             self.bot
-                .send_voice_with_params(self.chat_id, self.voice, Some(self.params))
+                .send_voice_with_params(self.voice, Some(self.params))
+                .await
+        })
+    }
+}
+
+/// Fluent builder for [`Bot::send_widget`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#sendwidget
+pub struct SendWidgetRequest<'bot> {
+    bot: &'bot Bot,
+    chat_id: ChatId,
+    html: String,
+    params: SendWidgetParams,
+}
+
+impl<'bot> SendWidgetRequest<'bot> {
+    pub(crate) fn new(bot: &'bot Bot, chat_id: impl Into<ChatId>, html: impl Into<String>) -> Self {
+        Self {
+            bot,
+            chat_id: chat_id.into(),
+            html: html.into(),
+            params: Default::default(),
+        }
+    }
+
+    /// Set `parse_mode` to `"HTML"`.
+    pub fn html(self) -> Self {
+        self.parse_mode("HTML")
+    }
+    /// Set `parse_mode` to `"MarkdownV2"`.
+    pub fn markdown(self) -> Self {
+        self.parse_mode("MarkdownV2")
+    }
+
+    /// Send silently (`disable_notification = true`).
+    pub fn silent(self) -> Self {
+        self.disable_notification(true)
+    }
+
+    /// Reply to a message by id.
+    pub fn reply_to(mut self, message_id: i64) -> Self {
+        self.params.reply_parameters = Some(make_reply_params(message_id));
+        self
+    }
+
+    pub fn message_thread_id(mut self, v: i64) -> Self {
+        self.params.message_thread_id = Some(v);
+        self
+    }
+    pub fn width(mut self, v: i64) -> Self {
+        self.params.width = Some(v);
+        self
+    }
+    pub fn height(mut self, v: i64) -> Self {
+        self.params.height = Some(v);
+        self
+    }
+    pub fn public_data(mut self, v: impl Into<String>) -> Self {
+        self.params.public_data = Some(v.into());
+        self
+    }
+    pub fn chat_data(mut self, v: impl Into<String>) -> Self {
+        self.params.chat_data = Some(v.into());
+        self
+    }
+    pub fn caption(mut self, v: impl Into<String>) -> Self {
+        self.params.caption = Some(v.into());
+        self
+    }
+    pub fn parse_mode(mut self, v: impl Into<String>) -> Self {
+        self.params.parse_mode = Some(v.into());
+        self
+    }
+    pub fn caption_entities(mut self, v: Vec<MessageEntity>) -> Self {
+        self.params.caption_entities = Some(v);
+        self
+    }
+    pub fn show_caption_above_media(mut self, v: bool) -> Self {
+        self.params.show_caption_above_media = Some(v);
+        self
+    }
+    pub fn allow_queries(mut self, v: bool) -> Self {
+        self.params.allow_queries = Some(v);
+        self
+    }
+    pub fn is_shared(mut self, v: bool) -> Self {
+        self.params.is_shared = Some(v);
+        self
+    }
+    pub fn disable_notification(mut self, v: bool) -> Self {
+        self.params.disable_notification = Some(v);
+        self
+    }
+    pub fn protect_content(mut self, v: bool) -> Self {
+        self.params.protect_content = Some(v);
+        self
+    }
+    pub fn allow_paid_broadcast(mut self, v: bool) -> Self {
+        self.params.allow_paid_broadcast = Some(v);
+        self
+    }
+    pub fn message_effect_id(mut self, v: impl Into<String>) -> Self {
+        self.params.message_effect_id = Some(v.into());
+        self
+    }
+    pub fn reply_parameters(mut self, v: ReplyParameters) -> Self {
+        self.params.reply_parameters = Some(Box::new(v));
+        self
+    }
+    pub fn reply_markup(mut self, v: impl Into<ReplyMarkup>) -> Self {
+        self.params.reply_markup = Some(v.into());
+        self
+    }
+}
+
+impl<'bot> IntoFuture for SendWidgetRequest<'bot> {
+    type Output = Result<Message, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .send_widget_with_params(self.chat_id, self.html, Some(self.params))
                 .await
         })
     }
@@ -9455,6 +9852,14 @@ impl<'bot> VerifyChatRequest<'bot> {
         self.params.custom_description = Some(v.into());
         self
     }
+    pub fn custom_description_parse_mode(mut self, v: impl Into<String>) -> Self {
+        self.params.custom_description_parse_mode = Some(v.into());
+        self
+    }
+    pub fn custom_description_entities(mut self, v: Vec<MessageEntity>) -> Self {
+        self.params.custom_description_entities = Some(v);
+        self
+    }
 }
 
 impl<'bot> IntoFuture for VerifyChatRequest<'bot> {
@@ -9490,6 +9895,14 @@ impl<'bot> VerifyUserRequest<'bot> {
 
     pub fn custom_description(mut self, v: impl Into<String>) -> Self {
         self.params.custom_description = Some(v.into());
+        self
+    }
+    pub fn custom_description_parse_mode(mut self, v: impl Into<String>) -> Self {
+        self.params.custom_description_parse_mode = Some(v.into());
+        self
+    }
+    pub fn custom_description_entities(mut self, v: Vec<MessageEntity>) -> Self {
+        self.params.custom_description_entities = Some(v);
         self
     }
 }
@@ -9588,6 +10001,15 @@ impl Bot {
         AnswerWebAppQueryRequest::new(self, web_app_query_id, result)
     }
 
+    /// Use this method to send an answer to a query from a widget. The query must be answered within 15 seconds. The answer is received only by the widget that sent the query and doesn't change data of the widget; use editMessageWidgetData or editSharedWidgetData to change it. On success, True is returned.
+    /// See: https://core.telegram.org/bots/api#answerwidgetquery
+    pub fn answer_widget_query(
+        &self,
+        widget_query_id: impl Into<String>,
+    ) -> AnswerWidgetQueryRequest<'_> {
+        AnswerWidgetQueryRequest::new(self, widget_query_id)
+    }
+
     /// Use this method to approve a chat join request. The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right. Returns True on success.
     /// See: https://core.telegram.org/bots/api#approvechatjoinrequest
     pub fn approve_chat_join_request(
@@ -9663,7 +10085,7 @@ impl Bot {
         ConvertGiftToStarsRequest::new(self, business_connection_id, owned_gift_id)
     }
 
-    /// Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success.
+    /// Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, invoice messages, and widget messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success.
     /// See: https://core.telegram.org/bots/api#copymessage
     pub fn copy_message(
         &self,
@@ -9674,7 +10096,7 @@ impl Bot {
         CopyMessageRequest::new(self, chat_id, from_chat_id, message_id)
     }
 
-    /// Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an Array of MessageId of the sent messages is returned.
+    /// Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, invoice messages, and widget messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an Array of MessageId of the sent messages is returned.
     /// See: https://core.telegram.org/bots/api#copymessages
     pub fn copy_messages(
         &self,
@@ -9710,7 +10132,7 @@ impl Bot {
         )
     }
 
-    /// Use this method to create a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator right. Returns information about the created topic as a ForumTopic object.
+    /// Use this method to create a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator right. In the case of a private chat, a link to the topic can be created in the format https://t.me/<bot_username>/<message_thread_id>; the link opens the topic only for the user. Returns information about the created topic as a ForumTopic object.
     /// See: https://core.telegram.org/bots/api#createforumtopic
     pub fn create_forum_topic(
         &self,
@@ -9772,6 +10194,16 @@ impl Bot {
         chat_id: impl Into<ChatId>,
     ) -> DeleteAllMessageReactionsRequest<'_> {
         DeleteAllMessageReactionsRequest::new(self, chat_id)
+    }
+
+    /// Deletes a regular gift owned by a managed business account without receiving Telegram Stars for it. Requires the can_convert_gifts_to_stars business bot right. The gift can be deleted only if it isn't limited (the field total_count of the Gift is omitted) and wasn't refunded. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#deletebusinessaccountgift
+    pub fn delete_business_account_gift(
+        &self,
+        business_connection_id: impl Into<String>,
+        owned_gift_id: impl Into<String>,
+    ) -> DeleteBusinessAccountGiftRequest<'_> {
+        DeleteBusinessAccountGiftRequest::new(self, business_connection_id, owned_gift_id)
     }
 
     /// Delete messages on behalf of a business account. Requires the can_delete_sent_messages business bot right to delete messages sent by the bot itself, or the can_delete_all_messages business bot right to delete any message. Returns True on success.
@@ -9957,22 +10389,15 @@ impl Bot {
         )
     }
 
-    /// Use this method to edit an ephemeral text message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
+    /// Use this method to edit an ephemeral text or rich message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned.
     /// See: https://core.telegram.org/bots/api#editephemeralmessagetext
     pub fn edit_ephemeral_message_text(
         &self,
         chat_id: impl Into<ChatId>,
         receiver_user_id: i64,
         ephemeral_message_id: i64,
-        text: impl Into<String>,
     ) -> EditEphemeralMessageTextRequest<'_> {
-        EditEphemeralMessageTextRequest::new(
-            self,
-            chat_id,
-            receiver_user_id,
-            ephemeral_message_id,
-            text,
-        )
+        EditEphemeralMessageTextRequest::new(self, chat_id, receiver_user_id, ephemeral_message_id)
     }
 
     /// Use this method to edit name and icon of a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success.
@@ -10045,6 +10470,22 @@ impl Bot {
     /// See: https://core.telegram.org/bots/api#editmessagetext
     pub fn edit_message_text(&self) -> EditMessageTextRequest<'_> {
         EditMessageTextRequest::new(self)
+    }
+
+    /// Use this method to edit data of a widget in a message sent by the bot or via the bot (for inline bots). Public data of a shared widget can be changed at most once per second. On success, True is returned.
+    /// See: https://core.telegram.org/bots/api#editmessagewidgetdata
+    pub fn edit_message_widget_data(&self) -> EditMessageWidgetDataRequest<'_> {
+        EditMessageWidgetDataRequest::new(self)
+    }
+
+    /// Use this method to edit public data of a shared widget created by the bot. A shared widget can be edited at most once per second. On success, True is returned.
+    /// See: https://core.telegram.org/bots/api#editsharedwidgetdata
+    pub fn edit_shared_widget_data(
+        &self,
+        widget_id: impl Into<String>,
+        public_data: impl Into<String>,
+    ) -> EditSharedWidgetDataRequest<'_> {
+        EditSharedWidgetDataRequest::new(self, widget_id, public_data)
     }
 
     /// Edits a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns Story on success.
@@ -10179,6 +10620,12 @@ impl Bot {
         GetChatMenuButtonRequest::new(self)
     }
 
+    /// Use this method to get the list of backdrops, which can be used as the background of a theme of the screen for sharing a link to a user or a chat. Requires no parameters. Returns a ChatShareThemeBackdrops object.
+    /// See: https://core.telegram.org/bots/api#getchatsharethemebackdrops
+    pub fn get_chat_share_theme_backdrops(&self) -> GetChatShareThemeBackdropsRequest<'_> {
+        GetChatShareThemeBackdropsRequest::new(self)
+    }
+
     /// Use this method to get information about custom emoji stickers by their identifiers. Returns an Array of Sticker objects.
     /// See: https://core.telegram.org/bots/api#getcustomemojistickers
     pub fn get_custom_emoji_stickers(
@@ -10275,6 +10722,12 @@ impl Bot {
     /// See: https://core.telegram.org/bots/api#getstickerset
     pub fn get_sticker_set(&self, name: impl Into<String>) -> GetStickerSetRequest<'_> {
         GetStickerSetRequest::new(self, name)
+    }
+
+    /// Use this method to get information about a unique gift by its name. Returns a UniqueGift object on success.
+    /// See: https://core.telegram.org/bots/api#getuniquegift
+    pub fn get_unique_gift(&self, name: impl Into<String>) -> GetUniqueGiftRequest<'_> {
+        GetUniqueGiftRequest::new(self, name)
     }
 
     /// Use this method to receive incoming updates using long polling (wiki). Returns an Array of Update objects.
@@ -10541,20 +10994,15 @@ impl Bot {
     /// See: https://core.telegram.org/bots/api#sendanimation
     pub fn send_animation(
         &self,
-        chat_id: impl Into<ChatId>,
         animation: impl Into<InputFileOrString>,
     ) -> SendAnimationRequest<'_> {
-        SendAnimationRequest::new(self, chat_id, animation)
+        SendAnimationRequest::new(self, animation)
     }
 
     /// Use this method to send audio files, if you want Telegram clients to display them in the music player. Your audio must be in the .MP3 or .M4A format. On success, the sent Message is returned. Bots can currently send audio files of up to 50 MB in size, this limit may be changed in the future.
     /// See: https://core.telegram.org/bots/api#sendaudio
-    pub fn send_audio(
-        &self,
-        chat_id: impl Into<ChatId>,
-        audio: impl Into<InputFileOrString>,
-    ) -> SendAudioRequest<'_> {
-        SendAudioRequest::new(self, chat_id, audio)
+    pub fn send_audio(&self, audio: impl Into<InputFileOrString>) -> SendAudioRequest<'_> {
+        SendAudioRequest::new(self, audio)
     }
 
     /// Use this method when you need to tell the user that something is happening on the bot's side. The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status). Returns True on success.
@@ -10592,11 +11040,10 @@ impl Bot {
     /// See: https://core.telegram.org/bots/api#sendcontact
     pub fn send_contact(
         &self,
-        chat_id: impl Into<ChatId>,
         phone_number: impl Into<String>,
         first_name: impl Into<String>,
     ) -> SendContactRequest<'_> {
-        SendContactRequest::new(self, chat_id, phone_number, first_name)
+        SendContactRequest::new(self, phone_number, first_name)
     }
 
     /// Use this method to send an animated emoji that will display a random value. On success, the sent Message is returned.
@@ -10607,12 +11054,8 @@ impl Bot {
 
     /// Use this method to send general files. On success, the sent Message is returned. Bots can currently send files of any type of up to 50 MB in size, this limit may be changed in the future.
     /// See: https://core.telegram.org/bots/api#senddocument
-    pub fn send_document(
-        &self,
-        chat_id: impl Into<ChatId>,
-        document: impl Into<InputFileOrString>,
-    ) -> SendDocumentRequest<'_> {
-        SendDocumentRequest::new(self, chat_id, document)
+    pub fn send_document(&self, document: impl Into<InputFileOrString>) -> SendDocumentRequest<'_> {
+        SendDocumentRequest::new(self, document)
     }
 
     /// Use this method to send a game. On success, the sent Message is returned.
@@ -10649,22 +11092,16 @@ impl Bot {
     /// See: https://core.telegram.org/bots/api#sendlivephoto
     pub fn send_live_photo(
         &self,
-        chat_id: impl Into<ChatId>,
         live_photo: impl Into<InputFileOrString>,
         photo: impl Into<InputFileOrString>,
     ) -> SendLivePhotoRequest<'_> {
-        SendLivePhotoRequest::new(self, chat_id, live_photo, photo)
+        SendLivePhotoRequest::new(self, live_photo, photo)
     }
 
     /// Use this method to send point on the map. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendlocation
-    pub fn send_location(
-        &self,
-        chat_id: impl Into<ChatId>,
-        latitude: f64,
-        longitude: f64,
-    ) -> SendLocationRequest<'_> {
-        SendLocationRequest::new(self, chat_id, latitude, longitude)
+    pub fn send_location(&self, latitude: f64, longitude: f64) -> SendLocationRequest<'_> {
+        SendLocationRequest::new(self, latitude, longitude)
     }
 
     /// Use this method to send a group of photos, live photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an Array of Message objects that were sent is returned.
@@ -10679,12 +11116,8 @@ impl Bot {
 
     /// Use this method to send text messages. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendmessage
-    pub fn send_message(
-        &self,
-        chat_id: impl Into<ChatId>,
-        text: impl Into<String>,
-    ) -> SendMessageRequest<'_> {
-        SendMessageRequest::new(self, chat_id, text)
+    pub fn send_message(&self, text: impl Into<String>) -> SendMessageRequest<'_> {
+        SendMessageRequest::new(self, text)
     }
 
     /// Use this method to stream a partial message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendMessage with the complete message to persist it in the user's chat. Returns True on success.
@@ -10706,12 +11139,8 @@ impl Bot {
 
     /// Use this method to send photos. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendphoto
-    pub fn send_photo(
-        &self,
-        chat_id: impl Into<ChatId>,
-        photo: impl Into<InputFileOrString>,
-    ) -> SendPhotoRequest<'_> {
-        SendPhotoRequest::new(self, chat_id, photo)
+    pub fn send_photo(&self, photo: impl Into<InputFileOrString>) -> SendPhotoRequest<'_> {
+        SendPhotoRequest::new(self, photo)
     }
 
     /// Use this method to send a native poll. On success, the sent Message is returned.
@@ -10727,12 +11156,8 @@ impl Bot {
 
     /// Use this method to send rich messages. If the message contains a block with a media element, then the bot must have the right to send the media to the chat. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendrichmessage
-    pub fn send_rich_message(
-        &self,
-        chat_id: impl Into<ChatId>,
-        rich_message: InputRichMessage,
-    ) -> SendRichMessageRequest<'_> {
-        SendRichMessageRequest::new(self, chat_id, rich_message)
+    pub fn send_rich_message(&self, rich_message: InputRichMessage) -> SendRichMessageRequest<'_> {
+        SendRichMessageRequest::new(self, rich_message)
     }
 
     /// Use this method to stream a partial rich message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendRichMessage with the complete message to persist it in the user's chat. Returns True on success.
@@ -10746,57 +11171,63 @@ impl Bot {
         SendRichMessageDraftRequest::new(self, chat_id, draft_id, rich_message)
     }
 
-    /// Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent Message is returned.
-    /// See: https://core.telegram.org/bots/api#sendsticker
-    pub fn send_sticker(
+    /// Use this method to send again a shared widget created by the bot. Currently, in the production environment, widgets can be sent only to private chats, and sent widgets automatically have protected content and therefore can't be forwarded. On success, the sent Message is returned.
+    /// See: https://core.telegram.org/bots/api#sendsharedwidget
+    pub fn send_shared_widget(
         &self,
         chat_id: impl Into<ChatId>,
-        sticker: impl Into<InputFileOrString>,
-    ) -> SendStickerRequest<'_> {
-        SendStickerRequest::new(self, chat_id, sticker)
+        widget_id: impl Into<String>,
+    ) -> SendSharedWidgetRequest<'_> {
+        SendSharedWidgetRequest::new(self, chat_id, widget_id)
+    }
+
+    /// Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent Message is returned.
+    /// See: https://core.telegram.org/bots/api#sendsticker
+    pub fn send_sticker(&self, sticker: impl Into<InputFileOrString>) -> SendStickerRequest<'_> {
+        SendStickerRequest::new(self, sticker)
     }
 
     /// Use this method to send information about a venue. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendvenue
     pub fn send_venue(
         &self,
-        chat_id: impl Into<ChatId>,
         latitude: f64,
         longitude: f64,
         title: impl Into<String>,
         address: impl Into<String>,
     ) -> SendVenueRequest<'_> {
-        SendVenueRequest::new(self, chat_id, latitude, longitude, title, address)
+        SendVenueRequest::new(self, latitude, longitude, title, address)
     }
 
     /// Use this method to send video files, Telegram clients support MPEG4 videos (other formats may be sent as Document). On success, the sent Message is returned. Bots can currently send video files of up to 50 MB in size, this limit may be changed in the future.
     /// See: https://core.telegram.org/bots/api#sendvideo
-    pub fn send_video(
-        &self,
-        chat_id: impl Into<ChatId>,
-        video: impl Into<InputFileOrString>,
-    ) -> SendVideoRequest<'_> {
-        SendVideoRequest::new(self, chat_id, video)
+    pub fn send_video(&self, video: impl Into<InputFileOrString>) -> SendVideoRequest<'_> {
+        SendVideoRequest::new(self, video)
     }
 
-    /// As of v.4.0, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent Message is returned.
+    /// Use this method to send a rounded square MPEG4 video of up to 1 minute long. On success, the sent Message is returned.
     /// See: https://core.telegram.org/bots/api#sendvideonote
     pub fn send_video_note(
         &self,
-        chat_id: impl Into<ChatId>,
         video_note: impl Into<InputFileOrString>,
     ) -> SendVideoNoteRequest<'_> {
-        SendVideoNoteRequest::new(self, chat_id, video_note)
+        SendVideoNoteRequest::new(self, video_note)
     }
 
     /// Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .OGG file encoded with OPUS, or in .MP3 format, or in .M4A format (other formats may be sent as Audio or Document). On success, the sent Message is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future.
     /// See: https://core.telegram.org/bots/api#sendvoice
-    pub fn send_voice(
+    pub fn send_voice(&self, voice: impl Into<InputFileOrString>) -> SendVoiceRequest<'_> {
+        SendVoiceRequest::new(self, voice)
+    }
+
+    /// Use this method to send a message with an HTML widget. Currently, in the production environment, widgets can be sent only to private chats, and sent widgets automatically have protected content and therefore can't be forwarded. On success, the sent Message is returned.
+    /// See: https://core.telegram.org/bots/api#sendwidget
+    pub fn send_widget(
         &self,
         chat_id: impl Into<ChatId>,
-        voice: impl Into<InputFileOrString>,
-    ) -> SendVoiceRequest<'_> {
-        SendVoiceRequest::new(self, chat_id, voice)
+        html: impl Into<String>,
+    ) -> SendWidgetRequest<'_> {
+        SendWidgetRequest::new(self, chat_id, html)
     }
 
     /// Changes the bio of a managed business account. Requires the can_change_bio business bot right. Returns True on success.
