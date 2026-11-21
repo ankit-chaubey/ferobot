@@ -10,17 +10,19 @@ Sending messages
 .. code-block:: rust
 
    // just required args
-   bot.send_message(chat_id, "Hello!").await?;
+   bot.send_message("Hello!").chat_id(chat_id).await?;
 
    // with options chained
-   bot.send_message(chat_id, "<b>Bold text</b>")
+   bot.send_message("<b>Bold text</b>")
+       .chat_id(chat_id)
        .html()
        .silent()
        .reply_to(msg.message_id)
        .await?;
 
    // all options available by field name
-   bot.send_message(chat_id, "hi")
+   bot.send_message("hi")
+       .chat_id(chat_id)
        .parse_mode("MarkdownV2")
        .disable_notification(true)
        .await?;
@@ -33,14 +35,15 @@ Sending media
    use ferobot::InputFile;
 
    // File ID already on Telegram
-   bot.send_photo(chat_id, "AgACAgIAAxkBAAI...").await?;
+   bot.send_photo("AgACAgIAAxkBAAI...").chat_id(chat_id).await?;
 
    // URL: Telegram fetches it
-   bot.send_photo(chat_id, "https://example.com/img.jpg").await?;
+   bot.send_photo("https://example.com/img.jpg").chat_id(chat_id).await?;
 
    // Raw bytes from disk
    let data = tokio::fs::read("photo.jpg").await?;
-   bot.send_photo(chat_id, InputFile::memory("photo.jpg", data))
+   bot.send_photo(InputFile::memory("photo.jpg", data))
+       .chat_id(chat_id)
        .caption("Look at this!")
        .await?;
 
@@ -67,7 +70,8 @@ Inline keyboard
        ]],
    });
 
-   bot.send_message(chat_id, "Confirm?")
+   bot.send_message("Confirm?")
+       .chat_id(chat_id)
        .reply_markup(kb)
        .await?;
 
@@ -121,10 +125,10 @@ InputFile
 .. code-block:: rust
 
    // File already on Telegram: pass file_id string directly
-   bot.send_photo(chat_id, "AgACAgIAAxkBAAI...").await?;
+   bot.send_photo("AgACAgIAAxkBAAI...").chat_id(chat_id).await?;
 
    // URL: pass URL string directly
-   bot.send_photo(chat_id, "https://example.com/img.jpg").await?;
+   bot.send_photo("https://example.com/img.jpg").chat_id(chat_id).await?;
 
    // Raw bytes
    InputFile::memory("photo.jpg", bytes)
@@ -163,7 +167,8 @@ Sending files (full reference)
 .. code-block:: rust
 
    let bytes = tokio::fs::read("document.pdf").await?;
-   bot.send_document(chat_id, InputFile::memory("doc.pdf", bytes))
+   bot.send_document(InputFile::memory("doc.pdf", bytes))
+       .chat_id(chat_id)
        .await?;
 
 Webhook (built-in vs manual)
@@ -224,7 +229,7 @@ Manual webhook with Axum:
        let bot = s.bot.clone();
        tokio::spawn(async move {
            if let Some(msg) = update.message {
-               let _ = bot.send_message(msg.chat.id, "got it").await;
+               let _ = bot.send_message("got it").chat_id(msg.chat.id).await;
            }
        });
        StatusCode::OK

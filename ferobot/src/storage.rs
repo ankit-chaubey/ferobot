@@ -52,12 +52,9 @@
 //! # #[cfg(feature = "redis-storage")]
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! use ferobot::storage::RedisStorage;
-//! use ferobot::{ConversationOpts, ConversationHandler};
+//! use ferobot::ConversationOpts;
 //!
-//! let storage = RedisStorage::new("redis://127.0.0.1/")
-//!     .await?
-//!     .with_prefix("mybot:")   // namespace by bot name
-//!     .with_ttl(86400);        // expire idle sessions after 24 h
+//! let storage = RedisStorage::new("redis://127.0.0.1/").await?;
 //!
 //! let opts = ConversationOpts {
 //!     storage: Some(storage),

@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-ferobot = { path = "../../ferobot",  = "0.1.4", features = ["webhook"] }
+ferobot = { path = "../../ferobot", features = ["webhook"] }
 tokio   = { version = "1",     features = ["full"] }
 dotenvy = "0.15"

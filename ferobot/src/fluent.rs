@@ -37,14 +37,16 @@
 //! let me = bot.get_me().await?;
 //!
 //! // Chain options before await
-//! bot.send_message(123_i64, "Hello!")
+//! bot.send_message("Hello!")
+//!    .chat_id(123_i64)
 //!    .html()
 //!    .silent()
 //!    .reply_to(42)
 //!    .await?;
 //!
 //! // Works for every method
-//! bot.send_video(123_i64, InputFile::memory("v.mp4", vec![]))
+//! bot.send_video(InputFile::memory("v.mp4", vec![]))
+//!    .chat_id(123_i64)
 //!    .caption("Watch this")
 //!    .duration(30)
 //!    .silent()

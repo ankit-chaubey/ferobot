@@ -103,8 +103,27 @@ mod serde_roundtrip {
                 callback_data: Some("btn_1".into()),
                 ..Default::default()
             }]],
+            force_reply: None,
         };
         rt(&markup);
+    }
+
+    #[test]
+    fn input_media_live_photo_tag() {
+        let media = crate::InputMedia::from(crate::types::InputMediaLivePhoto {
+            r#type: "live_photo".into(),
+            media: "video_id".into(),
+            photo: "photo_id".into(),
+            caption: None,
+            parse_mode: None,
+            caption_entities: None,
+            show_caption_above_media: None,
+            has_spoiler: None,
+        });
+        let json = serde_json::to_value(&media).unwrap();
+        assert_eq!(json["type"], "live_photo");
+        assert_eq!(json["media"], "video_id");
+        assert_eq!(json["photo"], "photo_id");
     }
 }
 

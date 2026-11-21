@@ -324,15 +324,16 @@ impl Handler for ConversationHandler {
 ///
 /// ```rust,no_run
 /// # #[cfg(feature = "redis-storage")]
-/// # async fn example() -> anyhow::Result<()> {
-/// use ferobot::framework::handlers::conversation::{
-
+/// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+/// use ferobot::storage::RedisStorage;
+/// use ferobot::ConversationOpts;
+///
+/// let storage = RedisStorage::new("redis://127.0.0.1/").await?;
+///
+/// let opts = ConversationOpts {
+///     storage: Some(storage),
+///     ..Default::default()
 /// };
-///
-/// let storage = RedisStorage::new("redis://127.0.0.1/")
-
-///
-/// let opts = ConversationOpts::default().storage(storage);
 /// # Ok(())
 /// # }
 /// ```

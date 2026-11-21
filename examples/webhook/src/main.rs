@@ -33,6 +33,7 @@ fn inline_kb(rows: Vec<Vec<(&str, &str)>>) -> InlineKeyboardMarkup {
                     .collect()
             })
             .collect(),
+        force_reply: None,
     }
 }
 
@@ -51,9 +52,10 @@ fn make_handler() -> UpdateHandler {
                 match text {
                     "/start" => {
                         let _ = bot
-                            .send_message(chat_id, format!("👋 Hello, <b>{name}</b>!\n\nI'm a webhook bot built with <a href=\"https://github.com/ankit-chaubey/ferobot\">ferobot</a> 🦀\n\nPick an option below or just send me a message."))
+                            .send_message(format!("👋 Hello, <b>{name}</b>!\n\nI'm a webhook bot built with <a href=\"https://github.com/ankit-chaubey/ferobot\">ferobot</a> 🦀\n\nPick an option below or just send me a message."))
+                            .chat_id(chat_id)
                             .html()
-                            .keyboard(ReplyMarkup::InlineKeyboard(inline_kb(vec![
+                            .reply_markup(ReplyMarkup::InlineKeyboard(inline_kb(vec![
                                 vec![("📖 Help", "help"), ("🎲 Random fact", "fact")],
                                 vec![("🌐 GitHub", "github")],
                             ])))
@@ -62,21 +64,24 @@ fn make_handler() -> UpdateHandler {
 
                     "/help" => {
                         let _ = bot
-                            .send_message(chat_id, "<b>Available commands:</b>\n/start - welcome message\n/help  - this list\n/about - about this bot\n\nOr just type anything and I'll echo it back! 🦜")
+                            .send_message("<b>Available commands:</b>\n/start - welcome message\n/help  - this list\n/about - about this bot\n\nOr just type anything and I'll echo it back! 🦜")
+                            .chat_id(chat_id)
                             .html()
                             .await;
                     }
 
                     "/about" => {
                         let _ = bot
-                            .send_message(chat_id, "🤖 <b>mybot</b>\n\nBuilt with <code>ferobot</code> - a fully-generated Rust Telegram Bot API library covering all 285 types and 165 methods.\n\n🔗 <a href=\"https://github.com/ankit-chaubey/ferobot\">Source on GitHub</a>")
+                            .send_message("🤖 <b>mybot</b>\n\nBuilt with <code>ferobot</code> - a fully-generated Rust Telegram Bot API library covering all 285 types and 165 methods.\n\n🔗 <a href=\"https://github.com/ankit-chaubey/ferobot\">Source on GitHub</a>")
+                            .chat_id(chat_id)
                             .html()
                             .await;
                     }
 
                     _ if !text.is_empty() => {
                         let _ = bot
-                            .send_message(chat_id, format!("🦜 You said:\n<blockquote>{text}</blockquote>"))
+                            .send_message(format!("🦜 You said:\n<blockquote>{text}</blockquote>"))
+                            .chat_id(chat_id)
                             .html()
                             .await;
                     }
@@ -140,7 +145,9 @@ fn make_handler() -> UpdateHandler {
                             .parse_mode("HTML")
                             .reply_markup(Box::new(new_kb));
 
-                        let _ = bot.edit_message_text(new_text, Some(edit_params)).await;
+                        let _ = bot
+                            .edit_message_text_with_params(Some(edit_params.text(new_text)))
+                            .await;
                     }
                 }
             }

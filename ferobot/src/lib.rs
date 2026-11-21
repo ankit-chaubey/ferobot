@@ -28,7 +28,7 @@
 //!     let bot = Bot::new("YOUR_BOT_TOKEN").await.unwrap();
 //!     println!("Running as @{}", bot.me.username.as_deref().unwrap_or("unknown"));
 //!
-//!     let msg = bot.send_message(123456789i64, "Hello from ferobot! 🦀").await.unwrap();
+//!     let msg = bot.send_message("Hello from ferobot! 🦀").chat_id(123456789i64).await.unwrap();
 //!     println!("Sent: #{}", msg.message_id);
 //! }
 //! ```
@@ -196,6 +196,8 @@ pub enum InputMedia {
     Audio(types::InputMediaAudio),
     Document(types::InputMediaDocument),
     Animation(types::InputMediaAnimation),
+    #[serde(rename = "live_photo")]
+    LivePhoto(types::InputMediaLivePhoto),
 }
 
 impl From<types::InputMediaPhoto> for InputMedia {
@@ -223,6 +225,11 @@ impl From<types::InputMediaAnimation> for InputMedia {
         InputMedia::Animation(v)
     }
 }
+impl From<types::InputMediaLivePhoto> for InputMedia {
+    fn from(v: types::InputMediaLivePhoto) -> Self {
+        InputMedia::LivePhoto(v)
+    }
+}
 
 /// `Default` for `InlineKeyboardButton` - only `text` is required by the API.
 impl Default for crate::gen_types::InlineKeyboardButton {
@@ -241,6 +248,7 @@ impl Default for crate::gen_types::InlineKeyboardButton {
             copy_text: None,
             callback_game: None,
             pay: None,
+            disabled: None,
         }
     }
 }

@@ -83,14 +83,15 @@ async fn main() {
 
 ### Calling methods
 
-Every bot method takes required arguments directly. Optional parameters are passed through a params struct, or you can skip them entirely with `None`:
+Every bot method takes its required arguments directly. Since Bot API 10.4 `chat_id` is optional on the send methods (it can be left out for ephemeral replies to callback queries), so set it with `.chat_id(..)`. Other optional parameters are passed through a params struct, or you can skip them entirely with `None`:
 
 ```rust
 // send a plain message
-bot.send_message(chat_id, "hello").await?;
+bot.send_message("hello").chat_id(chat_id).await?;
 
 // with optional params chained via builder
-bot.send_message(chat_id, "<b>hello</b>")
+bot.send_message("<b>hello</b>")
+    .chat_id(chat_id)
     .html()
     .silent()
     .reply_to(msg.message_id)
@@ -103,10 +104,11 @@ Shortcuts like `.html()`, `.markdown()`, `.silent()`, and `.reply_to(id)` cover 
 use ferobot::gen_methods::SendMessageParams;
 
 let params = SendMessageParams::new()
+    .chat_id(chat_id)
     .parse_mode("HTML")
     .disable_notification(true);
 
-bot.send_message(chat_id, "<b>hello</b>", Some(params)).await?;
+bot.send_message_with_params("<b>hello</b>", Some(params)).await?;
 ```
 
 ### Dispatcher and handlers
@@ -146,9 +148,9 @@ State is stored in memory by default. Add the `redis-storage` feature for persis
 `ChatId` accepts integers, negative group IDs, and `@username` strings interchangeably:
 
 ```rust
-bot.send_message(123456789_i64, "hi").await?;
-bot.send_message(-100123456789_i64, "hi group").await?;
-bot.send_message("@username", "hi").await?;
+bot.send_message("hi").chat_id(123456789_i64).await?;
+bot.send_message("hi group").chat_id(-100123456789_i64).await?;
+bot.send_message("hi").chat_id("@username").await?;
 ```
 
 `InputFile` accepts a file ID, a URL, or raw bytes at the same call site:

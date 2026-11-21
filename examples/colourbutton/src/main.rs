@@ -48,6 +48,7 @@ fn ibtn(text: &str, data: &str, style: Option<&str>) -> InlineKeyboardButton {
         copy_text: None,
         callback_game: None,
         pay: None,
+        disabled: None,
     }
 }
 
@@ -62,6 +63,7 @@ fn rbtn(text: &str, style: Option<&str>) -> KeyboardButton {
         request_location: None,
         request_poll: None,
         web_app: None,
+        request_managed_bot: None,
     }
 }
 
@@ -81,6 +83,7 @@ fn colored_inline_keyboard() -> InlineKeyboardMarkup {
                 ibtn("❌ Cancel",  "cancel",  Some("danger")),
             ],
         ],
+        force_reply: None,
     }
 }
 
@@ -102,6 +105,7 @@ fn colored_reply_keyboard() -> ReplyKeyboardMarkup {
         one_time_keyboard: Some(false),
         input_field_placeholder: None,
         selective: None,
+        force_reply: None,
     }
 }
 
@@ -128,6 +132,7 @@ fn inline_results(query: &str) -> Vec<InlineQueryResult> {
                     &format!("inline_{}", style),
                     btn_style,
                 )]],
+                force_reply: None,
             };
 
             InlineQueryResult::InlineQueryResultArticle(InlineQueryResultArticle {
@@ -172,16 +177,18 @@ async fn main() {
                 match text {
                     "/start" => {
                         let _ = bot
-                            .send_message(chat_id, "<b>🎨 Button Styles</b> - Bot API 9.4\n\n<code>primary</code> -> 🔵 blue\n<code>success</code> -> 🟢 green\n<code>danger</code>  -> 🔴 red\n(none)          -> ⬜ default")
+                            .send_message("<b>🎨 Button Styles</b> - Bot API 9.4\n\n<code>primary</code> -> 🔵 blue\n<code>success</code> -> 🟢 green\n<code>danger</code>  -> 🔴 red\n(none)          -> ⬜ default")
+                            .chat_id(chat_id)
                             .html()
-                            .keyboard(ReplyMarkup::InlineKeyboard(colored_inline_keyboard()))
+                            .reply_markup(ReplyMarkup::InlineKeyboard(colored_inline_keyboard()))
                             .await;
                     }
 
                     "/reply" => {
                         let _ = bot
-                            .send_message(chat_id, "⌨️ Colored reply keyboard - tap any button:")
-                            .keyboard(ReplyMarkup::ReplyKeyboard(colored_reply_keyboard()))
+                            .send_message("⌨️ Colored reply keyboard - tap any button:")
+                            .chat_id(chat_id)
+                            .reply_markup(ReplyMarkup::ReplyKeyboard(colored_reply_keyboard()))
                             .await;
                     }
 
@@ -200,17 +207,20 @@ async fn main() {
                                     ibtn("🗑 Delete",  "all_delete",  Some("danger")),
                                 ],
                             ],
+                            force_reply: None,
                         };
                         let _ = bot
-                            .send_message(chat_id, "<b>All styles at a glance</b>\n\nAlso try inline: type <code>@YourBot</code> in any chat")
+                            .send_message("<b>All styles at a glance</b>\n\nAlso try inline: type <code>@YourBot</code> in any chat")
+                            .chat_id(chat_id)
                             .html()
-                            .keyboard(ReplyMarkup::InlineKeyboard(keyboard))
+                            .reply_markup(ReplyMarkup::InlineKeyboard(keyboard))
                             .await;
                     }
 
                     other if !other.is_empty() && !other.starts_with('/') => {
                         let _ = bot
-                            .send_message(chat_id, format!("You pressed: <b>{}</b>", other))
+                            .send_message(format!("You pressed: <b>{}</b>", other))
+                            .chat_id(chat_id)
                             .html()
                             .await;
                     }
