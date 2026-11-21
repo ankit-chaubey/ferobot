@@ -122,13 +122,14 @@ impl Message {
                 quote: None,
                 quote_parse_mode: None,
                 quote_entities: None,
+                quote_rich_texts: None,
                 quote_position: None,
                 checklist_task_id: None,
                 poll_option_id: None,
             }));
         }
-        bot.send_message_with_params(self.chat.id, text, Some(p))
-            .await
+        p.chat_id = Some(self.chat.id.into());
+        bot.send_message_with_params(text, Some(p)).await
     }
 }
 
@@ -136,7 +137,7 @@ impl Message {
 impl Chat {
     /// Send a message to this chat.
     ///
-    /// Shorthand for `bot.send_message(chat.id, text, params)`.
+    /// Shorthand for `bot.send_message_with_params(text, params)` with `chat_id` set to this chat.
     ///
     /// # Example
     /// ```rust,no_run
@@ -151,7 +152,9 @@ impl Chat {
         text: impl Into<String>,
         params: Option<SendMessageParams>,
     ) -> Result<Message, BotError> {
-        bot.send_message_with_params(self.id, text, params).await
+        let mut p = params.unwrap_or_default();
+        p.chat_id = Some(self.id.into());
+        bot.send_message_with_params(text, Some(p)).await
     }
 }
 

@@ -133,9 +133,9 @@ Numeric IDs, negative group IDs, and ``@username`` strings all work anywhere a `
 
 .. code-block:: rust
 
-   bot.send_message(123456789i64,       "user",             None).await?;
-   bot.send_message(-100123456789i64,   "group or channel").await?;
-   bot.send_message("@username",        "by username",      None).await?;
+   bot.send_message("user").chat_id(123456789i64).await?;
+   bot.send_message("group or channel").chat_id(-100123456789i64).await?;
+   bot.send_message("by username").chat_id("@username").await?;
 
 Error handling
 --------------
@@ -144,7 +144,7 @@ Error handling
 
    use ferobot::BotError;
 
-   match bot.send_message(chat_id, "hello").await {
+   match bot.send_message("hello").chat_id(chat_id).await {
        Ok(msg) => println!("sent #{}", msg.message_id),
        Err(BotError::Api { code: 403, .. }) => eprintln!("bot was blocked"),
        Err(e) if e.is_api_error_code(429) => {
@@ -182,7 +182,7 @@ Wraps any API call and retries on flood-wait (429) and network errors:
 
    let msg = RetryPolicy::new()
        .max_attempts(3)
-       .run(|| bot.send_message(chat_id, "hello"))
+       .run(|| bot.send_message("hello").chat_id(chat_id))
        .await?;
 
 Auto-codegen
