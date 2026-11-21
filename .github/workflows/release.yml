@@ -121,9 +121,10 @@ jobs:
       - name: Test
         run: cargo test --workspace
 
-      - name: Commit and push
+      - name: Commit, tag and push
         if: steps.bump-type.outputs.bump != 'typed'
         run: |
+          TAG="v${{ steps.new-ver.outputs.version }}"
           git config user.name "Ankit Chaubey"
           git config user.email "ankitchaubey.dev@gmail.com"
           git add ferobot/Cargo.toml CHANGELOG.md
@@ -132,14 +133,9 @@ jobs:
             "${{ steps.api-ver.outputs.version }}" \
             > /tmp/commit_msg.txt
           git commit -F /tmp/commit_msg.txt
-          git push origin main
-
-      - name: Tag
-        if: steps.bump-type.outputs.bump != 'typed'
-        run: |
-          TAG="v${{ steps.new-ver.outputs.version }}"
           git tag -a "$TAG" -m "Release $TAG - Telegram Bot API ${{ steps.api-ver.outputs.version }}"
-          git push origin "$TAG"
+          # one atomic push so the branch and the tag land together or not at all
+          git push --atomic origin HEAD:main "refs/tags/$TAG"
 
       - name: GitHub release
         if: steps.bump-type.outputs.bump != 'typed'
