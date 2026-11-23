@@ -13,7 +13,7 @@
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
-// Generated from Telegram Bot API Bot API 10.4
+// Generated from Telegram Bot API Bot API 10.5
 // Spec:    https://github.com/ankit-chaubey/api-spec
 // Project: https://github.com/ankit-chaubey/ferobot
 // Author:  Ankit Chaubey <ankitchaubey.dev@gmail.com>
@@ -92,7 +92,7 @@ impl AnswerCallbackQueryParams {
 }
 
 impl Bot {
-    /// Use this method to send answers to callback queries sent from inline keyboards. The answer will be displayed to the user as a notification at the top of the chat screen or as an alert. On success, True is returned.
+    /// Use this method to send answers to callback queries sent from inline keyboards or rich messages. The answer will be displayed to the user as a notification at the top of the chat screen or as an alert. On success, True is returned.
     /// See: https://core.telegram.org/bots/api#answercallbackquery
     pub async fn answer_callback_query_with_params(
         &self,
@@ -3507,9 +3507,9 @@ impl Bot {
 }
 
 impl Bot {
-    /// A simple method for testing your bot's authentication token. Requires no parameters. Returns basic information about the bot in form of a User object.
+    /// A simple method for testing your bot's authentication token. Requires no parameters. Returns information about the bot in form of a BotFullInfo object.
     /// See: https://core.telegram.org/bots/api#getme
-    pub(crate) async fn raw_get_me(&self) -> Result<User, BotError> {
+    pub(crate) async fn raw_get_me(&self) -> Result<BotFullInfo, BotError> {
         #[derive(serde::Serialize)]
         struct Req {}
         let req = Req {};
@@ -9537,6 +9537,141 @@ impl Bot {
         }
         let req = Req { photo: &photo };
         self.call_api_raw("setMyProfilePhoto", &req).await
+    }
+}
+
+/// Optional parameters for [`Bot::set_my_settings_with_params`]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct SetMySettingsParams {
+    /// Pass True to enable inline mode for the bot or False to disable it
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub supports_inline_queries: Option<bool>,
+    /// New placeholder for inline queries, which is shown in the input field after the bot's username. Pass an empty string to use the default placeholder.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inline_query_placeholder: Option<String>,
+    /// Pass True to request the location of the user with every inline query to the bot or False to stop requesting it
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub needs_inline_query_location: Option<bool>,
+    /// Denominator of the share of chosen inline results received by the bot; the bot receives 1 out of inline_feedback_share_denominator chosen results. Must be one of 1, 10, 100, or 1000. Pass 0 to stop receiving chosen inline results.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inline_feedback_share_denominator: Option<i64>,
+    /// Pass True to allow adding the bot to groups or False to disallow it
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub can_join_groups: Option<bool>,
+    /// Pass True to disable privacy mode for the bot or False to enable it
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub can_read_all_group_messages: Option<bool>,
+    /// Pass True to allow connecting the bot to user accounts to manage them or False to disallow it
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub can_connect_to_business: Option<bool>,
+    /// Pass True to allow creating other bots that will be controlled by the bot or False to disallow it
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub can_manage_bots: Option<bool>,
+    /// Pass True to allow guest queries to the bot from chats it isn't a member of or False to disallow them
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub supports_guest_queries: Option<bool>,
+    /// Pass True to allow assigning the bot to process join request queries or False to disallow it
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub supports_join_request_queries: Option<bool>,
+    /// Pass True to enable forum topic mode in private chats with the bot or False to disable it
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub has_topics_enabled: Option<bool>,
+    /// Pass True to allow users to create and delete topics in private chats with the bot or False to disallow it
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub allows_users_to_create_topics: Option<bool>,
+    /// Pass True to show topics in private chats with the bot in a sidebar or False to stop showing them in a sidebar
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub has_topic_sidebar: Option<bool>,
+    /// Pass True to allow the bot to communicate with other bots in groups, private chats, and through business accounts or False to disallow it
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub can_communicate_with_bots: Option<bool>,
+    /// Mode in which the bot receives callback queries from buttons in messages sent by the bot. Must be one of "default" (the field message is always used and contains an InaccessibleMessage if the message is inaccessible to the bot), "auto" (the field inline_message_id is used instead of the field message if the message is inaccessible to the bot; the field message can still contain an inaccessible message if the message has just been deleted), or "inline" (the field inline_message_id is always used instead of the field message).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub callback_query_mode: Option<String>,
+}
+
+impl SetMySettingsParams {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn supports_inline_queries(mut self, v: impl Into<bool>) -> Self {
+        self.supports_inline_queries = Some(v.into());
+        self
+    }
+    pub fn inline_query_placeholder(mut self, v: impl Into<String>) -> Self {
+        self.inline_query_placeholder = Some(v.into());
+        self
+    }
+    pub fn needs_inline_query_location(mut self, v: impl Into<bool>) -> Self {
+        self.needs_inline_query_location = Some(v.into());
+        self
+    }
+    pub fn inline_feedback_share_denominator(mut self, v: impl Into<i64>) -> Self {
+        self.inline_feedback_share_denominator = Some(v.into());
+        self
+    }
+    pub fn can_join_groups(mut self, v: impl Into<bool>) -> Self {
+        self.can_join_groups = Some(v.into());
+        self
+    }
+    pub fn can_read_all_group_messages(mut self, v: impl Into<bool>) -> Self {
+        self.can_read_all_group_messages = Some(v.into());
+        self
+    }
+    pub fn can_connect_to_business(mut self, v: impl Into<bool>) -> Self {
+        self.can_connect_to_business = Some(v.into());
+        self
+    }
+    pub fn can_manage_bots(mut self, v: impl Into<bool>) -> Self {
+        self.can_manage_bots = Some(v.into());
+        self
+    }
+    pub fn supports_guest_queries(mut self, v: impl Into<bool>) -> Self {
+        self.supports_guest_queries = Some(v.into());
+        self
+    }
+    pub fn supports_join_request_queries(mut self, v: impl Into<bool>) -> Self {
+        self.supports_join_request_queries = Some(v.into());
+        self
+    }
+    pub fn has_topics_enabled(mut self, v: impl Into<bool>) -> Self {
+        self.has_topics_enabled = Some(v.into());
+        self
+    }
+    pub fn allows_users_to_create_topics(mut self, v: impl Into<bool>) -> Self {
+        self.allows_users_to_create_topics = Some(v.into());
+        self
+    }
+    pub fn has_topic_sidebar(mut self, v: impl Into<bool>) -> Self {
+        self.has_topic_sidebar = Some(v.into());
+        self
+    }
+    pub fn can_communicate_with_bots(mut self, v: impl Into<bool>) -> Self {
+        self.can_communicate_with_bots = Some(v.into());
+        self
+    }
+    pub fn callback_query_mode(mut self, v: impl Into<String>) -> Self {
+        self.callback_query_mode = Some(v.into());
+        self
+    }
+}
+
+impl Bot {
+    /// Use this method to change settings of the bot. Settings that aren't specified remain unchanged. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#setmysettings
+    pub async fn set_my_settings_with_params(
+        &self,
+        params: Option<SetMySettingsParams>,
+    ) -> Result<bool, BotError> {
+        #[derive(serde::Serialize)]
+        struct Req<'a> {
+            #[serde(flatten, skip_serializing_if = "Option::is_none")]
+            params: Option<&'a SetMySettingsParams>,
+        }
+        let req = Req {
+            params: params.as_ref(),
+        };
+        self.call_api_raw("setMySettings", &req).await
     }
 }
 
