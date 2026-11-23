@@ -13,7 +13,7 @@
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
-// Generated from Telegram Bot API Bot API 10.4
+// Generated from Telegram Bot API Bot API 10.5
 // Spec:    https://github.com/ankit-chaubey/api-spec
 // Project: https://github.com/ankit-chaubey/ferobot
 // Author:  Ankit Chaubey <ankitchaubey.dev@gmail.com>
@@ -403,6 +403,51 @@ pub struct BotDescription {
     pub description: String,
 }
 
+/// This object contains full information about the bot itself.
+/// https://core.telegram.org/bots/api#botfullinfo
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct BotFullInfo {
+    /// Unique identifier for this bot. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a 64-bit integer or double-precision float type are safe for storing this identifier.
+    pub id: i64,
+    /// Always True
+    pub is_bot: bool,
+    /// Bot's first name
+    pub first_name: String,
+    /// Optional. Bot's username
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub username: Option<String>,
+    /// Optional. If non-empty, the list of all active usernames of the bot
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub active_usernames: Option<Vec<String>>,
+    /// True, if the bot can be added to groups
+    pub can_join_groups: bool,
+    /// True, if privacy mode is disabled for the bot
+    pub can_read_all_group_messages: bool,
+    /// True, if the bot supports guest queries from chats it is not a member of
+    pub supports_guest_queries: bool,
+    /// True, if the bot supports inline queries
+    pub supports_inline_queries: bool,
+    /// Optional. Placeholder for inline queries, which is shown in the input field after the bot's username; omitted if the default placeholder is used
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inline_query_placeholder: Option<String>,
+    /// True, if the bot requests the location of the user with every inline query
+    pub needs_inline_query_location: bool,
+    /// True, if the bot can be connected to a user account to manage it
+    pub can_connect_to_business: bool,
+    /// True, if the bot has a main Web App
+    pub has_main_web_app: bool,
+    /// True, if the bot has forum topic mode enabled in private chats
+    pub has_topics_enabled: bool,
+    /// True, if the bot allows users to create and delete topics in private chats
+    pub allows_users_to_create_topics: bool,
+    /// True, if topics in private chats with the bot are shown in a sidebar
+    pub has_topic_sidebar: bool,
+    /// True, if other bots can be created to be controlled by the bot
+    pub can_manage_bots: bool,
+    /// True, if the bot supports join request queries and can be assigned to process them
+    pub supports_join_request_queries: bool,
+}
+
 /// This object represents the bot's name.
 /// https://core.telegram.org/bots/api#botname
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -561,7 +606,7 @@ pub struct BusinessOpeningHoursInterval {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct CallbackGame {}
 
-/// This object represents an incoming callback query from a callback button in an inline keyboard. If the button that originated the query was attached to a message sent by the bot, the field message will be present. If the button was attached to a message sent via the bot (in inline mode), the field inline_message_id will be present. Exactly one of the fields data or game_short_name will be present.
+/// This object represents an incoming callback query from a callback button in an inline keyboard or in a rich message. If the button that originated the query belongs to a message sent by the bot, the field message will be present, unless the field inline_message_id is used instead as specified by the parameter callback_query_mode of the method setMySettings. If the button belongs to a message sent via the bot (in inline mode), the field inline_message_id will be present. Exactly one of the fields data or game_short_name will be present.
 /// https://core.telegram.org/bots/api#callbackquery
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct CallbackQuery {
@@ -572,7 +617,7 @@ pub struct CallbackQuery {
     /// Optional. Message sent by the bot with the callback button that originated the query
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message: Option<Box<MaybeInaccessibleMessage>>,
-    /// Optional. Identifier of the message sent via the bot in inline mode, that originated the query
+    /// Optional. Identifier of the message sent via the bot in inline mode, that originated the query. Can also be present for messages sent by the bot, depending on the parameter callback_query_mode of the method setMySettings.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_message_id: Option<String>,
     /// Global identifier, uniquely corresponding to the chat to which the message with the callback button was sent. Useful for high scores in games.
@@ -1434,7 +1479,7 @@ pub struct ChecklistTasksDone {
 }
 
 /// Represents a result of an inline query that was chosen by the user and sent to their chat partner.
-/// Note: It is necessary to enable inline feedback via @BotFather in order to receive these objects in updates.
+/// Note: It is necessary to enable inline feedback via @BotFather or using the parameter inline_feedback_share_denominator of the method setMySettings in order to receive these objects in updates.
 /// https://core.telegram.org/bots/api#choseninlineresult
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ChosenInlineResult {
@@ -1442,7 +1487,7 @@ pub struct ChosenInlineResult {
     pub result_id: String,
     /// The user that chose the result
     pub from: User,
-    /// Optional. Sender location, only for bots that require user location
+    /// Optional. Sender location, only for bots that enabled user location requests via @BotFather or using the parameter needs_inline_query_location of the method setMySettings
     #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<Box<Location>>,
     /// Optional. Identifier of the sent inline message. Available only if there is an inline keyboard attached to the message. Will be also received in callback queries and can be used to edit the message.
@@ -2153,7 +2198,7 @@ pub struct InlineQuery {
     /// Optional. Type of the chat from which the inline query was sent. Can be either "sender" for a private chat with the inline query sender, "private", "group", "supergroup", or "channel". The chat type should be always known for requests sent from official clients and most third-party clients, unless the request was sent from a secret chat.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_type: Option<String>,
-    /// Optional. Sender location, only for bots that request user location
+    /// Optional. Sender location, only for bots that enabled user location requests via @BotFather or using the parameter needs_inline_query_location of the method setMySettings
     #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<Box<Location>>,
 }
@@ -3750,7 +3795,7 @@ pub struct InputRichBlockExpandableBlockQuotation {
     #[serde(rename = "type")]
     pub r#type: String,
     /// Content of the block
-    pub text: Box<RichText>,
+    pub blocks: Vec<InputRichBlock>,
     /// Optional. Credit of the block
     #[serde(skip_serializing_if = "Option::is_none")]
     pub credit: Option<Box<RichText>>,
@@ -4215,7 +4260,7 @@ pub struct KeyboardButton {
     /// Optional. If specified, pressing the button will open a list of suitable chats. Tapping on a chat will send its identifier to the bot in a "chat_shared" service message. Available in private chats only.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request_chat: Option<Box<KeyboardButtonRequestChat>>,
-    /// Optional. If specified, pressing the button will ask the user to create and share a bot that will be managed by the current bot. Available for bots that enabled management of other bots in the @BotFather Mini App. Available in private chats only.
+    /// Optional. If specified, pressing the button will ask the user to create and share a bot that will be managed by the current bot. Available for bots that enabled management of other bots in the @BotFather Mini App or using the parameter can_manage_bots of the method setMySettings. Available in private chats only.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request_managed_bot: Option<Box<KeyboardButtonRequestManagedBot>>,
     /// Optional. If True, the user's phone number will be sent as a contact when the button is pressed. Available in private chats only.
@@ -4783,7 +4828,7 @@ pub struct Message {
     /// Optional. The domain name of the website on which the user has logged in. More about Telegram Login: /widgets/login
     #[serde(skip_serializing_if = "Option::is_none")]
     pub connected_website: Option<String>,
-    /// Optional. Service message: the user allowed the bot to write messages after adding it to the attachment or side menu, launching a Web App from a link, or accepting an explicit request from a Web App sent by the method requestWriteAccess
+    /// Optional. Service message: the user allowed the bot to write messages after adding it to the attachment or side menu, launching a Web App from a link, or accepting an explicit request from a Web App sent by the method requestWriteAccess, or the user was invited to the private chat with the bot by the owner of the bot
     #[serde(skip_serializing_if = "Option::is_none")]
     pub write_access_allowed: Option<Box<WriteAccessAllowed>>,
     /// Optional. Telegram Passport data
@@ -6120,7 +6165,7 @@ pub struct RichBlockExpandableBlockQuotation {
     #[serde(rename = "type")]
     pub r#type: String,
     /// Content of the block
-    pub text: Box<RichText>,
+    pub blocks: Vec<RichBlock>,
     /// Optional. Credit of the block
     #[serde(skip_serializing_if = "Option::is_none")]
     pub credit: Option<Box<RichText>>,
@@ -7671,7 +7716,7 @@ pub struct Update {
     /// Optional. New incoming inline query
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_query: Option<Box<InlineQuery>>,
-    /// Optional. The result of an inline query that was chosen by a user and sent to their chat partner. Please see our documentation on the feedback collecting for details on how to enable these updates for your bot.
+    /// Optional. The result of an inline query that was chosen by a user and sent to their chat partner. Please see our documentation on the feedback collecting for details on how to enable these updates for your bot. The updates can also be enabled using the parameter inline_feedback_share_denominator of the method setMySettings.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chosen_inline_result: Option<Box<ChosenInlineResult>>,
     /// Optional. New incoming callback query
@@ -7749,36 +7794,6 @@ pub struct User {
     /// Optional. True, if this user added the bot to the attachment menu
     #[serde(skip_serializing_if = "Option::is_none")]
     pub added_to_attachment_menu: Option<bool>,
-    /// Optional. True, if the bot can be invited to groups. Returned only in getMe.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub can_join_groups: Option<bool>,
-    /// Optional. True, if privacy mode is disabled for the bot. Returned only in getMe.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub can_read_all_group_messages: Option<bool>,
-    /// Optional. True, if the bot supports guest queries from chats it is not a member of. Returned only in getMe.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub supports_guest_queries: Option<bool>,
-    /// Optional. True, if the bot supports inline queries. Returned only in getMe.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub supports_inline_queries: Option<bool>,
-    /// Optional. True, if the bot can be connected to a user account to manage it. Returned only in getMe.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub can_connect_to_business: Option<bool>,
-    /// Optional. True, if the bot has a main Web App. Returned only in getMe.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_main_web_app: Option<bool>,
-    /// Optional. True, if the bot has forum topic mode enabled in private chats. Returned only in getMe.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_topics_enabled: Option<bool>,
-    /// Optional. True, if the bot allows users to create and delete topics in private chats. Returned only in getMe.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub allows_users_to_create_topics: Option<bool>,
-    /// Optional. True, if other bots can be created to be controlled by the bot. Returned only in getMe.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub can_manage_bots: Option<bool>,
-    /// Optional. True, if the bot supports join request queries and can be assigned to process them. Returned only in getMe.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub supports_join_request_queries: Option<bool>,
 }
 
 /// This object represents a list of boosts added to a chat by a user.
@@ -8151,7 +8166,7 @@ pub struct WidgetQueryWallet {
     pub state_init: Option<String>,
 }
 
-/// This object represents a service message about a user allowing a bot to write messages after adding it to the attachment menu, launching a Web App from a link, or accepting an explicit request from a Web App sent by the method requestWriteAccess.
+/// This object represents a service message about a user allowing a bot to write messages after adding it to the attachment menu, launching a Web App from a link, or accepting an explicit request from a Web App sent by the method requestWriteAccess, or about a user being invited to the private chat with the bot by the owner of the bot.
 /// https://core.telegram.org/bots/api#writeaccessallowed
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct WriteAccessAllowed {
@@ -8164,4 +8179,7 @@ pub struct WriteAccessAllowed {
     /// Optional. True, if the access was granted when the bot was added to the attachment or side menu
     #[serde(skip_serializing_if = "Option::is_none")]
     pub from_attachment_menu: Option<bool>,
+    /// Optional. The owner of the bot, if the access was granted when the owner invited the user to the private chat with the bot. Bot owners can invite up to 10 users at once by pressing the link https://t.me/botinvite/<bot_username>.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inviter: Option<Box<User>>,
 }

@@ -13,7 +13,7 @@
 // and include the LICENSE-MIT or LICENSE-APACHE file from this repository.
 
 // THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
-// Generated from Telegram Bot API Bot API 10.4
+// Generated from Telegram Bot API Bot API 10.5
 // Spec:    https://github.com/ankit-chaubey/api-spec
 // Project: https://github.com/ankit-chaubey/ferobot
 // Author:  Ankit Chaubey <ankitchaubey.dev@gmail.com>
@@ -3647,7 +3647,7 @@ impl<'bot> GetMeRequest<'bot> {
 }
 
 impl<'bot> IntoFuture for GetMeRequest<'bot> {
-    type Output = Result<User, BotError>;
+    type Output = Result<BotFullInfo, BotError>;
     type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
 
     fn into_future(self) -> Self::IntoFuture {
@@ -8945,6 +8945,97 @@ impl<'bot> IntoFuture for SetMyProfilePhotoRequest<'bot> {
     }
 }
 
+/// Fluent builder for [`Bot::set_my_settings`]. Implements [`IntoFuture`].
+///
+/// See: https://core.telegram.org/bots/api#setmysettings
+pub struct SetMySettingsRequest<'bot> {
+    bot: &'bot Bot,
+    params: SetMySettingsParams,
+}
+
+impl<'bot> SetMySettingsRequest<'bot> {
+    pub(crate) fn new(bot: &'bot Bot) -> Self {
+        Self {
+            bot,
+            params: Default::default(),
+        }
+    }
+
+    pub fn supports_inline_queries(mut self, v: bool) -> Self {
+        self.params.supports_inline_queries = Some(v);
+        self
+    }
+    pub fn inline_query_placeholder(mut self, v: impl Into<String>) -> Self {
+        self.params.inline_query_placeholder = Some(v.into());
+        self
+    }
+    pub fn needs_inline_query_location(mut self, v: bool) -> Self {
+        self.params.needs_inline_query_location = Some(v);
+        self
+    }
+    pub fn inline_feedback_share_denominator(mut self, v: i64) -> Self {
+        self.params.inline_feedback_share_denominator = Some(v);
+        self
+    }
+    pub fn can_join_groups(mut self, v: bool) -> Self {
+        self.params.can_join_groups = Some(v);
+        self
+    }
+    pub fn can_read_all_group_messages(mut self, v: bool) -> Self {
+        self.params.can_read_all_group_messages = Some(v);
+        self
+    }
+    pub fn can_connect_to_business(mut self, v: bool) -> Self {
+        self.params.can_connect_to_business = Some(v);
+        self
+    }
+    pub fn can_manage_bots(mut self, v: bool) -> Self {
+        self.params.can_manage_bots = Some(v);
+        self
+    }
+    pub fn supports_guest_queries(mut self, v: bool) -> Self {
+        self.params.supports_guest_queries = Some(v);
+        self
+    }
+    pub fn supports_join_request_queries(mut self, v: bool) -> Self {
+        self.params.supports_join_request_queries = Some(v);
+        self
+    }
+    pub fn has_topics_enabled(mut self, v: bool) -> Self {
+        self.params.has_topics_enabled = Some(v);
+        self
+    }
+    pub fn allows_users_to_create_topics(mut self, v: bool) -> Self {
+        self.params.allows_users_to_create_topics = Some(v);
+        self
+    }
+    pub fn has_topic_sidebar(mut self, v: bool) -> Self {
+        self.params.has_topic_sidebar = Some(v);
+        self
+    }
+    pub fn can_communicate_with_bots(mut self, v: bool) -> Self {
+        self.params.can_communicate_with_bots = Some(v);
+        self
+    }
+    pub fn callback_query_mode(mut self, v: impl Into<String>) -> Self {
+        self.params.callback_query_mode = Some(v.into());
+        self
+    }
+}
+
+impl<'bot> IntoFuture for SetMySettingsRequest<'bot> {
+    type Output = Result<bool, BotError>;
+    type IntoFuture = Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'bot>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(async move {
+            self.bot
+                .set_my_settings_with_params(Some(self.params))
+                .await
+        })
+    }
+}
+
 /// Fluent builder for [`Bot::set_my_short_description`]. Implements [`IntoFuture`].
 ///
 /// See: https://core.telegram.org/bots/api#setmyshortdescription
@@ -9934,7 +10025,7 @@ impl Bot {
         AddStickerToSetRequest::new(self, user_id, name, sticker)
     }
 
-    /// Use this method to send answers to callback queries sent from inline keyboards. The answer will be displayed to the user as a notification at the top of the chat screen or as an alert. On success, True is returned.
+    /// Use this method to send answers to callback queries sent from inline keyboards or rich messages. The answer will be displayed to the user as a notification at the top of the chat screen or as an alert. On success, True is returned.
     /// See: https://core.telegram.org/bots/api#answercallbackquery
     pub fn answer_callback_query(
         &self,
@@ -10670,7 +10761,7 @@ impl Bot {
         GetManagedBotTokenRequest::new(self, user_id)
     }
 
-    /// A simple method for testing your bot's authentication token. Requires no parameters. Returns basic information about the bot in form of a User object.
+    /// A simple method for testing your bot's authentication token. Requires no parameters. Returns information about the bot in form of a BotFullInfo object.
     /// See: https://core.telegram.org/bots/api#getme
     pub fn get_me(&self) -> GetMeRequest<'_> {
         GetMeRequest::new(self)
@@ -11427,6 +11518,12 @@ impl Bot {
     /// See: https://core.telegram.org/bots/api#setmyprofilephoto
     pub fn set_my_profile_photo(&self, photo: InputProfilePhoto) -> SetMyProfilePhotoRequest<'_> {
         SetMyProfilePhotoRequest::new(self, photo)
+    }
+
+    /// Use this method to change settings of the bot. Settings that aren't specified remain unchanged. Returns True on success.
+    /// See: https://core.telegram.org/bots/api#setmysettings
+    pub fn set_my_settings(&self) -> SetMySettingsRequest<'_> {
+        SetMySettingsRequest::new(self)
     }
 
     /// Use this method to change the bot's short description, which is shown on the bot's profile page and is sent together with the link when users share the bot. Returns True on success.
